@@ -1,32 +1,31 @@
-# laby.il
+# julab.jl
 # My first real Julia program
 # Labyrinth generation and solving
 # 
 # 2024-03-14    PV      First version, full new code
 
-# cd(raw"C:\Development\GitHub\Julia\Learning\03_laby")
-# include("laby.jl")
+using Random
 
+include("args.jl")
 
-const rows = 10
-const cols = 10
 
 const TopWall = 1       # Also index in Cell.walls
 const LeftWall = 2      # Also index in Cell.walls
 const RightWall = 3
 const BottomWall = 4
 
-CornersS = [' ', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼', '█']
 const CellEmpty = 1
 const CellSolution = 17
 const VerticalWall = 6
 const HorizontalWall = 11
+
 
 mutable struct Cell
     walls::Array{Bool}
     visited::Bool
     dir_sol::Int8
 end
+
 
 lab = Array{Cell}(undef, rows+1, cols+1)
 for row in 1:rows+1
@@ -77,9 +76,9 @@ function GetTopWall(row::Int, col::Int)::Bool
 end
 
 function GetCorner(up::Bool, right::Bool, down::Bool, left::Bool)::Char
-    global CornersS
+    global Corners
     ix = (up ? 1 : 0) + (right ? 2 : 0) + (down ? 4 : 0) + (left ? 8 : 0)
-    return CornersS[ix+1]
+    return Corners[ix+1]
 end
 
 function PrintCorner(row::Int, col::Int)
@@ -98,9 +97,9 @@ function PrintTopWall(row::Int, col::Int)
     @assert 1<=col<=cols+1
     
     if GetTopWall(row, col)
-        print(CornersS[HorizontalWall]^2)
+        print(Corners[HorizontalWall]^2)
     else
-        print(CornersS[CellEmpty]^2)
+        print(Corners[CellEmpty]^2)
     end
 end
 
@@ -109,10 +108,9 @@ function PrintLeftWall(row::Int, col::Int)
     @assert 1<=col<=cols+1
     
     if GetLeftWall(row, col)
-        print(CornersS[VerticalWall])
-        #print(CornersS[CellEmpty])
+        print(Corners[VerticalWall])
     else
-        print(CornersS[CellEmpty])
+        print(Corners[CellEmpty])
     end
 end
 
@@ -120,7 +118,7 @@ function PrintCell(row::Int, col::Int)
     @assert 1<=row<=rows+1
     @assert 1<=col<=cols+1
     
-    print(CornersS[CellEmpty]^2)
+    print(Corners[CellEmpty]^2)
 end
 
 function PrintLab()
@@ -176,14 +174,14 @@ function GenerateLab()
             ntest::Int = 1
 
             while true
-                if (dir==1)
+                if (dir==1)         # TopWall
                     rt = r - 1 ; ct = c
-                elseif (dir==2)
-                    rt = r ; ct = c + 1
-                elseif (dir==3)
-                    rt = r + 1 ; ct = c
-                else
+                elseif (dir==2)     # LeftWall
                     rt = r ; ct = c - 1
+                elseif (dir==3)     # RightWall
+                    rt = r ; ct = c + 1
+                else                # BottomWall
+                    rt = r + 1 ; ct = c
                 end
 
                 if (1 <= rt <= rows && 1 <= ct <= cols)
@@ -214,5 +212,6 @@ function GenerateLab()
     ClearWall(rows, colEnd, BottomWall)
 end
 
+if (!random_shuffle) Random.seed!(2) end
 GenerateLab()
 PrintLab()
