@@ -5,31 +5,31 @@
 
 
 # General options
-show_solution::Bool = false
-is_monochrome::Bool = false
-simple_print::Bool = false
-random_shuffle::Bool = false
+showSolution::Bool = false
+isMonochrome::Bool = false
+simplePrint::Bool = false
+randomShuffle::Bool = false
 
 # Labyrinth itself
 rows::Int = 10
 cols::Int = 20
-col_start::Int = 0
-col_end::Int = 0
+colStart::Int = 0
+colEnd::Int = 0
 
 # Printing options
-CornersA = [' ', '|', '-', '+', '|', '|', '+', '+', '-', '+', '-', '+', '+', '+', '+', '+', '*',]
-CornersS = [' ', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼', '█',]
-CornersR = [' ', '╵', '╶', '╰', '╷', '│', '╭', '├', '╴', '╯', '─', '┴', '╮', '┤', '┬', '┼', '█',]
-CornersB = [' ', '╹', '╺', '┗', '╻', '┃', '┏', '┣', '╸', '┛', '━', '┻', '┓', '┫', '┳', '╋', '█',]
-CornersD = [' ', '║', '═', '╚', '║', '║', '╔', '╠', '═', '╝', '═', '╩', '╗', '╣', '╦', '╬', '█',]
+cornersA = [' ', '|', '-', '+', '|', '|', '+', '+', '-', '+', '-', '+', '+', '+', '+', '+', '*',]
+cornersS = [' ', '│', '─', '└', '│', '│', '┌', '├', '─', '┘', '─', '┴', '┐', '┤', '┬', '┼', '█',]
+cornersR = [' ', '╵', '╶', '╰', '╷', '│', '╭', '├', '╴', '╯', '─', '┴', '╮', '┤', '┬', '┼', '█',]
+cornersB = [' ', '╹', '╺', '┗', '╻', '┃', '┏', '┣', '╸', '┛', '━', '┻', '┓', '┫', '┳', '╋', '█',]
+cornersD = [' ', '║', '═', '╚', '║', '║', '╔', '╠', '═', '╝', '═', '╩', '╗', '╣', '╦', '╬', '█',]
 
-Corners = CornersA
+corners = cornersA
 
 
 i = 1
 while i <= length(ARGS)
-    global i, rows, cols, Corners
-    global show_solution, is_monochrome, simple_print, random_shuffle
+    global i, rows, cols, corners
+    global showSolution, isMonochrome, simplePrint, randomShuffle
 
     arg = ARGS[i]
     if (arg[1] == '/')
@@ -61,25 +61,25 @@ while i <= length(ARGS)
     end
 
     if (arg == "-s")
-        show_solution = true
+        showSolution = true
     elseif (arg == "-m")
-        is_monochrome = true
+        isMonochrome = true
     elseif (arg == "-a")
-        simple_print = true
+        simplePrint = true
     elseif (arg == "-d")
-        random_shuffle = true
+        randomShuffle = true
     elseif (arg == "-b")
         o = lowercase(getopt())
         if (o == "a")
-            Corners = CornersA
+            corners = cornersA
         elseif (o == "s")
-            Corners = CornersS
+            corners = cornersS
         elseif (o == "r")
-            Corners = CornersR
+            corners = cornersR
         elseif (o == "b")
-            Corners = CornersB
+            corners = cornersB
         elseif (o == "d")
-            Corners = CornersD
+            corners = cornersD
         else
             println("julab: invalid argument for option -b")
             exit(1)
