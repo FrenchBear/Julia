@@ -5,6 +5,44 @@
 
 using Unicode
 
+sd = "Bonjour à tous!"
+println(sd)
+println("length (number of codepoints): ", length(sd))
+println()
+
+println(reverse(sd))                            # But [end:-1:begin] doesn't work with utf-8 characters
+println(repeat(".:Z:.", 3))                     # .:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:.
+println(join(["apples", "bananas", "pineapples"], ", ", " and "))   # apples, bananas and pineapples
+println(join(['a', 'b', 'c', 'd']))             # abcd
+println("[" * join([1, 2, 3, 4], ", ") * "]")   # [1, 2, 3, 4]
+println()
+
+# Case
+println("uppercase:      ", uppercase(sd))
+println("lowercase:      ", lowercase(sd))
+println("tilecase:       ", titlecase(sd))
+println("uppercasefirst: ", uppercasefirst(sd))
+println("lowercasefirst: ", lowercasefirst(sd))
+println()
+
+# Padding
+println("lpad:   <", lpad("Hello", 10), ">")
+println("rpad:   <", rpad("Hello", 10), ">")
+println("rpad:   <", rpad("Hello", 10, '*'), ">")
+
+function center(s::String, l::Int)::String
+    if l <= length(s)
+        s
+    else
+        ls = length(s)
+        lr = l - ls
+        lpad(s, ls + cld(lr, 2)) * " "^fld(lr, 2)   # A good example of fld (floor integer divide) and cld (ceiling integer divide)
+    end
+end
+println("center: <", center("Hello", 10), ">")
+
+println()
+
 ls = [
     "Aé♫山𝄞🐗",               # Simple codepoints
     "œæĳøß≤≠Ⅷﬁﬆ",              # Simple codepoints
@@ -23,7 +61,7 @@ ls = [
 ]
 
 for s in ls
-#   nb = lastindex(s * "?") - 1 # bytes (UTF8 representation)
+    #   nb = lastindex(s * "?") - 1 # bytes (UTF8 representation)
     nb = ncodeunits(s)          # bytes (UTF8 representation)
     nc = length(s)              # characters (codepoints)
     ng = length(Unicode.graphemes(s))   # graphemes (glyphs)
@@ -42,6 +80,7 @@ println("STR l=$(length(ss)) ", ss)
 println("CF  l=$(length(sf)) ", sf)
 println("CFS l=$(length(ssf)) ", ssf)
 println()
+
 
 isBMP(cp::UInt)::Bool = cp <= 0xD7FF || 0xE000 <= cp <= 0xFFFF
 isBMP(c::Char)::Bool = isBMP(UInt(c))
@@ -175,13 +214,6 @@ println(occursin("a", "Xylophon"))              # false
 println(occursin('o', "Xylophon"))              # true
 println()
 
-# misc
-println(repeat(".:Z:.", 10))                    # .:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:..:Z:.
-println(join(["apples", "bananas", "pineapples"], ", ", " and "))   # apples, bananas and pineapples
-println(join(['a', 'b', 'c', 'd']))             # abcd
-println("[" * join([1, 2, 3, 4], ", ") * "]")   # [1, 2, 3, 4]
-println()
-
 #=
 Some other useful functions include:
 
@@ -197,14 +229,27 @@ prevind(str, i, n=1) find the start of the nth character starting before index i
 isvalid(s) finds if a is a valid utf8 string, also isvalid(Char, x)
 =#
 
-# raw strings
+# Note that strings don't have to be valid UTF8 representations:
+b = isvalid("DATA\xff\u2200")   # false
+
+
+# Raw strings
 path = raw"C:\utils\astructx.exe"
 htap = raw"$1$2$3"
 
-# version number literals
+
+# Version number literals
 println(VERSION)                # Julia version
 VER = v"0.2-rc1"
 if v"0.2" <= VER < v"0.3-"      # v"0.3-" is used, with a trailing -: this notation is a Julia extension of the standard, and it's used to indicate a version which is lower than any 0.3 release
     # do something specific to 0.2 release series
 end
 # VERSION > v"0.2-rc1+" can be used to mean any version above 0.2-rc1 and any of its builds: it will return false for version v"0.2-rc1+win64" and true for v"0.2-rc2"
+println()
+
+# byte arrays litterals
+tb = b"DATA\xff\u2200"          # 8-element Base.CodeUnits{UInt8, String}, behaves like read only array of UInt8
+vb = Vector{UInt8}(b"123")
+vb[1] = 0x32
+println(vb)                     # UInt8[0x32, 0x32, 0x33]
+
