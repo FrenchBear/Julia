@@ -17,6 +17,10 @@ println(join(['a', 'b', 'c', 'd']))             # abcd
 println("[" * join([1, 2, 3, 4], ", ") * "]")   # [1, 2, 3, 4]
 println()
 
+ts = split("Il était un petit navire")          # ["Il", "était", "un", "petit", "navire"]
+println(ts)
+println()
+
 # Case
 println("uppercase:      ", uppercase(sd))
 println("lowercase:      ", lowercase(sd))
