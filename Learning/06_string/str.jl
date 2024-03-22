@@ -34,16 +34,23 @@ println("lpad:   <", lpad("Hello", 10), ">")
 println("rpad:   <", rpad("Hello", 10), ">")
 println("rpad:   <", rpad("Hello", 10, '*'), ">")
 
-function center(s::String, l::Int)::String
-    if l <= length(s)
-        s
-    else
-        ls = length(s)
-        lr = l - ls
-        lpad(s, ls + cld(lr, 2)) * " "^fld(lr, 2)   # A good example of fld (floor integer divide) and cld (ceiling integer divide)
-    end
-end
+#function center(s::String, l::Int)::String
+#    ls = length(s)
+#    if l <= ls
+#        s
+#    else
+#        # lr = l - ls
+#        # lpad(s, ls + cld(lr, 2)) * " "^fld(lr, 2)   # A good example of fld (floor integer divide) and cld (ceiling integer divide)
+#        rpad(lpad(s, ls + (l - ls) ÷ 2), l)
+#    end
+#end
+
+center(s::String, l::Int)::String = rpad(lpad(s, (length(s)+l)÷2), l)
 println("center: <", center("Hello", 10), ">")
+
+#for lc in 4:12
+#    println("<", center("Hello", lc), ">")
+#end
 
 println()
 

@@ -122,4 +122,7 @@ a = sinpi(x)        # sin(π·x). Also cospi(x)
 y = sinc(x)         # sin(π·x)/(π·x) if x≠0, or 1 if x==0.  Also cosc(x)
 t = sincos(x)       # tuple(sine, cosine). Also sincospi(x)
 
+println(9.0 |> sind |> cosd |> tand |> atand |> acosd |> asind)
+println((asind ∘ acosd ∘ atand ∘ tand ∘ cosd ∘ sind)(9.0))
+
 # Also special functions in SpecialFunctions.jl
