@@ -1,7 +1,8 @@
 # re.jl
-# Play with julia regular expressins
+# Play with julia regular expressions
 # 
 # 2024-03-20    PV      First version
+# 2024-03-31    over    Split a string using regex
 
 source = "# 2024-03-20    PV      First version"
 
@@ -72,4 +73,10 @@ println(getfield.(collect(eachmatch(r"\d+", source)), [:offset]))
 
 # Find matching ranges
 println(findall(r"\d+", source))                                    # UnitRange{Int64}[3:6, 8:9, 11:12] 
+println()
 
+# Split a string using regex
+reSplit = r"[ \t\r\n]+"  # Extract all words separated by white spaces
+s = "Once\t\tupon a\ntime\r\nwas   a\rprince"
+vs = split(s, reSplit)
+println(vs)                     # ["Once", "upon", "a", "time", "was", "a", "prince"]
