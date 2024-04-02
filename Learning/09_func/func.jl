@@ -4,15 +4,15 @@
 # 2024-03-20    PV      First version
 
 function fib(n::Integer)::BigInt
-    φ = (BigFloat(1) + √BigFloat(5)) / BigFloat(2)
-    r = (φ^BigFloat(n) - (-φ)^-BigFloat(n)) / (BigFloat(2) * φ - BigFloat(1))
-    round(BigInt, r)
+	φ = (BigFloat(1) + √BigFloat(5)) / BigFloat(2)
+	r = (φ^BigFloat(n) - (-φ)^-BigFloat(n)) / (BigFloat(2) * φ - BigFloat(1))
+	round(BigInt, r)
 end
 
 function fib(n::Float64)::BigFloat
-    φ = (BigFloat(1) + √BigFloat(5)) / BigFloat(2)
-    r = (φ^BigFloat(n) - (-φ)^-BigFloat(n)) / (BigFloat(2) * φ - BigFloat(1))
-    r
+	φ = (BigFloat(1) + √BigFloat(5)) / BigFloat(2)
+	r = (φ^BigFloat(n) - (-φ)^-BigFloat(n)) / (BigFloat(2) * φ - BigFloat(1))
+	r
 end
 
 # for i in 1:250
@@ -58,7 +58,7 @@ Fill matrix per rows
 # Anomymous functions
 a1 = x -> x^2 + 1
 a2 = function (x)
-    x^3 - 1
+	x^3 - 1
 end
 a3 = (x, y, z) -> x / y + z
 
@@ -71,7 +71,7 @@ println(map(x -> x + 0.5, [1.2, 3.5, 1.7]))
 
 # Function returning a tuple
 function trig(a)
-    sin(a), cos(a), tan(a)
+	sin(a), cos(a), tan(a)
 end
 println(trig(π / 3))
 println()
@@ -84,10 +84,10 @@ println()
 
 # Property destructuring for functions arguments
 foo((; x, y)) = x + y
-println(foo((x=1, y=2)))
+println(foo((x = 1, y = 2)))
 struct A
-    x
-    y
+	x::Any
+	y::Any
 end
 println(foo(A(3, 4)))
 println()
@@ -114,10 +114,10 @@ println()
 # Optional arguments
 using Dates
 
-function date(y::Int64, m::Int64=1, d::Int64=1)     # Constructs a date with optional month and day, defaults 1. Builds actually 3 methods
-    err = Dates.validargs(Date, y, m, d)
-    err === nothing || throw(err)
-    return Date(Dates.UTD(Dates.totaldays(y, m, d)))
+function date(y::Int64, m::Int64 = 1, d::Int64 = 1)     # Constructs a date with optional month and day, defaults 1. Builds actually 3 methods
+	err = Dates.validargs(Date, y, m, d)
+	err === nothing || throw(err)
+	return Date(Dates.UTD(Dates.totaldays(y, m, d)))
 end
 println(date(2024, 2, 26))
 println(date(2024, 2))
@@ -126,43 +126,61 @@ println()
 println(methods(date))
 println()
 
+# Note for optional arguments: optional arguments are tied to a function, not a method 
+fdef(a = 1, b = 2) = a + 2b
+# translates to the following three methods:
+# f(a,b) = a+2b
+# f(a) = f(a,2)
+# f() = f(1,2)
+
+println("methods(fdef): $(methods(fdef))\n")    # List three defined methods
+
+#println("fdef()=", fdef())         # Was initially 5
+fdef(a::Int, b::Int) = a - 2b
+println("fdef()=", fdef())          # Now -3, new method definition is used with default function arguments
+
+# # https://stackoverflow.com/questions/61837154/how-to-tell-what-specializations-are-compiled-for-a-method
+# using MethodAnalysis
+# println(methodinstances(fdef))
+println()
+
 
 # Keywords arguments
-function plot1(x, y; style="solid", width=1, color="black")     # If a keyword argument is not assigned a default value in the method definition, then it is required
-    println("plot1 x=$x y=$y  style=$style  width=$width  color=$color")
+function plot1(x, y; style = "solid", width = 1, color = "black")     # If a keyword argument is not assigned a default value in the method definition, then it is required
+	println("plot1 x=$x y=$y  style=$style  width=$width  color=$color")
 end
 plot1(3, 2)
-plot1(1, -2, color="red", width=2)
-plot1(-1, 4; style="dash-dot")          # Can use ; at call site, but not needed and uncommon
+plot1(1, -2, color = "red", width = 2)
+plot1(-1, 4; style = "dash-dot")          # Can use ; at call site, but not needed and uncommon
 
-function plot2(x...; style="solid")     # Keyword arguments can be used in varargs functions
-    println("plot2 x=$x  style=$style")
+function plot2(x...; style = "solid")     # Keyword arguments can be used in varargs functions
+	println("plot2 x=$x  style=$style")
 end
-plot2(1, 3, -2, style="dot")
+plot2(1, 3, -2, style = "dot")
 
-function plot3(x; y=0, kwargs...)       # Extra keyword arguments can be collected using ..., kwargs will be an immutable key-value iterator over a named tuple
-    println("plot3 x=$x y=$y  kwargs=$kwargs")
+function plot3(x; y = 0, kwargs...)       # Extra keyword arguments can be collected using ..., kwargs will be an immutable key-value iterator over a named tuple
+	println("plot3 x=$x y=$y  kwargs=$kwargs")
 end
-plot3(6; color="blue", thickness=2.5, style="solid", closed=false)
-dic = Dict{Symbol,Integer}(:a => 1, :b => 2, :c => 3)
-plot3(1; y=2, dic...)
+plot3(6; color = "blue", thickness = 2.5, style = "solid", closed = false)
+dic = Dict{Symbol, Integer}(:a => 1, :b => 2, :c => 3)
+plot3(1; y = 2, dic...)
 println()
 
 # Do-block syntax for function arguments
 # do creates an anonymous function passed as 1st parameter of preceding function call
 v = map(1:10) do x
-    √x
+	√x
 end
 println(v)
 
 v = map([5, -2, 0]) do x
-    if x < 0 && iseven(x)
-        return 0
-    elseif x == 0
-        return 1
-    else
-        return x
-    end
+	if x < 0 && iseven(x)
+		return 0
+	elseif x == 0
+		return 1
+	else
+		return x
+	end
 end
 println(v)
 
@@ -173,7 +191,7 @@ println(v)
 # Here is a version of open that runs code ensuring that the opened file is eventually closed:
 msg = "Hello, world\r\n"
 open("outfile.txt", "w") do io
-    write(io, msg)
+	write(io, msg)
 end
 
 # A do block, like any other inner function, can "capture" variables from its enclosing scope.
