@@ -1,5 +1,5 @@
 # tup.jl
-# Play with julia tuples
+# Play with julia tuples (Julia manual §8)
 # 
 # 2024-03-20    PV      First version
 

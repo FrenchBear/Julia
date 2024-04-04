@@ -1,5 +1,5 @@
 # str.jl
-# Play with julia string and characters (regex are in project 08_regex)
+# Play with julia string and characters (Julia manual §7)
 # 
 # 2024-03-19    PV      First version
 # 2024-03-31    PV      String operations

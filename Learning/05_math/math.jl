@@ -1,5 +1,5 @@
 # math.jl
-# Play with julia math and operators
+# Play with julia math and operators (Julia manual §5)
 # 
 # 2024-03-20    PV      First version
 

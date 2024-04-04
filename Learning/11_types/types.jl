@@ -1,5 +1,5 @@
 # types.jl
-# Play with julia types
+# Play with julia types (Julia manual §11)
 # 
 # 2024-03-26    PV      First version
 

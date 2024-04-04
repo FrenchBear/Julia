@@ -1,5 +1,5 @@
 # func.jl
-# Play with julia functions
+# Play with julia functions (Julia manual §8)
 # 
 # 2024-03-20    PV      First version
 

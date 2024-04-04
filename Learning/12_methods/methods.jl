@@ -1,5 +1,5 @@
 # methods.jl
-# Play with julia methods
+# Play with julia methods (Julia manual §12)
 # 
 # 2024-03-29    PV      First version
 

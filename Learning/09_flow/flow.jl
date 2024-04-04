@@ -1,5 +1,5 @@
 # flow.jl
-# Play with julia flow conntrol
+# Play with julia flow control (Julia manual §9)
 # 
 # 2024-03-22    PV      First version
 

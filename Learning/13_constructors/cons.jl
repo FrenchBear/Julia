@@ -1,5 +1,5 @@
 # cons.jl
-# Play with julia constructors
+# Play with julia constructors (Julia manual §13)
 # 
 # 2024-04-02    PV      First version
 
@@ -200,13 +200,68 @@ Point(x::Int64, y::Float64) = Point(convert(Float64, x), y)
 
 # But this doesn't work for other similar calls such as Point(1.5,2)
 # The following outer method definition to make all calls to the general Point constructor work as one would expect:
-
 Point(x::Real, y::Real) = Point(promote(x, y)...)
 
-# Not it works:
-Point(1.5,2)        # Point{Float64}(1.5, 2.0)
-Point(1,1//2)       # Point{Rational{Int64}}(1//1, 1//2)
-Point(1.0,1//2)     # Point{Float64}(1.0, 0.5)
+# Now it works:
+Point(1.5, 2)           # Point{Float64}(1.5, 2.0)
+Point(1, 1 // 2)        # Point{Rational{Int64}}(1//1, 1//2)
+Point(1.0, 1 // 2)      # Point{Float64}(1.0, 0.5)
 
 
 # Case study: Rational
+
+# Here is a real world example of a parametric composite type and its constructor methods. To that end,
+# we implement our own rational number type OurRational, similar to Julia's built-in Rational type, defined in rational.jl
+
+# OurRational takes one type parameter of an integer type, and is itself a real type.
+struct OurRational{T<:Integer} <: Real
+    num::T
+    den::T
+    function OurRational{T}(num::T, den::T) where {T<:Integer}
+        if num == 0 && den == 0
+            error("invalid rational: 0//0")
+        end
+        num = flipsign(num, den)    # Only num bear sign
+        den = flipsign(den, den)    # Den is >0
+        g = gcd(num, den)           # Reduce fraction
+        num = div(num, g)
+        den = div(den, g)
+        new(num, den)
+    end
+end
+
+# OurRational also provides several outer constructor methods for convenience.
+# The first is the "standard" general constructor that infers the type parameter T from the type of the numerator
+# and denominator when they have the same type.
+# The second applies when the given numerator and denominator values have different types:
+# it promotes them to a common type and then delegates construction to the outer constructor for arguments of matching type.
+# The third outer constructor turns integer values into rationals by supplying a value of 1 as the denominator.
+OurRational(n::T, d::T) where {T<:Integer} = OurRational{T}(n, d)
+OurRational(n::Integer, d::Integer) = OurRational(promote(n, d)...)
+OurRational(n::Integer) = OurRational(n, one(n))
+
+#  We define a number of methods for the ⊘ operator, which provides a syntax for writing rationals (e.g. 1 ⊘ 2).
+# Julia's Rational type uses the // operator for this purpose. Before these definitions, ⊘ is a completely undefined
+# operator with only syntax and no meaning. Afterwards, it behaves just as described in Rational Numbers –
+# its entire behavior is defined in these few lines.
+# The first and most basic definition just makes a ⊘ b construct a OurRational by applying the OurRational constructor
+# to a and b when they are integers. When one of the operands of ⊘ is already a rational number, we construct a new
+# rational for the resulting ratio slightly differently; this behavior is actually identical to division of
+# a rational with an integer.
+# Finally, applying ⊘ to complex integral values creates an instance of Complex{<:OurRational} – a complex number
+# whose real and imaginary parts are rationals:
+⊘(n::Integer, d::Integer) = OurRational(n, d)
+⊘(x::OurRational, y::Integer) = x.num ⊘ (x.den * y)
+⊘(x::Integer, y::OurRational) = (x * y.den) ⊘ y.num
+⊘(x::Complex, y::Real) = complex(real(x) ⊘ y, imag(x) ⊘ y)
+⊘(x::Real, y::Complex) = (x * y') ⊘ real(y * y')
+function ⊘(x::Complex, y::Complex)
+    xy = x * y'
+    yy = real(y * y')
+    complex(real(xy) ⊘ yy, imag(xy) ⊘ yy)
+end
+
+# Thus, although the ⊘ operator usually returns an instance of OurRational, if either of its arguments are complex integers,
+# it will return an instance of Complex{<:OurRational} instead. The interested reader should consider perusing
+# the rest of rational.jl: it is short, self-contained, and implements an entire basic Julia type.
+

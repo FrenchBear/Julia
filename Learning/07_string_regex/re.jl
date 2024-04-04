@@ -1,5 +1,5 @@
 # re.jl
-# Play with julia regular expressions
+# Play with julia regular expressions (Julia manual §7)
 # 
 # 2024-03-20    PV      First version
 # 2024-03-31    over    Split a string using regex
