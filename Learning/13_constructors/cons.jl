@@ -161,6 +161,7 @@ x = SelfReferential()
 println(x === x)            # true
 println(x === x.obj)        # true
 println(x === x.obj.obj)    # true
+println()
 
 
 # Parametric constructors
@@ -264,4 +265,44 @@ end
 # Thus, although the ⊘ operator usually returns an instance of OurRational, if either of its arguments are complex integers,
 # it will return an instance of Complex{<:OurRational} instead. The interested reader should consider perusing
 # the rest of rational.jl: it is short, self-contained, and implements an entire basic Julia type.
+
+
+
+# Test of constructors
+
+struct S1
+    x::Float64
+    y::Float64
+
+    function S1()
+        println("S1 inner .ctor No args")
+        new(0.0, 0.0)
+    end
+
+    function S1(f::Float64)
+        println("S1 inner .ctor 1 Float64")
+        new(f, 0.0)
+    end
+
+    function S1(f::Float64, g::Float64)
+        println("S1 inner .ctor 2 Float64")
+        new(f, g)
+    end
+
+    function S1(z::ComplexF64)
+        println("S1 inner .ctor 1 ComplexF64")
+        new(z.re, z.im)
+    end
+end
+
+function  S1(i::Int, j::Int)
+    println("S1 outer .ctor 2 Int")
+    S1(Float64(i), Float64(j))
+end
+
+S1(2.1, 3.2)    # S1 inner .ctor 2 Float64
+S1(√2)          # S1 inner .ctor 1 Float64
+S1()            # S1 inner .ctor No args
+S1(2.0-1.5im)   # S1 inner .ctor 1 ComplexF64
+S1(3, 4)        # S1 outer .ctor 2 Int -> S1 inner .ctor 2 Float64
 
