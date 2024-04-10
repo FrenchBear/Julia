@@ -4,6 +4,7 @@
 # 2024-03-19    PV      First version
 # 2024-03-31    PV      String operations
 # 2024-04-01    PV      Trimming (strip)
+# 2024-04-10    PV      first, last, chop
 
 using Unicode
 
@@ -298,3 +299,16 @@ println("strip: <$(strip(chaine))>")        # Whitespaces include (not limited t
 chaine="__Main__"
 println("strip: <$(strip(chaine, '_' ))>")  # Can specify char, or vector or set of chars 
 println()
+
+
+# Other string operations
+
+str = "😄 Hello! 👋"                       # "😄 Hello! 👋"
+last(first(str, 9), 7)                      # "Hello! "
+chop(str, head=2, tail=length(str)-9)       # "Hello! "
+chop(first(str, 9), head=2, tail=0)         # "Hello! "
+str[(:)(nextind.(str, 0, (3, 9))...)]       # "Hello! "
+
+chop("Hello")                               # "Hell"
+chop("Hello", tail=2)                       # "Hel"
+chop("Hello", head=2, tail=0)               # "llo"     (by default, tail=1)

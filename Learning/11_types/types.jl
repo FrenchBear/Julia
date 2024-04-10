@@ -113,8 +113,8 @@ ps::Point{String} = Point("Yes", "No")
 
 println(ps isa Point{String})           # true
 println(Point{String} <: Point{AbstractString})   # false
-# oncrete points types with different values of T are never subtypes of each other
-# even though Float64 <: Real we DO NOT have Point{Float64} <: Point{Real} -> Julia types are NOT covariant (and even less contravariant)
+# Concrete points types with different values of T are never subtypes of each other
+# Even though Float64 <: Real we DO NOT have Point{Float64} <: Point{Real} -> Julia types are NOT covariant (and even less contravariant)
 println()
 
 # Point itself is also a valid type object, containing all instances Point{Float64}, Point{AbstractString}, etc. as subtypes
