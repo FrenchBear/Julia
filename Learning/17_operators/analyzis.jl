@@ -31,6 +31,7 @@ function add_dots(str::String)::String
 end
 
 function op(prec::Symbol, str::String)
+    @assert prec ∈ precedences
 	for s in split(str, ' ')
 		push!(operators, (prec, s))
 	end
@@ -75,7 +76,7 @@ op(:prec_dot, ".")
 
 for (p, s) in operators
     if !startswith(s, '.')
-        println(s, " = 8")
+        println(s, "(a, b) = a+b")
     end
 end
 println()
