@@ -2,6 +2,7 @@
 # Play with julia functions (Julia manual §8)
 # 
 # 2024-03-20    PV      First version
+# 2024-04-15    PV      Docstrings
 
 function fib(n::Integer)::BigInt
 	φ = (BigFloat(1) + √BigFloat(5)) / BigFloat(2)
@@ -20,12 +21,15 @@ end
 #     println(i, ' ', fib(Float64(i)))
 # end
 
-# most operators are also functions (exceptions such as && or || because short-circuit requires that their operands are not evaluated before evaluation of the operator)
+# most operators are also functions (exceptions such as && or || because short-circuit requires that their operands are
+# not evaluated before evaluation of the operator)
 s = 1 + 2 + 3       # Infix notation
 s = +(1, 2, 3)      # Function notation
 f = +
 s = f(1, 2, 3)      # Under the name f, fuction does not support infix notation
 
+# Possible infix operators: (https://discourse.julialang.org/t/is-not-an-operator/20221/2)
+# * / ÷ % & ⋅ ∘ × \ ∩ ∧ ⊗ ⊘ ⊙ ⊚ ⊛ ⊠ ⊡ ⊓ ∗ ∙ ∤ ⅋ ≀ ⊼ ⋄ ⋆ ⋇ ⋉ ⋊ ⋋ ⋌ ⋏ ⋒ ⟑ ⦸ ⦼ ⦾ ⦿ ⧶ ⧷ ⨇ ⨰ ⨱ ⨲ ⨳ ⨴ ⨵ ⨶ ⨷ ⨸ ⨻ ⨼ ⨽ ⩀ ⩃ ⩄ ⩋ ⩍ ⩎ ⩑ ⩓ ⩕ ⩘ ⩚ ⩜ ⩞ ⩟ ⩠ ⫛ ⊍ ▷ ⨝ ⟕ ⟖ ⟗
 
 # Operators with special names
 # [A B C ...]	        hvcat       Also [A, B, C...]
@@ -37,6 +41,8 @@ s = f(1, 2, 3)      # Under the name f, fuction does not support infix notation
 # A[i] = x	            setindex!
 # A.n	                getproperty
 # A.n = x	            setproperty!
+
+⊜ = 2
 
 #=
 Fill matrix per columns
@@ -264,3 +270,73 @@ X = similar(Y); # pre-allocate output array
 
 #You can also combine dot operations with function chaining using |>, as in this example:
 println(1:5 .|> [x -> x^2, inv, x -> 2 * x, -, isodd])      # [1, 0.5, 6, -4, true]
+
+
+# Docstrings
+
+# Useful in interactive environments, or in a include("file.jl")
+# In VSCode, hovering function name shows docstring
+# No blank line or comment between docstring and function
+
+"Tell whether there are too foo items in the array."
+foo(xs::Array) = nothing
+
+# julia> include("f1.jl")     # foo
+# help?> foo  
+# search: foo floor fourthroot pointer_from_objref OverflowError RoundFromZero unsafe_copyto! functionloc
+# 
+#   Tell whether there are too foo items in the array.
+# 
+# julia>
+
+# Documentation is interpreted as Markdown, so you can use indentation and code fences to delimit code examples from
+# text. Technically, any object can be associated with any other as metadata; Markdown happens to be the default, but
+# one can construct other string macros and pass them to the @doc macro just as well.
+
+# Here is a more complex example, still using Markdown:
+    
+"""
+    bar(x[, y])
+
+Compute the Bar index between `x` and `y`.
+
+# Arguments
+- `n::Integer`: the number of elements to compute.
+- `dim::Integer=1`: the dimensions along which to perform the computation.
+
+If `y` is unspecified, compute the Bar index between all pairs of columns of `x`.
+
+# Examples
+```julia-repl
+julia> bar([1, 2], [1, 2])
+1
+```
+
+See also [`bar!`](@ref), [`baz`](@ref), [`baaz`](@ref).
+"""
+bar(x, y) = nothing
+
+# help?> bar
+# search: bar baremodule SubArray GlobalRef clipboard BitArray backtrace BitMatrix catch_backtrace AbstractRange
+# 
+#   bar(x[, y])
+# 
+#   Compute the Bar index between x and y.
+# 
+#   Arguments
+#   ≡≡≡≡≡≡≡≡≡
+# 
+#     •  n::Integer: the number of elements to compute.
+# 
+#     •  dim::Integer=1: the dimensions along which to perform the computation.
+# 
+#   If y is unspecified, compute the Bar index between all pairs of columns of x.
+# 
+#   Examples
+#   ≡≡≡≡≡≡≡≡
+# 
+#   julia> bar([1, 2], [1, 2])
+#   1
+# 
+#   See also bar!, baz, baaz.
+
