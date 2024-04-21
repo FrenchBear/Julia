@@ -90,6 +90,12 @@ println(methodinstances(mysum))                     # List two instances
 # Core.MethodInstance[MethodInstance for mysum(::Int64, ::Int64), MethodInstance for mysum(::Float64, ::Float64)]
 println()
 
+# Check that Union{X,Y} actually builds two method instances, one for type X and ont for type Y
+Zap(x::Union{String, Nothing})::Int = return isnothing(x) ? 0 : length(x)
+Zap("Hello")
+Zap(nothing)
+println(methodinstances(Zap))                     # List two instances:[MethodInstance for Zap(::String), MethodInstance for Zap(::Nothing)]
+println()
 
 # ---------------------------------------------------------------------
 # Method ambiguities

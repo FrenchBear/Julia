@@ -36,7 +36,7 @@ y, m, d = ma
 println("$d/$m/$y")
 
 # Replace a regexp with a s-string (substitution), but severely limited, can't call a function since s special members such as \0 are intepreted inside replace function
-println(replace("1+2*3^4=163", r"(\d+)" => s"<\0>"))
+println(replace("1+2*3^4=163", r"(\d+)" => s"<\0>"))        # => operator creates a pair, Pair(5,7)==(5=>7)
 # ToDo: write a function betterreplace
 function betterreplace(re::Regex, f)
 end

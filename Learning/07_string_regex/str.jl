@@ -300,9 +300,7 @@ chaine="__Main__"
 println("strip: <$(strip(chaine, '_' ))>")  # Can specify char, or vector or set of chars 
 println()
 
-
 # Other string operations
-
 str = "😄 Hello! 👋"                       # "😄 Hello! 👋"
 last(first(str, 9), 7)                      # "Hello! "
 chop(str, head=2, tail=length(str)-9)       # "Hello! "
@@ -312,3 +310,7 @@ str[(:)(nextind.(str, 0, (3, 9))...)]       # "Hello! "
 chop("Hello")                               # "Hell"
 chop("Hello", tail=2)                       # "Hel"
 chop("Hello", head=2, tail=0)               # "llo"     (by default, tail=1)
+
+# Replace, reached/replace argument is a pair. Can also use a regex as search (see re.jl)
+println(replace("Bonjour", "jour"=>"soir")) # Bonsoir
+println(replace("Bonjour", Pair('o', 'ô'))) # Bônjôur
