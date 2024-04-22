@@ -2,6 +2,7 @@
 # Play with julia methods (Julia manual §12)
 # 
 # 2024-03-29    PV      First version
+# 2024-04-22    PV      Methods defined for a type
 
 # When defining a function, one can optionally constrain the types of parameters it is applicable to, using the :: type-assertion operator
 f(x::Float64, y::Float64) = 2x + y
@@ -153,7 +154,7 @@ println(mytypeof(1.0))                      # Float64
 
 
 # You can also constrain type parameters of methods:
-same_type_numeric(x::T, y::T) where {T<:Number} = true
+same_type_numeric(x::T, y::T) where {T <: Number} = true
 same_type_numeric(x::Number, y::Number) = false
 println(same_type_numeric(1, 2))            # true
 println(same_type_numeric(1, 2.0))          # false
@@ -174,16 +175,16 @@ println()
 
 # For example, you can define a type that stores the coefficients of a polynomial, but behaves like a function evaluating the polynomial:
 struct Polynomial{R}
-    coeffs::Vector{R}
+	coeffs::Vector{R}
 end
 
 # Notice that the function is specified by type instead of by name. As with normal functions there is a terse syntax form.
 function (p::Polynomial)(x)
-    v = p.coeffs[end]
-    for i = (length(p.coeffs)-1):-1:1
-        v = v * x + p.coeffs[i]
-    end
-    return v
+	v = p.coeffs[end]
+	for i ∈ (length(p.coeffs)-1):-1:1
+		v = v * x + p.coeffs[i]
+	end
+	return v
 end
 
 # In the function body, p will refer to the object that was called. A Polynomial can be used as follows:
@@ -215,16 +216,16 @@ f(x::Int, y::Int) = 3
 
 # Tuple and NTuple arguments
 #uple (and NTuple) arguments present special challenges. For example,
-f(x::NTuple{N,Int}) where {N} = 1
-f(x::NTuple{N,Float64}) where {N} = 2
+f(x::NTuple{N, Int}) where {N} = 1
+f(x::NTuple{N, Float64}) where {N} = 2
 
 # are ambiguous because of the possibility that N == 0: there are no elements to determine whether the Int or Float64
 # variant should be called. To resolve the ambiguity, one approach is define a method for the empty tuple:
 f(x::Tuple{}) = 3
 
 # Alternatively, for all methods but one you can insist that there is at least one element in the tuple:
-f(x::NTuple{N,Int}) where {N} = 1           # this is the fallback
-f(x::Tuple{Float64,Vararg{Float64}}) = 2   # this requires at least one Float64
+f(x::NTuple{N, Int}) where {N} = 1           # this is the fallback
+f(x::Tuple{Float64, Vararg{Float64}}) = 2   # this requires at least one Float64
 
 
 # Orthogonalize your design
@@ -317,9 +318,9 @@ f(x::Tuple{Float64,Vararg{Float64}}) = 2   # this requires at least one Float64
 
 # You can define methods within a local scope, for example
 function f(x)
-    g(y::Int) = y + x
-    g(y) = y - x
-    g
+	g(y::Int) = y + x
+	g(y) = y - x
+	g
 end
 
 h = f(3)
@@ -344,9 +345,39 @@ h(4.0)      # 1.0
 
 # For cases like this use anonymous functions instead:
 function f2(inc)
-    g = if inc
-        x -> x + 1
-    else
-        x -> x - 1
-    end
+	g = if inc
+		x -> x + 1
+	else
+		x -> x - 1
+	end
 end
+
+
+# ---------------------------------------------------------------------
+# Methods defined for a type ≈ static methods
+# Dispatch applied to a type, not an instance
+
+Zop(::Type{Int8}) = 8
+Zop(::Type{Int16}) = 16
+Zop(::Type{Int32}) = 32
+Zop(::Type{Int64}) = 64
+
+# There are 4 methods defined for function Zop
+for m in methods(Zop)
+	println(m)
+end
+println(Zop(Int16))     # 16
+println(Zop(Int32))     # 32
+
+# Important: DO NOT define such method without ::Type{}, it doesn't work!
+Zup(UInt8) = 8
+Zup(UInt16) = 16
+Zup(UInt32) = 32
+Zup(UInt64) = 64
+
+# Only one method gets defined!!!
+for m in methods(Zup)
+	println(m)
+end
+println(Zup(Int16))     # 64    !!!
+println(Zup(Int32))     # 64    !!!
