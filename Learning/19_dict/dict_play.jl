@@ -37,3 +37,9 @@ for v in values(fibdic)
     println(v)
 end
 println()
+
+# Beware! In Julia, direct enumeration returns pairs, while in Python, direct enumeration return keys...
+println("direct:")
+for z in fibdic
+    println(z)
+end

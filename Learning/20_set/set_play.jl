@@ -15,9 +15,7 @@ while true
 	np = popfirst!(p)
 	global pc += 1
 	print(np, ' ')
-	if np >= rmax
-		break
-	end
+	np >= rmax && break
 	for m in np*np:np+np:max
 		delete!(p, m)
 	end

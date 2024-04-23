@@ -5,6 +5,7 @@
 # 2024-03-31    PV      String operations
 # 2024-04-01    PV      Trimming (strip)
 # 2024-04-10    PV      first, last, chop
+# 2024-04-23    PV      conversions
 
 using Unicode
 
@@ -314,3 +315,45 @@ chop("Hello", head=2, tail=0)               # "llo"     (by default, tail=1)
 # Replace, reached/replace argument is a pair. Can also use a regex as search (see re.jl)
 println(replace("Bonjour", "jour"=>"soir")) # Bonsoir
 println(replace("Bonjour", Pair('o', 'ô'))) # Bônjôur
+
+
+# -------------------------------------------------------------------------
+# Conversions
+
+# Conversion String <-> Vector{UInt8}
+v = Vector{UInt8}([0x48, 0x65, 0x6C, 0x6C, 0x6F])
+s = String(v)
+@assert s == "Hello"
+
+v2 = codeunits("Aé♫山𝄞🐗")
+v3 = Vector{UInt8}([0x41,
+                    0xC3, 0xA9,
+                    0xE2, 0x99, 0xAB,
+                    0xE5, 0xB1, 0xB1,
+                    0xF0, 0x9D, 0x84, 0x9E,
+                    0xF0, 0x9F, 0x90, 0x97, ])
+@assert v2==v3
+
+v = transcode(UInt8, "Hello")
+@assert v == [0x48, 0x65, 0x6C, 0x6C, 0x6F]
+s = transcode(String, v)
+@assert s == "Hello"
+
+
+# Conversion Char <-> Int
+@assert Char(65) == 'A'
+@assert Char(233) == 'é'
+@assert Char(9835) == '♫'
+@assert Char(23665) == '山'
+@assert Char(119070) == '𝄞'
+@assert Char(128023) == '🐗'
+
+@assert codepoint('A') == 65
+@assert codepoint('é') == 233
+@assert codepoint('♫') == 9835
+@assert codepoint('山') == 23665
+@assert codepoint('𝄞') == 119070
+@assert codepoint('🐗') == 128023
+
+
+
