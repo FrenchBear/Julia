@@ -69,7 +69,9 @@ eachindex(IndexCartesian(), A)  # CartesianIndices((3, 4, 5))
 stride(A, 2)                    # 3                 Distance in memory (in number of elements) between adjacent elements in dimension k
 stride(A, 3)                    # 12
 strides(A)                      # (1, 3, 12)        Tuple of the memory strides in each dimension
-Base.elsize(A)                  # 8                 memory stride in bytes between consecutive elements of eltype
+Base.elsize(A)                  # 8                 Memory stride in bytes between consecutive elements of eltype
+Base.summarysize(A)             # 528               Size in bytes (used by all objects reachable from the argument)
+sizeof(A)                       # 480               Size in bytes of data (here, 3×4×5 × 8bytes = 480 bytes)
 
 # Shorter form: foreach(println, CartesianIndices(A))
 for ix in CartesianIndices(A)

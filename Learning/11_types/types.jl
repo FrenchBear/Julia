@@ -85,6 +85,15 @@ baz.a = 2
 # baz.b = 2.0
 # ERROR: setfield!: const field .b of type Baz cannot be changed
 
+# Get struct info
+println(fieldnames(Baz))        # (:a, :b)
+println(fieldtypes(Baz))        # (Int64, Float64)
+println(ismutable(Baz))         # true
+println(sizeof(Baz))            # 16
+dump(Baz)
+# Baz <: Any
+#   a::Int64
+#   b::Float64
 
 # --------------------------------------------------------------------
 # Types unions

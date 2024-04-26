@@ -184,7 +184,7 @@ Vector{Union{Missing, String}}(missing, 2)
 
 # Construct an uninitialized Matrix{T} of size m×n.
 
-Matrix{Float64}(undef, 2, 3)
+ans=Matrix{Float64}(undef, 2, 3)
 #2×3 Array{Float64, 2}:
 # 2.36365e-314  2.28473e-314    5.0e-324
 # 2.26704e-314  2.26711e-314  NaN
@@ -462,7 +462,7 @@ a = [1, 1, 1]; A = fill!(Vector{Vector{Int}}(undef, 3), a); a[1] = 2; A
 #  [2, 1, 1]
 #  [2, 1, 1]
 
-x = 0; f() = (global x += 1; x); fill!(Vector{Int}(undef, 3), f())
+x = 0; ff() = (global x += 1; x); fill!(Vector{Int}(undef, 3), ff())
 # 3-element Vector{Int64}:
 #  1
 #  1
@@ -773,7 +773,8 @@ x = 1.0:3.0; y = similar(x);
 # BroadcastStyle(typeof(x)) returns the style associated with x. To customize the broadcasting behavior of a type, one
 # can declare a style by defining a type/method pair
 
-struct MyContainerStyle <: BroadcastStyle end
+struct MyContainer end
+struct MyContainerStyle <: Base.BroadcastStyle end
 Base.BroadcastStyle(::Type{<:MyContainer}) = MyContainerStyle()
 
 # One then writes method(s) (at least similar) operating on Broadcasted{MyContainerStyle}. There are also several
@@ -785,12 +786,13 @@ Base.BroadcastStyle(::Type{<:MyContainer}) = MyContainerStyle()
 # is the abstract supertype for any style associated with an AbstractArray type. The N parameter is the dimensionality,
 # which can be handy for AbstractArray types that only support specific dimensionalities:
 
+struct SparseMatrixCSC end
 struct SparseMatrixStyle <: Broadcast.AbstractArrayStyle{2} end
 Base.BroadcastStyle(::Type{<:SparseMatrixCSC}) = SparseMatrixStyle()
 
 # For AbstractArray types that support arbitrary dimensionality, N can be set to Any:
-struct MyArrayStyle <: Broadcast.AbstractArrayStyle{Any} end
-Base.BroadcastStyle(::Type{<:MyArray}) = MyArrayStyle()
+# struct MyArrayStyle <: Broadcast.AbstractArrayStyle{Any} end
+# Base.BroadcastStyle(::Type{<:MyArray}) = MyArrayStyle()
 
 # In cases where you want to be able to mix multiple AbstractArrayStyles and keep track of dimensionality, your style
 # needs to support a Val constructor:
@@ -992,7 +994,7 @@ cartesian[2, 2]                             # CartesianIndex(3, 2)
 
 # Broadcasting
 # CartesianIndices support broadcasting arithmetic (+ and -) with a CartesianIndex.
-s = CartesianIndices((2:3, 5:6))            # CartesianIndices((2:3, 5:6))
+CIs = CartesianIndices((2:3, 5:6))          # CartesianIndices((2:3, 5:6))
 CI = CartesianIndex(3, 4)                   # CartesianIndex(3, 4)
 CIs .+ CI                                   # CartesianIndices((5:6, 9:10))
 
@@ -1138,8 +1140,8 @@ A                           # 2×2 Matrix{Int64}: 0  2\n 0  4
 
 A = zeros(3, 3);
 @views for row in 1:3
-           b = A[row, :]
-           b[:] .= row
+           bb = A[row, :]
+           bb[:] .= row
        end
 A
 # 3×3 Matrix{Float64}:
@@ -1266,299 +1268,244 @@ b[1,1,1] = 5; a
 # array shares the same underlying data as a, so it will only be mutable if a is mutable, in which case modifying one
 # will also modify the other.
 a = [1 2 3; 4 5 6]      # 2×3 Matrix{Int64}:  1  2  3\n  4  5  6
-vec(a)                  # 6-element Vector{Int64}: 1\n 4\n 2\n 5\n 3\n \6
+vec(a)                  # 6-element Vector{Int64}: 1 4 2 5 3 6
 vec(1:3)                # 1:3
 
+# Base.SubArray
+# Type SubArray{T,N,P,I,L} <: AbstractArray{T,N}
+# N-dimensional view into a parent array (of type P) with an element type T, restricted by a tuple of indices (of type I).
+# L is true for types that support fast linear indexing, and false otherwise.
+# Construct SubArrays using the view function.
 
-source
-Base.SubArray
-—
-Type
-SubArray{T,N,P,I,L} <: AbstractArray{T,N}
 
-N-dimensional view into a parent array (of type P) with an element type T, restricted by a tuple of indices (of type I). L is true for types that support fast linear indexing, and false otherwise.
+# -------------------------------------------------
+# Concatenation and permutation
 
-Construct SubArrays using the view function.
+# Base.cat
+# Function cat(A...; dims)
+# Concatenate the input arrays along the dimensions specified in dims.
 
-source
-Concatenation and permutation
-Base.cat
-—
-Function
-cat(A...; dims)
+# Along a dimension d in dims, the size of the output array is sum(size(a,d) for a in A). Along other dimensions, all
+# input arrays should have the same size, which will also be the size of the output array along those dimensions.
 
-Concatenate the input arrays along the dimensions specified in dims.
+# If dims is a single number, the different arrays are tightly packed along that dimension. If dims is an iterable
+# containing several dimensions, the positions along these dimensions are increased simultaneously for each input array,
+# filling with zero elsewhere. This allows one to construct block-diagonal matrices as cat(matrices...; dims=(1,2)), and
+# their higher-dimensional analogues.
 
-Along a dimension d in dims, the size of the output array is sum(size(a,d) for a in A). Along other dimensions, all input arrays should have the same size, which will also be the size of the output array along those dimensions.
-
-If dims is a single number, the different arrays are tightly packed along that dimension. If dims is an iterable containing several dimensions, the positions along these dimensions are increased simultaneously for each input array, filling with zero elsewhere. This allows one to construct block-diagonal matrices as cat(matrices...; dims=(1,2)), and their higher-dimensional analogues.
-
-The special case dims=1 is vcat, and dims=2 is hcat. See also hvcat, hvncat, stack, repeat.
-
-The keyword also accepts Val(dims).
-
-Julia 1.8
-For multiple dimensions dims = Val(::Tuple) was added in Julia 1.8.
-
-Examples
+# The special case dims=1 is vcat, and dims=2 is hcat. See also hvcat, hvncat, stack, repeat.
+# The keyword also accepts Val(dims).
 
 cat([1 2; 3 4], [pi, pi], fill(10, 2,3,1); dims=2)  # same as hcat
-2×6×1 Array{Float64, 3}:
-[:, :, 1] =
- 1.0  2.0  3.14159  10.0  10.0  10.0
- 3.0  4.0  3.14159  10.0  10.0  10.0
+# 2×6×1 Array{Float64, 3}:
+# [:, :, 1] =
+#  1.0  2.0  3.14159  10.0  10.0  10.0
+#  3.0  4.0  3.14159  10.0  10.0  10.0
 
 cat(true, trues(2,2), trues(4)', dims=(1,2))  # block-diagonal
-4×7 Matrix{Bool}:
- 1  0  0  0  0  0  0
- 0  1  1  0  0  0  0
- 0  1  1  0  0  0  0
- 0  0  0  1  1  1  1
+# 4×7 Matrix{Bool}:
+#  1  0  0  0  0  0  0
+#  0  1  1  0  0  0  0
+#  0  1  1  0  0  0  0
+#  0  0  0  1  1  1  1
 
 cat(1, [2], [3;;]; dims=Val(2))
-1×3 Matrix{Int64}:
- 1  2  3
+# 1×3 Matrix{Int64}:
+#  1  2  3
 
-source
-Base.vcat
-—
-Function
-vcat(A...)
+# Base.vcat
+# Function vcat(A...)
+# Concatenate arrays or numbers vertically. Equivalent to cat(A...; dims=1), and to the syntax [a; b; c].
 
-Concatenate arrays or numbers vertically. Equivalent to cat(A...; dims=1), and to the syntax [a; b; c].
+# To concatenate a large vector of arrays, reduce(vcat, A) calls an efficient method when A isa
+# AbstractVector{<:AbstractVecOrMat}, rather than working pairwise.
+# See also hcat, Iterators.flatten, stack.
 
-To concatenate a large vector of arrays, reduce(vcat, A) calls an efficient method when A isa AbstractVector{<:AbstractVecOrMat}, rather than working pairwise.
-
-See also hcat, Iterators.flatten, stack.
-
-Examples
-
-v = vcat([1,2], [3,4])
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
-
-v == vcat(1, 2, [3,4])  # accepts numbers
-true
-
-v == [1; 2; [3,4]]  # syntax for the same operation
-true
-
-summary(ComplexF64[1; 2; [3,4]])  # syntax for supplying the element type
-"4-element Vector{ComplexF64}"
-
-vcat(range(1, 2, length=3))  # collects lazy ranges
-3-element Vector{Float64}:
- 1.0
- 1.5
- 2.0
-
-two = ([10, 20, 30]', Float64[4 5 6; 7 8 9])  # row vector and a matrix
-([10 20 30], [4.0 5.0 6.0; 7.0 8.0 9.0])
-
-vcat(two...)
-3×3 Matrix{Float64}:
- 10.0  20.0  30.0
-  4.0   5.0   6.0
-  7.0   8.0   9.0
-
+v = vcat([1,2], [3,4])                          # 4-element Vector{Int64}: 1 2 3 4
+v == vcat(1, 2, [3,4])                          # true                                      # accepts numbers
+v == [1; 2; [3,4]]                              # true                                      # syntax for the same operation
+summary(ComplexF64[1; 2; [3,4]])                # "4-element Vector{ComplexF64}"            # syntax for supplying the element type
+vcat(range(1, 2, length=3))                     # 3-element Vector{Float64}: 1.0 1.5 2.0    # collects lazy ranges
+two = ([10, 20, 30]', Float64[4 5 6; 7 8 9])    # ([10 20 30], [4.0 5.0 6.0; 7.0 8.0 9.0])  # row vector and a matrix
+vcat(two...)                                    # 3×3 Matrix{Float64}: 10.0  20.0  30.0\n  4.0   5.0   6.0\n  7.0   8.0   9.0
 vs = [[1, 2], [3, 4], [5, 6]];
+reduce(vcat, vs)                                # 6-element Vector{Int64}: 1 2 3 4 5 6      # more efficient than vcat(vs...)
+ans == collect(Iterators.flatten(vs))           # true
 
-reduce(vcat, vs)  # more efficient than vcat(vs...)
-6-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
- 6
 
-ans == collect(Iterators.flatten(vs))
-true
+# Base.hcat
+# Function hcat(A...)
+# Concatenate arrays or numbers horizontally. Equivalent to cat(A...; dims=2), and to the syntax [a b c] or [a;; b;; c].
 
-source
-Base.hcat
-—
-Function
-hcat(A...)
-
-Concatenate arrays or numbers horizontally. Equivalent to cat(A...; dims=2), and to the syntax [a b c] or [a;; b;; c].
-
-For a large vector of arrays, reduce(hcat, A) calls an efficient method when A isa AbstractVector{<:AbstractVecOrMat}. For a vector of vectors, this can also be written stack(A).
-
-See also vcat, hvcat.
-
-Examples
+# For a large vector of arrays, reduce(hcat, A) calls an efficient method when A isa AbstractVector{<:AbstractVecOrMat}.
+# For a vector of vectors, this can also be written stack(A).
+# See also vcat, hvcat.
 
 hcat([1,2], [3,4], [5,6])
-2×3 Matrix{Int64}:
- 1  3  5
- 2  4  6
+# 2×3 Matrix{Int64}:
+#  1  3  5
+#  2  4  6
 
 hcat(1, 2, [30 40], [5, 6, 7]')  # accepts numbers
-1×7 Matrix{Int64}:
- 1  2  30  40  5  6  7
+# 1×7 Matrix{Int64}:
+#  1  2  30  40  5  6  7
 
 ans == [1 2 [30 40] [5, 6, 7]']  # syntax for the same operation
-true
+# true
 
 Float32[1 2 [30 40] [5, 6, 7]']  # syntax for supplying the eltype
-1×7 Matrix{Float32}:
- 1.0  2.0  30.0  40.0  5.0  6.0  7.0
+# 1×7 Matrix{Float32}:
+#  1.0  2.0  30.0  40.0  5.0  6.0  7.0
 
 ms = [zeros(2,2), [1 2; 3 4], [50 60; 70 80]];
 
 reduce(hcat, ms)  # more efficient than hcat(ms...)
-2×6 Matrix{Float64}:
- 0.0  0.0  1.0  2.0  50.0  60.0
- 0.0  0.0  3.0  4.0  70.0  80.0
+# 2×6 Matrix{Float64}:
+#  0.0  0.0  1.0  2.0  50.0  60.0
+#  0.0  0.0  3.0  4.0  70.0  80.0
 
 stack(ms) |> summary  # disagrees on a vector of matrices
-"2×2×3 Array{Float64, 3}"
+# "2×2×3 Array{Float64, 3}"
 
 hcat(Int[], Int[], Int[])  # empty vectors, each of size (0,)
-0×3 Matrix{Int64}
+# 0×3 Matrix{Int64}
 
 hcat([1.1, 9.9], Matrix(undef, 2, 0))  # hcat with empty 2×0 Matrix
-2×1 Matrix{Any}:
- 1.1
- 9.9
+# 2×1 Matrix{Any}:
+#  1.1
+#  9.9
 
-source
-Base.hvcat
-—
-Function
-hvcat(blocks_per_row::Union{Tuple{Vararg{Int}}, Int}, values...)
 
-Horizontal and vertical concatenation in one call. This function is called for block matrix syntax. The first argument specifies the number of arguments to concatenate in each block row. If the first argument is a single integer n, then all block rows are assumed to have n block columns.
-
-Examples
+# Base.hvcat
+# Function hvcat(blocks_per_row::Union{Tuple{Vararg{Int}}, Int}, values...)
+# Horizontal and vertical concatenation in one call. This function is called for block matrix syntax. The first argument
+# specifies the number of arguments to concatenate in each block row. If the first argument is a single integer n, then
+# all block rows are assumed to have n block columns.
 
 a, b, c, d, e, f = 1, 2, 3, 4, 5, 6
-(1, 2, 3, 4, 5, 6)
+# (1, 2, 3, 4, 5, 6)
 
 [a b c; d e f]
-2×3 Matrix{Int64}:
- 1  2  3
- 4  5  6
+# 2×3 Matrix{Int64}:
+#  1  2  3
+#  4  5  6
 
 hvcat((3,3), a,b,c,d,e,f)
-2×3 Matrix{Int64}:
- 1  2  3
- 4  5  6
+# 2×3 Matrix{Int64}:
+#  1  2  3
+#  4  5  6
 
 [a b; c d; e f]
-3×2 Matrix{Int64}:
- 1  2
- 3  4
- 5  6
+# 3×2 Matrix{Int64}:
+#  1  2
+#  3  4
+#  5  6
 
 hvcat((2,2,2), a,b,c,d,e,f)
-3×2 Matrix{Int64}:
- 1  2
- 3  4
- 5  6
+#3×2 Matrix{Int64}:
+# 1  2
+# 3  4
+# 5  6
+
 hvcat((2,2,2), a,b,c,d,e,f) == hvcat(2, a,b,c,d,e,f)
-true
+# true
 
-source
-Base.hvncat
-—
-Function
-hvncat(dim::Int, row_first, values...)
-hvncat(dims::Tuple{Vararg{Int}}, row_first, values...)
-hvncat(shape::Tuple{Vararg{Tuple}}, row_first, values...)
 
-Horizontal, vertical, and n-dimensional concatenation of many values in one call.
+# Base.hvncat
+# Function hvncat(dim::Int, row_first, values...)
+# Function hvncat(dims::Tuple{Vararg{Int}}, row_first, values...)
+# Function hvncat(shape::Tuple{Vararg{Tuple}}, row_first, values...)
+# Horizontal, vertical, and n-dimensional concatenation of many values in one call.
 
-This function is called for block matrix syntax. The first argument either specifies the shape of the concatenation, similar to hvcat, as a tuple of tuples, or the dimensions that specify the key number of elements along each axis, and is used to determine the output dimensions. The dims form is more performant, and is used by default when the concatenation operation has the same number of elements along each axis (e.g., [a b; c d;;; e f ; g h]). The shape form is used when the number of elements along each axis is unbalanced (e.g., [a b ; c]). Unbalanced syntax needs additional validation overhead. The dim form is an optimization for concatenation along just one dimension. row_first indicates how values are ordered. The meaning of the first and second elements of shape are also swapped based on row_first.
-
-Examples
+# This function is called for block matrix syntax. The first argument either specifies the shape of the concatenation,
+# similar to hvcat, as a tuple of tuples, or the dimensions that specify the key number of elements along each axis, and
+# is used to determine the output dimensions. The dims form is more performant, and is used by default when the
+# concatenation operation has the same number of elements along each axis (e.g., [a b; c d;;; e f ; g h]). The shape
+# form is used when the number of elements along each axis is unbalanced (e.g., [a b ; c]). Unbalanced syntax needs
+# additional validation overhead. The dim form is an optimization for concatenation along just one dimension. row_first
+# indicates how values are ordered. The meaning of the first and second elements of shape are also swapped based on
+# row_first.
 
 a, b, c, d, e, f = 1, 2, 3, 4, 5, 6
-(1, 2, 3, 4, 5, 6)
+# (1, 2, 3, 4, 5, 6)
 
 [a b c;;; d e f]
-1×3×2 Array{Int64, 3}:
-[:, :, 1] =
- 1  2  3
-
-[:, :, 2] =
- 4  5  6
+# 1×3×2 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  2  3
+# 
+# [:, :, 2] =
+#  4  5  6
 
 hvncat((2,1,3), false, a,b,c,d,e,f)
-2×1×3 Array{Int64, 3}:
-[:, :, 1] =
- 1
- 2
-
-[:, :, 2] =
- 3
- 4
-
-[:, :, 3] =
- 5
- 6
+# 2×1×3 Array{Int64, 3}:
+# [:, :, 1] =
+#  1
+#  2
+# 
+# [:, :, 2] =
+#  3
+#  4
+# 
+# [:, :, 3] =
+#  5
+#  6
 
 [a b;;; c d;;; e f]
-1×2×3 Array{Int64, 3}:
-[:, :, 1] =
- 1  2
-
-[:, :, 2] =
- 3  4
-
-[:, :, 3] =
- 5  6
+# 1×2×3 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  2
+# 
+# [:, :, 2] =
+#  3  4
+# 
+# [:, :, 3] =
+#  5  6
 
 hvncat(((3, 3), (3, 3), (6,)), true, a, b, c, d, e, f)
-1×3×2 Array{Int64, 3}:
-[:, :, 1] =
- 1  2  3
+# 1×3×2 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  2  3
+# 
+# [:, :, 2] =
+#  4  5  6
 
-[:, :, 2] =
- 4  5  6
+# Examples for construction of the arguments
 
-Examples for construction of the arguments
+# [a b c ; d e f ;;;
+#  g h i ; j k l ;;;
+#  m n o ; p q r ;;;
+#  s t u ; v w x]
+# ⇒ dims = (2, 3, 4)
+# 
+# [a b ; c ;;; d ;;;;]
+#  ___   _     _
+#  2     1     1 = elements in each row (2, 1, 1)
+#  _______     _
+#  3           1 = elements in each column (3, 1)
+#  _____________
+#  4             = elements in each 3d slice (4,)
+#  _____________
+#  4             = elements in each 4d slice (4,)
+# ⇒ shape = ((2, 1, 1), (3, 1), (4,), (4,)) with `row_first` = true
 
-[a b c ; d e f ;;;
- g h i ; j k l ;;;
- m n o ; p q r ;;;
- s t u ; v w x]
-⇒ dims = (2, 3, 4)
 
-[a b ; c ;;; d ;;;;]
- ___   _     _
- 2     1     1 = elements in each row (2, 1, 1)
- _______     _
- 3           1 = elements in each column (3, 1)
- _____________
- 4             = elements in each 3d slice (4,)
- _____________
- 4             = elements in each 4d slice (4,)
-⇒ shape = ((2, 1, 1), (3, 1), (4,), (4,)) with `row_first` = true
+# Base.stack
+# Function stack(iter; [dims])
+# Combine a collection of arrays (or other iterable objects) of equal size into one larger array, by arranging them
+# along one or more new dimensions.
+ 
+# By default the axes of the elements are placed first, giving size(result) = (size(first(iter))..., size(iter)...).
+# This has the same order of elements as Iterators.flatten(iter).
+ 
+# With keyword dims::Integer, instead the ith element of iter becomes the slice selectdim(result, dims, i), so that
+# size(result, dims) == length(iter). In this case stack reverses the action of eachslice with the same dims.
+ 
+# The various cat functions also combine arrays. However, these all extend the arrays' existing (possibly trivial)
+# dimensions, rather than placing the arrays along new dimensions. They also accept arrays as separate arguments, rather
+# than a single collection.
 
-source
-Base.stack
-—
-Function
-stack(iter; [dims])
-
-Combine a collection of arrays (or other iterable objects) of equal size into one larger array, by arranging them along one or more new dimensions.
-
-By default the axes of the elements are placed first, giving size(result) = (size(first(iter))..., size(iter)...). This has the same order of elements as Iterators.flatten(iter).
-
-With keyword dims::Integer, instead the ith element of iter becomes the slice selectdim(result, dims, i), so that size(result, dims) == length(iter). In this case stack reverses the action of eachslice with the same dims.
-
-The various cat functions also combine arrays. However, these all extend the arrays' existing (possibly trivial) dimensions, rather than placing the arrays along new dimensions. They also accept arrays as separate arguments, rather than a single collection.
-
-Julia 1.9
-This function requires at least Julia 1.9.
-
-Examples
-
+#=
 vecs = (1:2, [30, 40], Float32[500, 600]);
 
 mat = stack(vecs)
@@ -1622,922 +1569,570 @@ stack(M; dims=1) |> size  # vec(container) along dims=1
 
 hvcat(5, M...) |> size  # hvcat puts matrices next to each other
 (14, 15)
+=#
 
-source
-stack(f, args...; [dims])
 
-Apply a function to each element of a collection, and stack the result. Or to several collections, zipped together.
+# stack(f, args...; [dims])
 
-The function should return arrays (or tuples, or other iterators) all of the same size. These become slices of the result, each separated along dims (if given) or by default along the last dimensions.
+# Apply a function to each element of a collection, and stack the result. Or to several collections, zipped together.
 
-See also mapslices, eachcol.
+# The function should return arrays (or tuples, or other iterators) all of the same size. These become slices of the
+# result, each separated along dims (if given) or by default along the last dimensions.
+# See also mapslices, eachcol.
 
-Examples
-
-stack(c -> (c, c-32), "julia")
-2×5 Matrix{Char}:
- 'j'  'u'  'l'  'i'  'a'
- 'J'  'U'  'L'  'I'  'A'
+# stack(c -> (c, c-32), "julia")
+# 2×5 Matrix{Char}:
+#  'j'  'u'  'l'  'i'  'a'
+#  'J'  'U'  'L'  'I'  'A'
 
 stack(eachrow([1 2 3; 4 5 6]), (10, 100); dims=1) do row, n
          vcat(row, row .* n, row ./ n)
        end
-2×9 Matrix{Float64}:
- 1.0  2.0  3.0   10.0   20.0   30.0  0.1   0.2   0.3
- 4.0  5.0  6.0  400.0  500.0  600.0  0.04  0.05  0.06
+# 2×9 Matrix{Float64}:
+#  1.0  2.0  3.0   10.0   20.0   30.0  0.1   0.2   0.3
+#  4.0  5.0  6.0  400.0  500.0  600.0  0.04  0.05  0.06
 
-source
-Base.vect
-—
-Function
-vect(X...)
 
-Create a Vector with element type computed from the promote_typeof of the argument, containing the argument list.
-
-Examples
+# Base.vect
+# Function vect(X...)
+# Create a Vector with element type computed from the promote_typeof of the argument, containing the argument list.
 
 a = Base.vect(UInt8(1), 2.5, 1//2)
-3-element Vector{Float64}:
- 1.0
- 2.5
- 0.5
+# 3-element Vector{Float64}:
+#  1.0
+#  2.5
+#  0.5
 
-source
-Base.circshift
-—
-Function
-circshift(A, shifts)
 
-Circularly shift, i.e. rotate, the data in an array. The second argument is a tuple or vector giving the amount to shift in each dimension, or an integer to shift only in the first dimension.
-
-See also: circshift!, circcopy!, bitrotate, <<.
-
-Examples
+# Base.circshift
+# Function circshift(A, shifts)
+# Circularly shift, i.e. rotate, the data in an array. The second argument is a tuple or vector giving the amount to
+# shift in each dimension, or an integer to shift only in the first dimension.
+# See also: circshift!, circcopy!, bitrotate, <<.
 
 b = reshape(Vector(1:16), (4,4))
-4×4 Matrix{Int64}:
- 1  5   9  13
- 2  6  10  14
- 3  7  11  15
- 4  8  12  16
-
+# 4×4 Matrix{Int64}:
+#  1  5   9  13
+#  2  6  10  14
+#  3  7  11  15
+#  4  8  12  16
+ 
 circshift(b, (0,2))
-4×4 Matrix{Int64}:
-  9  13  1  5
- 10  14  2  6
- 11  15  3  7
- 12  16  4  8
-
+# 4×4 Matrix{Int64}:
+#   9  13  1  5
+#  10  14  2  6
+#  11  15  3  7
+#  12  16  4  8
+ 
 circshift(b, (-1,0))
-4×4 Matrix{Int64}:
- 2  6  10  14
- 3  7  11  15
- 4  8  12  16
- 1  5   9  13
-
+# 4×4 Matrix{Int64}:
+#  2  6  10  14
+#  3  7  11  15
+#  4  8  12  16
+#  1  5   9  13
+ 
 a = BitArray([true, true, false, false, true])
-5-element BitVector:
- 1
- 1
- 0
- 0
- 1
-
+# 5-element BitVector:
+#  1
+#  1
+#  0
+#  0
+#  1
+ 
 circshift(a, 1)
-5-element BitVector:
- 1
- 1
- 1
- 0
- 0
-
+# 5-element BitVector:
+#  1
+#  1
+#  1
+#  0
+#  0
+ 
 circshift(a, -1)
-5-element BitVector:
- 1
- 0
- 0
- 1
- 1
+# 5-element BitVector:
+#  1
+#  0
+#  0
+#  1
+#  1
 
-source
-Base.circshift!
-—
-Function
-circshift!(dest, src, shifts)
+# Base.circshift!
+# Function circshift!(dest, src, shifts)
+# Circularly shift, i.e. rotate, the data in src, storing the result in dest. shifts specifies the amount to shift in each dimension.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
-Circularly shift, i.e. rotate, the data in src, storing the result in dest. shifts specifies the amount to shift in each dimension.
 
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-See also circshift.
-
-source
-Base.circcopy!
-—
-Function
-circcopy!(dest, src)
-
-Copy src to dest, indexing each dimension modulo its length. src and dest must have the same size, but can be offset in their indices; any offset results in a (circular) wraparound. If the arrays have overlapping indices, then on the domain of the overlap dest agrees with src.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-See also: circshift.
-
-Examples
+# Base.circcopy!
+# Function circcopy!(dest, src)
+# Copy src to dest, indexing each dimension modulo its length. src and dest must have the same size, but can be offset
+# in their indices; any offset results in a (circular) wraparound. If the arrays have overlapping indices, then on the
+# domain of the overlap dest agrees with src.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 src = reshape(Vector(1:16), (4,4))
-4×4 Array{Int64,2}:
- 1  5   9  13
- 2  6  10  14
- 3  7  11  15
- 4  8  12  16
+# 4×4 Array{Int64,2}:
+#  1  5   9  13
+#  2  6  10  14
+#  3  7  11  15
+#  4  8  12  16
+
+
+using OffsetArrays
+# OffsetArrays provides Julia users with arrays that have arbitrary indices, similar to those found in some other languages.
+# An OffsetArray is a lightweight wrapper around an AbstractArray that shifts its indices. Generally, indexing into an
+# OffsetArray should be as performant as the parent array.
 
 dest = OffsetArray{Int}(undef, (0:3,2:5))
-
+ 
 circcopy!(dest, src)
-OffsetArrays.OffsetArray{Int64,2,Array{Int64,2}} with indices 0:3×2:5:
- 8  12  16  4
- 5   9  13  1
- 6  10  14  2
- 7  11  15  3
+# OffsetArrays.OffsetArray{Int64,2,Array{Int64,2}} with indices 0:3×2:5:
+#  8  12  16  4
+#  5   9  13  1
+#  6  10  14  2
+#  7  11  15  3
 
 dest[1:3,2:4] == src[1:3,2:4]
-true
+# true
 
-source
-Base.findall
-—
-Method
-findall(A)
 
-Return a vector I of the true indices or keys of A. If there are no such elements of A, return an empty array. To search for other kinds of values, pass a predicate as the first argument.
+# -------------------------------------------------
+# Base.findall
+# Method findall(A)
 
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+# Return a vector I of the true indices or keys of A. If there are no such elements of A, return an empty array. To
+# search for other kinds of values, pass a predicate as the first argument.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+# See also: findfirst, searchsorted.
 
-See also: findfirst, searchsorted.
+A = [true, false, false, true]          # 4-element Vector{Bool}: 1 0 0 1
+findall(A)                              # 2-element Vector{Int64}: 1 4
+A = [true false; false true]            # 2×2 Matrix{Bool}: 1  0\n 0  1
+findall(A)                              # 2-element Vector{CartesianIndex{2}}: CartesianIndex(1, 1),  CartesianIndex(2, 2)
+findall(falses(3))                      # Int64[]
 
-Examples
+# Base.findall
+# Method findall(f::Function, A)
+# Return a vector I of the indices or keys of A where f(A[I]) returns true. If there are no such elements of A, return
+# an empty array.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
 
-A = [true, false, false, true]
-4-element Vector{Bool}:
- 1
- 0
- 0
- 1
-
-findall(A)
-2-element Vector{Int64}:
- 1
- 4
-
-A = [true false; false true]
-2×2 Matrix{Bool}:
- 1  0
- 0  1
-
-findall(A)
-2-element Vector{CartesianIndex{2}}:
- CartesianIndex(1, 1)
- CartesianIndex(2, 2)
-
-findall(falses(3))
-Int64[]
-
-source
-Base.findall
-—
-Method
-findall(f::Function, A)
-
-Return a vector I of the indices or keys of A where f(A[I]) returns true. If there are no such elements of A, return an empty array.
-
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
-
-Examples
-
-x = [1, 3, 4]
-3-element Vector{Int64}:
- 1
- 3
- 4
-
-findall(isodd, x)
-2-element Vector{Int64}:
- 1
- 2
+x = [1, 3, 4]                           # 3-element Vector{Int64}: 1 3 4
+findall(isodd, x)                       # 2-element Vector{Int64}: 1 2
 
 A = [1 2 0; 3 4 0]
-2×3 Matrix{Int64}:
- 1  2  0
- 3  4  0
+# 2×3 Matrix{Int64}:
+#  1  2  0
+#  3  4  0
+
 findall(isodd, A)
-2-element Vector{CartesianIndex{2}}:
- CartesianIndex(1, 1)
- CartesianIndex(2, 1)
+# 2-element Vector{CartesianIndex{2}}:
+#  CartesianIndex(1, 1)
+#  CartesianIndex(2, 1)
 
 findall(!iszero, A)
-4-element Vector{CartesianIndex{2}}:
- CartesianIndex(1, 1)
- CartesianIndex(2, 1)
- CartesianIndex(1, 2)
- CartesianIndex(2, 2)
+# 4-element Vector{CartesianIndex{2}}:
+#  CartesianIndex(1, 1)
+#  CartesianIndex(2, 1)
+#  CartesianIndex(1, 2)
+#  CartesianIndex(2, 2)
 
 d = Dict(:A => 10, :B => -1, :C => 0)
-Dict{Symbol, Int64} with 3 entries:
-  :A => 10
-  :B => -1
-  :C => 0
+# Dict{Symbol, Int64} with 3 entries:
+#   :A => 10
+#   :B => -1
+#   :C => 0
 
 findall(x -> x >= 0, d)
-2-element Vector{Symbol}:
- :A
- :C
+# 2-element Vector{Symbol}:
+#  :A
+#  :C
 
-source
-Base.findfirst
-—
-Method
-findfirst(A)
 
-Return the index or key of the first true value in A. Return nothing if no such value is found. To search for other kinds of values, pass a predicate as the first argument.
+# Base.findfirst
+# Method findfirst(A)
+# Return the index or key of the first true value in A. Return nothing if no such value is found. To search for other
+# kinds of values, pass a predicate as the first argument.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+# See also: findall, findnext, findlast, searchsortedfirst.
 
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+A = [false, false, true, false]             # 4-element Vector{Bool}: 0 0 1 0
+findfirst(A)                                # 3
+findfirst(falses(3))                        # returns nothing
+A = [false false; true false]               # 2×2 Matrix{Bool}: 0  0\n 1  0
+findfirst(A)                                # CartesianIndex(2, 1)
 
-See also: findall, findnext, findlast, searchsortedfirst.
 
-Examples
+# Base.findfirst
+# Method findfirst(predicate::Function, A)
+# Return the index or key of the first element of A for which predicate returns true. Return nothing if there is no such
+# element.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
 
-A = [false, false, true, false]
-4-element Vector{Bool}:
- 0
- 0
- 1
- 0
+A = [1, 4, 2, 2]                            # 4-element Vector{Int64}: 1 4 2 2
+findfirst(iseven, A)                        # 2
+findfirst(x -> x>10, A)                     # returns nothing
+findfirst(isequal(4), A)                    # 2
+A = [1 4; 2 2]                              # 2×2 Matrix{Int64}: 1  4\n 2  2
+findfirst(iseven, A)                        # CartesianIndex(2, 1)
 
-findfirst(A)
-3
+# Base.findlast
+# Method findlast(A)
+# Return the index or key of the last true value in A. Return nothing if there is no true value in A.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+# See also: findfirst, findprev, findall.
 
-findfirst(falses(3)) # returns nothing, but not printed in the REPL
+A = [true, false, true, false]              # 4-element Vector{Bool}: 1 0 1 0
+findlast(A)                                 # 3
+A = falses(2,2)
+findlast(A)                                 # returns nothing
+A = [true false; true false]                # 2×2 Matrix{Bool}: 1  0\n 1  0
+findlast(A)                                 # CartesianIndex(2, 1)
 
-A = [false false; true false]
-2×2 Matrix{Bool}:
- 0  0
- 1  0
 
-findfirst(A)
-CartesianIndex(2, 1)
+# Base.findlast
+# Method findlast(predicate::Function, A)
+# Return the index or key of the last element of A for which predicate returns true. Return nothing if there is no such element.
+# Indices or keys are of the same type as those returned by keys(A) and pairs(A).
 
-source
-Base.findfirst
-—
-Method
-findfirst(predicate::Function, A)
+A = [1, 2, 3, 4]                            # 4-element Vector{Int64}: 1 2 3 4
+findlast(isodd, A)                          # 3
+findlast(x -> x > 5, A)                     # returns nothing
+A = [1 2; 3 4]                              # 2×2 Matrix{Int64}: 1  2\n 3  4
+findlast(isodd, A)                          # CartesianIndex(2, 1)
 
-Return the index or key of the first element of A for which predicate returns true. Return nothing if there is no such element.
+# Base.findnext
+# Method findnext(A, i)
+# Find the next index after or including i of a true element of A, or nothing if not found.
+# Indices are of the same type as those returned by keys(A) and pairs(A).
 
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
+A = [false, false, true, false]             # 4-element Vector{Bool}: 0 0 1 0
+findnext(A, 1)                              # 3
+findnext(A, 4)                              # returns nothing
+A = [false false; true false]               # 2×2 Matrix{Bool}: 0  0\n 1  0
+findnext(A, CartesianIndex(1, 1))           # CartesianIndex(2, 1)
 
-Examples
 
-A = [1, 4, 2, 2]
-4-element Vector{Int64}:
- 1
- 4
- 2
- 2
-
-findfirst(iseven, A)
-2
-
-findfirst(x -> x>10, A) # returns nothing, but not printed in the REPL
-
-findfirst(isequal(4), A)
-2
-
-A = [1 4; 2 2]
-2×2 Matrix{Int64}:
- 1  4
- 2  2
-
-findfirst(iseven, A)
-CartesianIndex(2, 1)
-
-source
-Base.findlast
-—
-Method
-findlast(A)
-
-Return the index or key of the last true value in A. Return nothing if there is no true value in A.
-
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
-
-See also: findfirst, findprev, findall.
-
-Examples
-
-A = [true, false, true, false]
-4-element Vector{Bool}:
- 1
- 0
- 1
- 0
-
-findlast(A)
-3
-
-A = falses(2,2);
-
-findlast(A) # returns nothing, but not printed in the REPL
-
-A = [true false; true false]
-2×2 Matrix{Bool}:
- 1  0
- 1  0
-
-findlast(A)
-CartesianIndex(2, 1)
-
-source
-Base.findlast
-—
-Method
-findlast(predicate::Function, A)
-
-Return the index or key of the last element of A for which predicate returns true. Return nothing if there is no such element.
-
-Indices or keys are of the same type as those returned by keys(A) and pairs(A).
-
-Examples
-
-A = [1, 2, 3, 4]
-4-element Vector{Int64}:
- 1
- 2
- 3
- 4
-
-findlast(isodd, A)
-3
-
-findlast(x -> x > 5, A) # returns nothing, but not printed in the REPL
-
-A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
-
-findlast(isodd, A)
-CartesianIndex(2, 1)
-
-source
-Base.findnext
-—
-Method
-findnext(A, i)
-
-Find the next index after or including i of a true element of A, or nothing if not found.
-
-Indices are of the same type as those returned by keys(A) and pairs(A).
-
-Examples
-
-A = [false, false, true, false]
-4-element Vector{Bool}:
- 0
- 0
- 1
- 0
-
-findnext(A, 1)
-3
-
-findnext(A, 4) # returns nothing, but not printed in the REPL
-
-A = [false false; true false]
-2×2 Matrix{Bool}:
- 0  0
- 1  0
-
-findnext(A, CartesianIndex(1, 1))
-CartesianIndex(2, 1)
-
-source
-Base.findnext
-—
-Method
-findnext(predicate::Function, A, i)
-
-Find the next index after or including i of an element of A for which predicate returns true, or nothing if not found.
-
-Indices are of the same type as those returned by keys(A) and pairs(A).
-
-Examples
+# Base.findnext
+# Method findnext(predicate::Function, A, i)
+# Find the next index after or including i of an element of A for which predicate returns true, or nothing if not found.
+# Indices are of the same type as those returned by keys(A) and pairs(A).
 
 A = [1, 4, 2, 2];
-
-findnext(isodd, A, 1)
-1
-
-findnext(isodd, A, 2) # returns nothing, but not printed in the REPL
-
+findnext(isodd, A, 1)                       # 1
+findnext(isodd, A, 2)                       # returns nothing
 A = [1 4; 2 2];
+findnext(isodd, A, CartesianIndex(1, 1))    # CartesianIndex(1, 1)
 
-findnext(isodd, A, CartesianIndex(1, 1))
-CartesianIndex(1, 1)
 
-source
-Base.findprev
-—
-Method
-findprev(A, i)
+# Base.findprev
+# Method findprev(A, i)
+# Find the previous index before or including i of a true element of A, or nothing if not found.
+# Indices are of the same type as those returned by keys(A) and pairs(A).
+# See also: findnext, findfirst, findall.
 
-Find the previous index before or including i of a true element of A, or nothing if not found.
+A = [false, false, true, true]              # 4-element Vector{Bool}: 0 0 1 1
+findprev(A, 3)                              # 3
+findprev(A, 1)                              # returns nothing
+A = [false false; true true]                # 2×2 Matrix{Bool}: 0  0\n 1  1
+findprev(A, CartesianIndex(2, 1))           # CartesianIndex(2, 1)
 
-Indices are of the same type as those returned by keys(A) and pairs(A).
+# Base.findprev
+# Method findprev(predicate::Function, A, i)
+# Find the previous index before or including i of an element of A for which predicate returns true, or nothing if not found.
+# Indices are of the same type as those returned by keys(A) and pairs(A).
 
-See also: findnext, findfirst, findall.
+A = [4, 6, 1, 2]                            # 4-element Vector{Int64}: 4 6 1 2
+findprev(isodd, A, 1)                       # returns nothing
+findprev(isodd, A, 3)                       # 3
+A = [4 6; 1 2]                              # 2×2 Matrix{Int64}: 4  6\n 1  2
+findprev(isodd, A, CartesianIndex(1, 2))    # CartesianIndex(2, 1)
 
-Examples
 
-A = [false, false, true, true]
-4-element Vector{Bool}:
- 0
- 0
- 1
- 1
-
-findprev(A, 3)
-3
-
-findprev(A, 1) # returns nothing, but not printed in the REPL
-
-A = [false false; true true]
-2×2 Matrix{Bool}:
- 0  0
- 1  1
-
-findprev(A, CartesianIndex(2, 1))
-CartesianIndex(2, 1)
-
-source
-Base.findprev
-—
-Method
-findprev(predicate::Function, A, i)
-
-Find the previous index before or including i of an element of A for which predicate returns true, or nothing if not found.
-
-Indices are of the same type as those returned by keys(A) and pairs(A).
-
-Examples
-
-A = [4, 6, 1, 2]
-4-element Vector{Int64}:
- 4
- 6
- 1
- 2
-
-findprev(isodd, A, 1) # returns nothing, but not printed in the REPL
-
-findprev(isodd, A, 3)
-3
-
-A = [4 6; 1 2]
-2×2 Matrix{Int64}:
- 4  6
- 1  2
-
-findprev(isodd, A, CartesianIndex(1, 2))
-CartesianIndex(2, 1)
-
-source
-Base.permutedims
-—
-Function
-permutedims(A::AbstractArray, perm)
-
-Permute the dimensions of array A. perm is a vector or a tuple of length ndims(A) specifying the permutation.
-
-See also permutedims!, PermutedDimsArray, transpose, invperm.
-
-Examples
+# -------------------------------------------------
+# Base.permutedims
+# Function permutedims(A::AbstractArray, perm)
+# Permute the dimensions of array A. perm is a vector or a tuple of length ndims(A) specifying the permutation.
+# See also permutedims!, PermutedDimsArray, transpose, invperm.
 
 A = reshape(Vector(1:8), (2,2,2))
-2×2×2 Array{Int64, 3}:
-[:, :, 1] =
- 1  3
- 2  4
-
-[:, :, 2] =
- 5  7
- 6  8
+# 2×2×2 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  3
+#  2  4
+# 
+# [:, :, 2] =
+#  5  7
+#  6  8
 
 perm = (3, 1, 2); # put the last dimension first
 
 B = permutedims(A, perm)
-2×2×2 Array{Int64, 3}:
-[:, :, 1] =
- 1  2
- 5  6
-
-[:, :, 2] =
- 3  4
- 7  8
+# 2×2×2 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  2
+#  5  6
+# 
+# [:, :, 2] =
+#  3  4
+#  7  8
 
 A == permutedims(B, invperm(perm)) # the inverse permutation
-true
+# true
 
-For each dimension i of B = permutedims(A, perm), its corresponding dimension of A will be perm[i]. This means the equality size(B, i) == size(A, perm[i]) holds.
+# For each dimension i of B = permutedims(A, perm), its corresponding dimension of A will be perm[i]. This means the
+# equality size(B, i) == size(A, perm[i]) holds.
 
 A = randn(5, 7, 11, 13);
-
 perm = [4, 1, 3, 2];
-
 B = permutedims(A, perm);
+size(B)                         # (13, 5, 11, 7)
+size(A)[perm] == ans            # true
 
-size(B)
-(13, 5, 11, 7)
 
-size(A)[perm] == ans
-true
-
-source
-permutedims(m::AbstractMatrix)
-
-Permute the dimensions of the matrix m, by flipping the elements across the diagonal of the matrix. Differs from LinearAlgebra's transpose in that the operation is not recursive.
-
-Examples
+# permutedims(m::AbstractMatrix)
+# Permute the dimensions of the matrix m, by flipping the elements across the diagonal of the matrix. Differs from
+# LinearAlgebra's transpose in that the operation is not recursive.
 
 a = [1 2; 3 4];
-
 b = [5 6; 7 8];
-
 c = [9 10; 11 12];
-
 d = [13 14; 15 16];
-
 X = [[a] [b]; [c] [d]]
-2×2 Matrix{Matrix{Int64}}:
- [1 2; 3 4]     [5 6; 7 8]
- [9 10; 11 12]  [13 14; 15 16]
+# 2×2 Matrix{Matrix{Int64}}:
+#  [1 2; 3 4]     [5 6; 7 8]
+#  [9 10; 11 12]  [13 14; 15 16]
 
 permutedims(X)
-2×2 Matrix{Matrix{Int64}}:
- [1 2; 3 4]  [9 10; 11 12]
- [5 6; 7 8]  [13 14; 15 16]
+# 2×2 Matrix{Matrix{Int64}}:
+#  [1 2; 3 4]  [9 10; 11 12]
+#  [5 6; 7 8]  [13 14; 15 16]
 
 transpose(X)
-2×2 transpose(::Matrix{Matrix{Int64}}) with eltype Transpose{Int64, Matrix{Int64}}:
- [1 3; 2 4]  [9 11; 10 12]
- [5 7; 6 8]  [13 15; 14 16]
+# 2×2 transpose(::Matrix{Matrix{Int64}}) with eltype Transpose{Int64, Matrix{Int64}}:
+#  [1 3; 2 4]  [9 11; 10 12]
+#  [5 7; 6 8]  [13 15; 14 16]
 
-source
-permutedims(v::AbstractVector)
-
-Reshape vector v into a 1 × length(v) row matrix. Differs from LinearAlgebra's transpose in that the operation is not recursive.
-
-Examples
+# permutedims(v::AbstractVector)
+# Reshape vector v into a 1 × length(v) row matrix. Differs from LinearAlgebra's transpose in that the operation is not recursive.
 
 permutedims([1, 2, 3, 4])
-1×4 Matrix{Int64}:
- 1  2  3  4
+# 1×4 Matrix{Int64}:
+#  1  2  3  4
 
 V = [[[1 2; 3 4]]; [[5 6; 7 8]]]
-2-element Vector{Matrix{Int64}}:
- [1 2; 3 4]
- [5 6; 7 8]
+# 2-element Vector{Matrix{Int64}}:
+#  [1 2; 3 4]
+#  [5 6; 7 8]
 
 permutedims(V)
-1×2 Matrix{Matrix{Int64}}:
- [1 2; 3 4]  [5 6; 7 8]
+# 1×2 Matrix{Matrix{Int64}}:
+#  [1 2; 3 4]  [5 6; 7 8]
 
 transpose(V)
-1×2 transpose(::Vector{Matrix{Int64}}) with eltype Transpose{Int64, Matrix{Int64}}:
- [1 3; 2 4]  [5 7; 6 8]
+# 1×2 transpose(::Vector{Matrix{Int64}}) with eltype Transpose{Int64, Matrix{Int64}}:
+#  [1 3; 2 4]  [5 7; 6 8]
 
-source
-Base.permutedims!
-—
-Function
-permutedims!(dest, src, perm)
+# Base.permutedims!
+# Function permutedims!(dest, src, perm)
+# Permute the dimensions of array src and store the result in the array dest. perm is a vector specifying a permutation
+# of length ndims(src). The preallocated array dest should have size(dest) == size(src)[perm] and is completely
+# overwritten. No in-place permutation is supported and unexpected results will happen if src and dest have overlapping
+# memory regions.
 
-Permute the dimensions of array src and store the result in the array dest. perm is a vector specifying a permutation of length ndims(src). The preallocated array dest should have size(dest) == size(src)[perm] and is completely overwritten. No in-place permutation is supported and unexpected results will happen if src and dest have overlapping memory regions.
-
-See also permutedims.
-
-source
-Base.PermutedDimsArrays.PermutedDimsArray
-—
-Type
-PermutedDimsArray(A, perm) -> B
-
-Given an AbstractArray A, create a view B such that the dimensions appear to be permuted. Similar to permutedims, except that no copying occurs (B shares storage with A).
-
-See also permutedims, invperm.
-
-Examples
+# Base.PermutedDimsArrays.PermutedDimsArray
+# Type PermutedDimsArray(A, perm) -> B
+# Given an AbstractArray A, create a view B such that the dimensions appear to be permuted. Similar to permutedims, except that no copying occurs (B shares storage with A).
+# See also permutedims, invperm.
 
 A = rand(3,5,4);
-
 B = PermutedDimsArray(A, (3,1,2));
+size(B)                                 # (4, 3, 5)
+B[3,1,2] == A[1,2,3]                    # true
 
-size(B)
-(4, 3, 5)
 
-B[3,1,2] == A[1,2,3]
-true
-
-source
-Base.promote_shape
-—
-Function
-promote_shape(s1, s2)
-
-Check two array shapes for compatibility, allowing trailing singleton dimensions, and return whichever shape has more dimensions.
-
-Examples
+# Base.promote_shape
+# Function promote_shape(s1, s2)
+# Check two array shapes for compatibility, allowing trailing singleton dimensions, and return whichever shape has more dimensions.
 
 a = fill(1, (3,4,1,1,1));
-
 b = fill(1, (3,4));
+promote_shape(a,b)                          # (Base.OneTo(3), Base.OneTo(4), Base.OneTo(1), Base.OneTo(1), Base.OneTo(1))
+promote_shape((2,3,1,4), (2, 3, 1, 4, 1))   # (2, 3, 1, 4, 1)
 
-promote_shape(a,b)
-(Base.OneTo(3), Base.OneTo(4), Base.OneTo(1), Base.OneTo(1), Base.OneTo(1))
 
-promote_shape((2,3,1,4), (2, 3, 1, 4, 1))
-(2, 3, 1, 4, 1)
+# -------------------------------------------------
+# Array functions
 
-source
-Array functions
-Base.accumulate
-—
-Function
-accumulate(op, A; dims::Integer, [init])
+# Base.accumulate
+# Function accumulate(op, A; dims::Integer, [init])
 
-Cumulative operation op along the dimension dims of A (providing dims is optional for vectors). An initial value init may optionally be provided by a keyword argument. See also accumulate! to use a preallocated output array, both for performance and to control the precision of the output (e.g. to avoid overflow).
+# Cumulative operation op along the dimension dims of A (providing dims is optional for vectors). An initial value init
+# may optionally be provided by a keyword argument. See also accumulate! to use a preallocated output array, both for
+# performance and to control the precision of the output (e.g. to avoid overflow).
 
-For common operations there are specialized variants of accumulate, see cumsum, cumprod. For a lazy version, see Iterators.accumulate.
+# For common operations there are specialized variants of accumulate, see cumsum, cumprod. For a lazy version, see
+# Iterators.accumulate.
 
-Julia 1.5
-accumulate on a non-array iterator requires at least Julia 1.5.
-
-Examples
-
-accumulate(+, [1,2,3])
-3-element Vector{Int64}:
- 1
- 3
- 6
-
-accumulate(min, (1, -2, 3, -4, 5), init=0)
-(0, -2, -2, -4, -4)
-
-accumulate(/, (2, 4, Inf), init=100)
-(50.0, 12.5, 0.0)
-
+accumulate(+, [1,2,3])                      # 3-element Vector{Int64}: 1 3 6
+accumulate(min, (1, -2, 3, -4, 5), init=0)  # (0, -2, -2, -4, -4)
+accumulate(/, (2, 4, Inf), init=100)        # (50.0, 12.5, 0.0)
 accumulate(=>, i^2 for i in 1:3)
-3-element Vector{Any}:
-          1
-        1 => 4
- (1 => 4) => 9
+# 3-element Vector{Any}:
+#           1
+#         1 => 4
+#  (1 => 4) => 9
 
 accumulate(+, fill(1, 3, 4))
-3×4 Matrix{Int64}:
- 1  4  7  10
- 2  5  8  11
- 3  6  9  12
+# 3×4 Matrix{Int64}:
+#  1  4  7  10
+#  2  5  8  11
+#  3  6  9  12
 
 accumulate(+, fill(1, 2, 5), dims=2, init=100.0)
-2×5 Matrix{Float64}:
- 101.0  102.0  103.0  104.0  105.0
- 101.0  102.0  103.0  104.0  105.0
+# 2×5 Matrix{Float64}:
+#  101.0  102.0  103.0  104.0  105.0
+#  101.0  102.0  103.0  104.0  105.0
 
-source
-Base.accumulate!
-—
-Function
-accumulate!(op, B, A; [dims], [init])
-
-Cumulative operation op on A along the dimension dims, storing the result in B. Providing dims is optional for vectors. If the keyword argument init is given, its value is used to instantiate the accumulation.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-See also accumulate, cumsum!, cumprod!.
-
-Examples
+# Base.accumulate!
+# Function accumulate!(op, B, A; [dims], [init])
+# Cumulative operation op on A along the dimension dims, storing the result in B. Providing dims is optional for
+# vectors. If the keyword argument init is given, its value is used to instantiate the accumulation.
+# See also accumulate, cumsum!, cumprod!.
 
 x = [1, 0, 2, 0, 3];
-
 y = rand(5);
-
 accumulate!(+, y, x);
-
-y
-5-element Vector{Float64}:
- 1.0
- 1.0
- 3.0
- 3.0
- 6.0
-
+y                           # 5-element Vector{Float64}: 1.0 1.0 3.0 3.0 6.0
 A = [1 2 3; 4 5 6];
-
 B = similar(A);
 
 accumulate!(-, B, A, dims=1)
-2×3 Matrix{Int64}:
-  1   2   3
- -3  -3  -3
+# 2×3 Matrix{Int64}:
+#   1   2   3
+#  -3  -3  -3
 
 accumulate!(*, B, A, dims=2, init=10)
-2×3 Matrix{Int64}:
- 10   20    60
- 40  200  1200
+# 2×3 Matrix{Int64}:
+#  10   20    60
+#  40  200  1200
 
-source
-Base.cumprod
-—
-Function
-cumprod(A; dims::Integer)
 
-Cumulative product along the dimension dim. See also cumprod! to use a preallocated output array, both for performance and to control the precision of the output (e.g. to avoid overflow).
-
-Examples
+# Base.cumprod
+# Function cumprod(A; dims::Integer)
+# Cumulative product along the dimension dim. See also cumprod! to use a preallocated output array, both for performance
+# and to control the precision of the output (e.g. to avoid overflow).
 
 a = Int8[1 2 3; 4 5 6];
 
 cumprod(a, dims=1)
-2×3 Matrix{Int64}:
- 1   2   3
- 4  10  18
+# 2×3 Matrix{Int64}:
+#  1   2   3
+#  4  10  18
 
 cumprod(a, dims=2)
-2×3 Matrix{Int64}:
- 1   2    6
- 4  20  120
+# 2×3 Matrix{Int64}:
+#  1   2    6
+#  4  20  120
 
-source
-cumprod(itr)
 
-Cumulative product of an iterator.
-
-See also cumprod!, accumulate, cumsum.
-
-Julia 1.5
-cumprod on a non-array iterator requires at least Julia 1.5.
-
-Examples
+# cumprod(itr)
+# Cumulative product of an iterator.
+# See also cumprod!, accumulate, cumsum.
 
 cumprod(fill(1//2, 3))
-3-element Vector{Rational{Int64}}:
- 1//2
- 1//4
- 1//8
+# 3-element Vector{Rational{Int64}}:
+#  1//2
+#  1//4
+#  1//8
 
-cumprod((1, 2, 1, 3, 1))
-(1, 2, 2, 6, 6)
+cumprod((1, 2, 1, 3, 1))            # (1, 2, 2, 6, 6)
+cumprod("julia")                    # 5-element Vector{String}: "j" "ju" "jul" "juli" "julia"
 
-cumprod("julia")
-5-element Vector{String}:
- "j"
- "ju"
- "jul"
- "juli"
- "julia"
+# Base.cumprod!
+# Function cumprod!(B, A; dims::Integer)
+# Cumulative product of A along the dimension dims, storing the result in B. See also cumprod.
 
-source
-Base.cumprod!
-—
-Function
-cumprod!(B, A; dims::Integer)
+# cumprod!(y::AbstractVector, x::AbstractVector)
+# Cumulative product of a vector x, storing the result in y. See also cumprod.
 
-Cumulative product of A along the dimension dims, storing the result in B. See also cumprod.
 
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-source
-cumprod!(y::AbstractVector, x::AbstractVector)
-
-Cumulative product of a vector x, storing the result in y. See also cumprod.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-source
-Base.cumsum
-—
-Function
-cumsum(A; dims::Integer)
-
-Cumulative sum along the dimension dims. See also cumsum! to use a preallocated output array, both for performance and to control the precision of the output (e.g. to avoid overflow).
-
-Examples
+# Base.cumsum
+# Function cumsum(A; dims::Integer)
+# Cumulative sum along the dimension dims. See also cumsum! to use a preallocated output array, both for performance and
+# to control the precision of the output (e.g. to avoid overflow).
 
 a = [1 2 3; 4 5 6]
-2×3 Matrix{Int64}:
- 1  2  3
- 4  5  6
+# 2×3 Matrix{Int64}:
+#  1  2  3
+#  4  5  6
 
 cumsum(a, dims=1)
-2×3 Matrix{Int64}:
- 1  2  3
- 5  7  9
+# 2×3 Matrix{Int64}:
+#  1  2  3
+#  5  7  9
 
 cumsum(a, dims=2)
-2×3 Matrix{Int64}:
- 1  3   6
- 4  9  15
+# 2×3 Matrix{Int64}:
+#  1  3   6
+#  4  9  15
 
-Note
-The return array's eltype is Int for signed integers of less than system word size and UInt for unsigned integers of less than system word size. To preserve eltype of arrays with small signed or unsigned integer accumulate(+, A) should be used.
+# Note: The return array's eltype is Int for signed integers of less than system word size and UInt for unsigned
+# integers of less than system word size. To preserve eltype of arrays with small signed or unsigned integer
+# accumulate(+, A) should be used.
 
 cumsum(Int8[100, 28])
-2-element Vector{Int64}:
- 100
- 128
+# 2-element Vector{Int64}:
+#  100
+#  128
 
 accumulate(+,Int8[100, 28])
-2-element Vector{Int8}:
-  100
- -128
+# 2-element Vector{Int8}:
+#   100
+#  -128
 
-In the former case, the integers are widened to system word size and therefore the result is Int64[100, 128]. In the latter case, no such widening happens and integer overflow results in Int8[100, -128].
+# In the former case, the integers are widened to system word size and therefore the result is Int64[100, 128]. In the
+# latter case, no such widening happens and integer overflow results in Int8[100, -128].
 
-source
-cumsum(itr)
 
-Cumulative sum of an iterator.
+# cumsum(itr)
+# Cumulative sum of an iterator.
+# See also accumulate to apply functions other than +.
 
-See also accumulate to apply functions other than +.
+cumsum(1:3)                                 # 3-element Vector{Int64}: 1 3 6
+cumsum((true, false, true, false, true))    # (1, 1, 2, 2, 3)
+cumsum(fill(1, 2) for i in 1:3)             # 3-element Vector{Vector{Int64}}: [1, 1]\n [2, 2]\n [3, 3]
 
-Julia 1.5
-cumsum on a non-array iterator requires at least Julia 1.5.
 
-Examples
+# Base.cumsum!
+# Function cumsum!(B, A; dims::Integer)
+# Cumulative sum of A along the dimension dims, storing the result in B. See also cumsum.
 
-cumsum(1:3)
-3-element Vector{Int64}:
- 1
- 3
- 6
 
-cumsum((true, false, true, false, true))
-(1, 1, 2, 2, 3)
+# -------------------------------------------------
+# Base.diff
+# Function diff(A::AbstractVector)
+# Function diff(A::AbstractArray; dims::Integer)
 
-cumsum(fill(1, 2) for i in 1:3)
-3-element Vector{Vector{Int64}}:
- [1, 1]
- [2, 2]
- [3, 3]
-
-source
-Base.cumsum!
-—
-Function
-cumsum!(B, A; dims::Integer)
-
-Cumulative sum of A along the dimension dims, storing the result in B. See also cumsum.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-source
-Base.diff
-—
-Function
-diff(A::AbstractVector)
-diff(A::AbstractArray; dims::Integer)
-
-Finite difference operator on a vector or a multidimensional array A. In the latter case the dimension to operate on needs to be specified with the dims keyword argument.
-
-Julia 1.1
-diff for arrays with dimension higher than 2 requires at least Julia 1.1.
-
-Examples
+# Finite difference operator on a vector or a multidimensional array A. In the latter case the dimension to operate on
+# needs to be specified with the dims keyword argument.
 
 a = [2 4; 6 16]
-2×2 Matrix{Int64}:
- 2   4
- 6  16
+# 2×2 Matrix{Int64}:
+#  2   4
+#  6  16
 
 diff(a, dims=2)
-2×1 Matrix{Int64}:
-  2
- 10
+# 2×1 Matrix{Int64}:
+#   2
+#  10
 
 diff(vec(a))
-3-element Vector{Int64}:
-  4
- -2
- 12
+# 3-element Vector{Int64}:
+#   4
+#  -2
+#  12
 
-source
+
+# -------------------------------------------------
 Base.repeat
 —
 Function
@@ -2617,7 +2212,8 @@ Examples
 repeat('A', 3)
 "AAA"
 
-source
+
+# -------------------------------------------------
 Base.rot180
 —
 Function
@@ -2763,7 +2359,8 @@ rotr90(a,4)
  1  2
  3  4
 
-source
+
+# -------------------------------------------------
 Base.mapslices
 —
 Function
@@ -2945,7 +2542,9 @@ eachslice(m, dims=1, drop=false)
  [4, 5, 6]
  [7, 8, 9]
 
-source
+
+
+# -------------------------------------------------
 Combinatorics
 Base.invperm
 —
@@ -3143,6 +2742,3 @@ source
 reverse!(A; dims=:)
 
 Like reverse, but operates in-place in A.
-
-Julia 1.6
-Multidimensional reverse! requires Julia 1.6.

@@ -1,4 +1,4 @@
-# arr0.jl
+# offset_arrays.jl
 # Test custom array indices in Julia to build arrays with indices starting at 0
 # https://julialang.org/blog/2017/04/offset-arrays/
 # 

@@ -2,7 +2,8 @@
 # Play with julia regular expressions (Julia manual §7)
 # 
 # 2024-03-20    PV      First version
-# 2024-03-31    over    Split a string using regex
+# 2024-03-31    PV      Split a string using regex
+# 2024-04-24    PV      Escape a string to use in a regex
 
 source = "# 2024-03-20    PV      First version"
 
@@ -79,4 +80,10 @@ println()
 reSplit = r"[ \t\r\n]+"  # Extract all words separated by white spaces
 s = "Once\t\tupon a\ntime\r\nwas   a\rprince"
 vs = split(s, reSplit)
-println(vs)                     # ["Once", "upon", "a", "time", "was", "a", "prince"]
+println(vs)                                                         # ["Once", "upon", "a", "time", "was", "a", "prince"]
+
+# Escape a string to use in a regex
+# PCRE2 library used by Julia uses its regex-quoting syntax to automatically escape special characters when you join a
+# Regex with a normal String
+re = r"" * raw".^(??"
+println(replace("Test.^(??", re=>""))                               # Test

@@ -25,497 +25,286 @@
 # The state object may be anything, and should be chosen appropriately for each iterable type. See the manual section on
 # the iteration interface for more details about defining a custom iterable type.
 
-Base.iterate
-—
-Function
-iterate(iter [, state]) -> Union{Nothing, Tuple{Any, Any}}
+# Base.iterate
+# Function iterate(iter [, state]) -> Union{Nothing, Tuple{Any, Any}}
+# Advance the iterator to obtain the next element. If no elements remain, nothing should be returned. Otherwise, a
+# 2-tuple of the next element and the new iteration state should be returned.
 
-Advance the iterator to obtain the next element. If no elements remain, nothing should be returned. Otherwise, a 2-tuple of the next element and the new iteration state should be returned.
+# Base.IteratorSize
+# Type IteratorSize(itertype::Type) -> IteratorSize
+# Given the type of an iterator, return one of the following values:
+# - SizeUnknown() if the length (number of elements) cannot be determined in advance.
+# - HasLength() if there is a fixed, finite length.
+# - HasShape{N}() if there is a known length plus a notion of multidimensional shape (as for an array). In this case N
+#   should give the number of dimensions, and the axes function is valid for the iterator.
+# - IsInfinite() if the iterator yields values forever.
+# The default value (for iterators that do not define this function) is HasLength(). This means that most iterators are
+# assumed to implement length.
 
-source
-Base.IteratorSize
-—
-Type
-IteratorSize(itertype::Type) -> IteratorSize
+# This trait is generally used to select between algorithms that pre-allocate space for their result, and algorithms
+# that resize their result incrementally.
 
-Given the type of an iterator, return one of the following values:
+Base.IteratorSize(1:5)          # Base.HasShape{1}()
+Base.IteratorSize((2,3))        # Base.HasLength()
 
-SizeUnknown() if the length (number of elements) cannot be determined in advance.
-HasLength() if there is a fixed, finite length.
-HasShape{N}() if there is a known length plus a notion of multidimensional shape (as for an array). In this case N should give the number of dimensions, and the axes function is valid for the iterator.
-IsInfinite() if the iterator yields values forever.
-The default value (for iterators that do not define this function) is HasLength(). This means that most iterators are assumed to implement length.
+# Base.IteratorEltype
+# Type IteratorEltype(itertype::Type) -> IteratorEltype
+# Given the type of an iterator, return one of the following values:
+# - EltypeUnknown() if the type of elements yielded by the iterator is not known in advance.
+# - HasEltype() if the element type is known, and eltype would return a meaningful value.
+# - HasEltype() is the default, since iterators are assumed to implement eltype.
 
-This trait is generally used to select between algorithms that pre-allocate space for their result, and algorithms that resize their result incrementally.
+# This trait is generally used to select between algorithms that pre-allocate a specific type of result, and algorithms
+# that pick a result type based on the types of yielded values.
 
-Base.IteratorSize(1:5)
-Base.HasShape{1}()
+Base.IteratorEltype(1:5)        # Base.HasEltype()
 
-Base.IteratorSize((2,3))
-Base.HasLength()
+# Fully implemented by:
+# - AbstractRange
+# - UnitRange
+# - Tuple
+# - Number
+# - AbstractArray
+# - BitSet
+# - IdDict
+# - Dict
+# - WeakKeyDict
+# - EachLine
+# - AbstractString
+# - Set
+# - Pair
+# - NamedTuple
 
-source
-Base.IteratorEltype
-—
-Type
-IteratorEltype(itertype::Type) -> IteratorEltype
 
-Given the type of an iterator, return one of the following values:
+# -------------------------------------------------------------------
+# Constructors and Types
 
-EltypeUnknown() if the type of elements yielded by the iterator is not known in advance.
-HasEltype() if the element type is known, and eltype would return a meaningful value.
-HasEltype() is the default, since iterators are assumed to implement eltype.
+# Base.AbstractRange
+# Type AbstractRange{T}
+# Supertype for ranges with elements of type T. UnitRange and other types are subtypes of this.
 
-This trait is generally used to select between algorithms that pre-allocate a specific type of result, and algorithms that pick a result type based on the types of yielded values.
+# Base.OrdinalRange
+# Type OrdinalRange{T, S} <: AbstractRange{T}
+# Supertype for ordinal ranges with elements of type T with spacing(s) of type S. The steps should be always-exact
+# multiples of oneunit, and T should be a "discrete" type, which cannot have values smaller than oneunit. For example,
+# Integer or Date types would qualify, whereas Float64 would not (since this type can represent values smaller than
+# oneunit(Float64). UnitRange, StepRange, and other types are subtypes of this.
 
-Base.IteratorEltype(1:5)
-Base.HasEltype()
+# Base.AbstractUnitRange
+# Type AbstractUnitRange{T} <: OrdinalRange{T, T}
+# Supertype for ranges with a step size of oneunit(T) with elements of type T. UnitRange and other types are subtypes of this.
 
-source
-Fully implemented by:
+# Base.StepRange
+# Type StepRange{T, S} <: OrdinalRange{T, S}
+# Ranges with elements of type T with spacing of type S. The step between each element is constant, and the range is
+# defined in terms of a start and stop of type T and a step of type S. Neither T nor S should be floating point types.
+# The syntax a:b:c with b != 0 and a, b, and c all integers creates a StepRange.
 
-AbstractRange
-UnitRange
-Tuple
-Number
-AbstractArray
-BitSet
-IdDict
-Dict
-WeakKeyDict
-EachLine
-AbstractString
-Set
-Pair
-NamedTuple
-Constructors and Types
-Base.AbstractRange
-—
-Type
-AbstractRange{T}
+collect(StepRange(1, Int8(2), 10))      # 5-element Vector{Int64}: 1, 3, 5, 7, 9
+typeof(StepRange(1, Int8(2), 10))       # StepRange{Int64, Int8}
+typeof(1:3:6)                           # StepRange{Int64, Int64}
 
-Supertype for ranges with elements of type T. UnitRange and other types are subtypes of this.
+# Base.UnitRange
+# Type UnitRange{T<:Real}
+# A range parameterized by a start and stop of type T, filled with elements spaced by 1 from start until stop is
+# exceeded. The syntax a:b with a and b both Integers creates a UnitRange.
 
-source
-Base.OrdinalRange
-—
-Type
-OrdinalRange{T, S} <: AbstractRange{T}
+collect(UnitRange(2.3, 5.2))            # 3-element Vector{Float64}: 2.3, 3.3, 4.3
+typeof(1:10)                            # UnitRange{Int64}
 
-Supertype for ordinal ranges with elements of type T with spacing(s) of type S. The steps should be always-exact multiples of oneunit, and T should be a "discrete" type, which cannot have values smaller than oneunit. For example, Integer or Date types would qualify, whereas Float64 would not (since this type can represent values smaller than oneunit(Float64). UnitRange, StepRange, and other types are subtypes of this.
+# Base.LinRange
+# Type LinRange{T,L}
+# A range with len linearly spaced elements between its start and stop. The size of the spacing is controlled by len,
+# which must be an Integer.
 
-source
-Base.AbstractUnitRange
-—
-Type
-AbstractUnitRange{T} <: OrdinalRange{T, T}
+LinRange(1.5, 5.5, 9)                   # 9-element LinRange{Float64, Int64}: 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5
 
-Supertype for ranges with a step size of oneunit(T) with elements of type T. UnitRange and other types are subtypes of this.
+# Compared to using range, directly constructing a LinRange should have less overhead but won't try to correct for
+# floating point errors:
+collect(range(-0.1, 0.3, length=5))     # 5-element Vector{Float64}: -0.1 0.0 0.1 0.2 0.3
+collect(LinRange(-0.1, 0.3, 5))         # 5-element Vector{Float64}: -0.1 -1.3877787807814457e-17  0.09999999999999999 0.19999999999999998  0.3
 
-source
-Base.StepRange
-—
-Type
-StepRange{T, S} <: OrdinalRange{T, S}
 
-Ranges with elements of type T with spacing of type S. The step between each element is constant, and the range is defined in terms of a start and stop of type T and a step of type S. Neither T nor S should be floating point types. The syntax a:b:c with b != 0 and a, b, and c all integers creates a StepRange.
+# -------------------------------------------------------------------
+# General Collections
 
-Examples
+# Base.isempty
+# Function isempty(collection) -> Bool
+# Determine whether a collection is empty (has no elements).
 
-collect(StepRange(1, Int8(2), 10))
-5-element Vector{Int64}:
- 1
- 3
- 5
- 7
- 9
+# Warning: isempty(itr) may consume the next element of a stateful iterator itr unless an appropriate Base.isdone(itr)
+# or isempty method is defined. Use of isempty should therefore be avoided when writing generic code which should
+# support any iterator type.
 
-typeof(StepRange(1, Int8(2), 10))
-StepRange{Int64, Int8}
+isempty([])                             # true
+isempty([1 2 3])                        # false
 
-typeof(1:3:6)
-StepRange{Int64, Int64}
+# isempty(condition)
+# Return true if no tasks are waiting on the condition, false otherwise.
 
-source
-Base.UnitRange
-—
-Type
-UnitRange{T<:Real}
+# Base.empty!
+# Function empty!(collection) -> collection
+# Remove all elements from a collection.
 
-A range parameterized by a start and stop of type T, filled with elements spaced by 1 from start until stop is exceeded. The syntax a:b with a and b both Integers creates a UnitRange.
-
-Examples
-
-collect(UnitRange(2.3, 5.2))
-3-element Vector{Float64}:
- 2.3
- 3.3
- 4.3
-
-typeof(1:10)
-UnitRange{Int64}
-
-source
-Base.LinRange
-—
-Type
-LinRange{T,L}
-
-A range with len linearly spaced elements between its start and stop. The size of the spacing is controlled by len, which must be an Integer.
-
-Examples
-
-LinRange(1.5, 5.5, 9)
-9-element LinRange{Float64, Int64}:
- 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5
-
-Compared to using range, directly constructing a LinRange should have less overhead but won't try to correct for floating point errors:
-
-collect(range(-0.1, 0.3, length=5))
-5-element Vector{Float64}:
- -0.1
-  0.0
-  0.1
-  0.2
-  0.3
-
-collect(LinRange(-0.1, 0.3, 5))
-5-element Vector{Float64}:
- -0.1
- -1.3877787807814457e-17
-  0.09999999999999999
-  0.19999999999999998
-  0.3
-
-source
-General Collections
-Base.isempty
-—
-Function
-isempty(collection) -> Bool
-
-Determine whether a collection is empty (has no elements).
-
-Warning
-isempty(itr) may consume the next element of a stateful iterator itr unless an appropriate Base.isdone(itr) or isempty method is defined. Use of isempty should therefore be avoided when writing generic code which should support any iterator type.
-
-Examples
-
-isempty([])
-true
-
-isempty([1 2 3])
-false
-
-source
-isempty(condition)
-
-Return true if no tasks are waiting on the condition, false otherwise.
-
-source
-Base.empty!
-—
-Function
-empty!(collection) -> collection
-
-Remove all elements from a collection.
-
-Examples
-
-A = Dict("a" => 1, "b" => 2)
-Dict{String, Int64} with 2 entries:
-  "b" => 2
-  "a" => 1
-
+A = Dict("a" => 1, "b" => 2)            # Dict{String, Int64} with 2 entries:  "b" => 2, "a" => 1
 empty!(A);
+A                                       # Dict{String, Int64}()
 
-A
-Dict{String, Int64}()
+# Base.length
+# Function length(collection) -> Integer
+# Return the number of elements in the collection.
+# Use lastindex to get the last valid index of an indexable collection.
+# See also: size, ndims, eachindex.
 
-source
-Base.length
-—
-Function
-length(collection) -> Integer
+length(1:5)                             # 5
+length([1, 2, 3, 4])                    # 4
+length([1 2; 3 4])                      # 4
 
-Return the number of elements in the collection.
+# Base.checked_length
+# Function Base.checked_length(r)
+# Calculates length(r), but may check for overflow errors where applicable when the result doesn't fit into
+# Union{Integer(eltype(r)),Int}.
 
-Use lastindex to get the last valid index of an indexable collection.
+# Fully implemented by:
+# - AbstractRange
+# - UnitRange
+# - Tuple
+# - Number
+# - AbstractArray
+# - BitSet
+# - IdDict
+# - Dict
+# - WeakKeyDict
+# - AbstractString
+# - Set
+# - NamedTuple
 
-See also: size, ndims, eachindex.
 
-Examples
+# -------------------------------------------------------------------
+# Iterable Collections
 
-length(1:5)
-5
+# Base.in
+# Function in(item, collection) -> Bool
+# Function ∈(item, collection) -> Bool
 
-length([1, 2, 3, 4])
-4
+# Determine whether an item is in the given collection, in the sense that it is == to one of the values generated by
+# iterating over the collection. Return a Bool value, except if item is missing or collection contains missing but not
+# item, in which case missing is returned (three-valued logic, matching the behavior of any and ==).
 
-length([1 2; 3 4])
-4
+# Some collections follow a slightly different definition. For example, Sets check whether the item isequal to one of
+# the elements; Dicts look for key=>value pairs, and the key is compared using isequal.
 
-source
-Base.checked_length
-—
-Function
-Base.checked_length(r)
+# To test for the presence of a key in a dictionary, use haskey or k in keys(dict). For the collections mentioned above,
+# the result is always a Bool.
+ 
+# When broadcasting with in.(items, collection) or items .∈ collection, both item and collection are broadcasted over,
+# which is often not what is intended. For example, if both arguments are vectors (and the dimensions match), the result
+# is a vector indicating whether each value in collection items is in the value at the corresponding position in
+# collection. To get a vector indicating whether each value in items is in collection, wrap collection in a tuple or a
+# Ref like this: in.(items, Ref(collection)) or items .∈ Ref(collection).
 
-Calculates length(r), but may check for overflow errors where applicable when the result doesn't fit into Union{Integer(eltype(r)),Int}.
+# See also: ∉, insorted, contains, occursin, issubset.
 
-source
-Fully implemented by:
+a = 1:3:20                              # 1:3:19
+4 in a                                  # true
+5 in a                                  # false
+missing in [1, 2]                       # missing
+1 in [2, missing]                       # missing
+1 in [1, missing]                       # true
+missing in Set([1, 2])                  # false
+(1=>missing) in Dict(1=>10, 2=>20)      # missing
+[1, 2] .∈ [2, 3]                        # 2-element BitVector: 0  0
+[1, 2] .∈ ([2, 3],)                     # 2-element BitVector: 0  1
 
-AbstractRange
-UnitRange
-Tuple
-Number
-AbstractArray
-BitSet
-IdDict
-Dict
-WeakKeyDict
-AbstractString
-Set
-NamedTuple
-Iterable Collections
-Base.in
-—
-Function
-in(item, collection) -> Bool
-∈(item, collection) -> Bool
+# Base.:∉
+# Function ∉(item, collection) -> Bool
+# Function ∌(collection, item) -> Bool
 
-Determine whether an item is in the given collection, in the sense that it is == to one of the values generated by iterating over the collection. Return a Bool value, except if item is missing or collection contains missing but not item, in which case missing is returned (three-valued logic, matching the behavior of any and ==).
+# Negation of ∈ and ∋, i.e. checks that item is not in collection.
 
-Some collections follow a slightly different definition. For example, Sets check whether the item isequal to one of the elements; Dicts look for key=>value pairs, and the key is compared using isequal.
+# When broadcasting with items .∉ collection, both item and collection are broadcasted over, which is often not what is
+# intended. For example, if both arguments are vectors (and the dimensions match), the result is a vector indicating
+# whether each value in collection items is not in the value at the corresponding position in collection. To get a
+# vector indicating whether each value in items is not in collection, wrap collection in a tuple or a Ref like this:
+# items .∉ Ref(collection).
 
-To test for the presence of a key in a dictionary, use haskey or k in keys(dict). For the collections mentioned above, the result is always a Bool.
+1 ∉ 2:4                                 # true
+1 ∉ 1:3                                 # false
+[1, 2] .∉ [2, 3]                        # 2-element BitVector: 1  1
+[1, 2] .∉ ([2, 3],)                     # 2-element BitVector: 1  0
 
-When broadcasting with in.(items, collection) or items .∈ collection, both item and collection are broadcasted over, which is often not what is intended. For example, if both arguments are vectors (and the dimensions match), the result is a vector indicating whether each value in collection items is in the value at the corresponding position in collection. To get a vector indicating whether each value in items is in collection, wrap collection in a tuple or a Ref like this: in.(items, Ref(collection)) or items .∈ Ref(collection).
 
-See also: ∉, insorted, contains, occursin, issubset.
+# Base.eltype
+# Function eltype(type)
+# Determine the type of the elements generated by iterating a collection of the given type. For dictionary types, this will be a Pair{KeyType,ValType}. The definition eltype(x) = eltype(typeof(x)) is provided for convenience so that instances can be passed instead of types. However the form that accepts a type argument should be defined for new types.
+# See also: keytype, typeof.
 
-Examples
+eltype(fill(1f0, (2,2)))                # Float32
+eltype(fill(0x1, (2,2)))                # UInt8
 
-a = 1:3:20
-1:3:19
-
-4 in a
-true
-
-5 in a
-false
-
-missing in [1, 2]
-missing
-
-1 in [2, missing]
-missing
-
-1 in [1, missing]
-true
-
-missing in Set([1, 2])
-false
-
-(1=>missing) in Dict(1=>10, 2=>20)
-missing
-
-[1, 2] .∈ [2, 3]
-2-element BitVector:
- 0
- 0
-
-[1, 2] .∈ ([2, 3],)
-2-element BitVector:
- 0
- 1
-
-source
-Base.:∉
-—
-Function
-∉(item, collection) -> Bool
-∌(collection, item) -> Bool
-
-Negation of ∈ and ∋, i.e. checks that item is not in collection.
-
-When broadcasting with items .∉ collection, both item and collection are broadcasted over, which is often not what is intended. For example, if both arguments are vectors (and the dimensions match), the result is a vector indicating whether each value in collection items is not in the value at the corresponding position in collection. To get a vector indicating whether each value in items is not in collection, wrap collection in a tuple or a Ref like this: items .∉ Ref(collection).
-
-Examples
-
-1 ∉ 2:4
-true
-
-1 ∉ 1:3
-false
-
-[1, 2] .∉ [2, 3]
-2-element BitVector:
- 1
- 1
-
-[1, 2] .∉ ([2, 3],)
-2-element BitVector:
- 1
- 0
-
-source
-Base.eltype
-—
-Function
-eltype(type)
-
-Determine the type of the elements generated by iterating a collection of the given type. For dictionary types, this will be a Pair{KeyType,ValType}. The definition eltype(x) = eltype(typeof(x)) is provided for convenience so that instances can be passed instead of types. However the form that accepts a type argument should be defined for new types.
-
-See also: keytype, typeof.
-
-Examples
-
-eltype(fill(1f0, (2,2)))
-Float32
-
-eltype(fill(0x1, (2,2)))
-UInt8
-
-source
-Base.indexin
-—
-Function
-indexin(a, b)
-
-Return an array containing the first index in b for each value in a that is a member of b. The output array contains nothing wherever a is not a member of b.
-
-See also: sortperm, findfirst.
-
-Examples
+# Base.indexin
+# Function indexin(a, b)
+# Return an array containing the first index in b for each value in a that is a member of b. The output array contains nothing wherever a is not a member of b.
+# See also: sortperm, findfirst.
 
 a = ['a', 'b', 'c', 'b', 'd', 'a'];
-
 b = ['a', 'b', 'c'];
+indexin(a, b)                           # 6-element Vector{Union{Nothing, Int64}}: 1 2 3 2 nothing 1
+indexin(b, a)                           # 3-element Vector{Union{Nothing, Int64}}: 1 2 3
 
-indexin(a, b)
-6-element Vector{Union{Nothing, Int64}}:
- 1
- 2
- 3
- 2
-  nothing
- 1
+# Base.unique
+# Function unique(itr)
+# Return an array containing only the unique elements of collection itr, as determined by isequal, in the order that the
+# first of each set of equivalent elements originally appears. The element type of the input is preserved.
+# See also: unique!, allunique, allequal.
 
-indexin(b, a)
-3-element Vector{Union{Nothing, Int64}}:
- 1
- 2
- 3
+unique([1, 2, 6, 2])                    # 3-element Vector{Int64}: 1 2 6
+unique(Real[1, 1.0, 2])                 # 2-element Vector{Real}: 1 2
 
-source
-Base.unique
-—
-Function
-unique(itr)
+# unique(f, itr)
+# Return an array containing one value from itr for each unique value produced by f applied to elements of itr.
 
-Return an array containing only the unique elements of collection itr, as determined by isequal, in the order that the first of each set of equivalent elements originally appears. The element type of the input is preserved.
+unique(x -> x^2, [1, -1, 3, -3, 4])     # 3-element Vector{Int64}: 1 3 4
 
-See also: unique!, allunique, allequal.
-
-Examples
-
-unique([1, 2, 6, 2])
-3-element Vector{Int64}:
- 1
- 2
- 6
-
-unique(Real[1, 1.0, 2])
-2-element Vector{Real}:
- 1
- 2
-
-source
-unique(f, itr)
-
-Return an array containing one value from itr for each unique value produced by f applied to elements of itr.
-
-Examples
-
-unique(x -> x^2, [1, -1, 3, -3, 4])
-3-element Vector{Int64}:
- 1
- 3
- 4
-
-This functionality can also be used to extract the indices of the first occurrences of unique elements in an array:
-
+# This functionality can also be used to extract the indices of the first occurrences of unique elements in an array:
 a = [3.1, 4.2, 5.3, 3.1, 3.1, 3.1, 4.2, 1.7];
+i = unique(i -> a[i], eachindex(a))     # 4-element Vector{Int64}: 1 2 3 8
+a[i]                                    # 4-element Vector{Float64}: 3.1 4.2 5.3 1.7
+a[i] == unique(a)                       # true
 
-i = unique(i -> a[i], eachindex(a))
-4-element Vector{Int64}:
- 1
- 2
- 3
- 8
+# unique(A::AbstractArray; dims::Int)
+# Return unique regions of A along dimension dims.
 
-a[i]
-4-element Vector{Float64}:
- 3.1
- 4.2
- 5.3
- 1.7
+A = map(isodd, reshape(Vector(1:8), (2,2,2)))   #
+# 2×2×2 Array{Bool, 3}:
+# [:, :, 1] =
+#  1  1
+#  0  0
+# 
+# [:, :, 2] =
+#  1  1
+#  0  0
 
-a[i] == unique(a)
-true
-
-source
-unique(A::AbstractArray; dims::Int)
-
-Return unique regions of A along dimension dims.
-
-Examples
-
-A = map(isodd, reshape(Vector(1:8), (2,2,2)))
-2×2×2 Array{Bool, 3}:
-[:, :, 1] =
- 1  1
- 0  0
-
-[:, :, 2] =
- 1  1
- 0  0
-
-unique(A)
-2-element Vector{Bool}:
- 1
- 0
-
-unique(A, dims=2)
-2×1×2 Array{Bool, 3}:
-[:, :, 1] =
- 1
- 0
-
-[:, :, 2] =
- 1
- 0
+unique(A)               # 2-element Vector{Bool}: 1 0
+unique(A, dims=2)       
+# 2×1×2 Array{Bool, 3}:
+# [:, :, 1] =
+#  1
+#  0
+# 
+# [:, :, 2] =
+#  1
+#  0
 
 unique(A, dims=3)
-2×2×1 Array{Bool, 3}:
-[:, :, 1] =
- 1  1
- 0  0
+# 2×2×1 Array{Bool, 3}:
+# [:, :, 1] =
+#  1  1
+#  0  0
 
-source
-Base.unique!
-—
-Function
-unique!(f, A::AbstractVector)
-
-Selects one value from A for each unique value produced by f applied to elements of A, then return the modified A.
-
-Julia 1.1
-This method is available as of Julia 1.1.
-
-Examples
+# Base.unique!
+# Function unique!(f, A::AbstractVector)
+# Selects one value from A for each unique value produced by f applied to elements of A, then return the modified A.
 
 unique!(x -> x^2, [1, -1, 3, -3, 4])
 3-element Vector{Int64}:
