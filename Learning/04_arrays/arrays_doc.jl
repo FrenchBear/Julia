@@ -2133,612 +2133,492 @@ diff(vec(a))
 
 
 # -------------------------------------------------
-Base.repeat
-—
-Function
-repeat(A::AbstractArray, counts::Integer...)
+# Base.repeat
+# Function repeat(A::AbstractArray, counts::Integer...)
 
-Construct an array by repeating array A a given number of times in each dimension, specified by counts.
-
-See also: fill, Iterators.repeated, Iterators.cycle.
-
-Examples
+# Construct an array by repeating array A a given number of times in each dimension, specified by counts.
+# See also: fill, Iterators.repeated, Iterators.cycle.
 
 repeat([1, 2, 3], 2)
-6-element Vector{Int64}:
- 1
- 2
- 3
- 1
- 2
- 3
+# 6-element Vector{Int64}:
+#  1
+#  2
+#  3
+#  1
+#  2
+#  3
 
 repeat([1, 2, 3], 2, 3)
-6×3 Matrix{Int64}:
- 1  1  1
- 2  2  2
- 3  3  3
- 1  1  1
- 2  2  2
- 3  3  3
+# 6×3 Matrix{Int64}:
+#  1  1  1
+#  2  2  2
+#  3  3  3
+#  1  1  1
+#  2  2  2
+#  3  3  3
 
-source
-repeat(A::AbstractArray; inner=ntuple(Returns(1), ndims(A)), outer=ntuple(Returns(1), ndims(A)))
-
-Construct an array by repeating the entries of A. The i-th element of inner specifies the number of times that the individual entries of the i-th dimension of A should be repeated. The i-th element of outer specifies the number of times that a slice along the i-th dimension of A should be repeated. If inner or outer are omitted, no repetition is performed.
-
-Examples
+# repeat(A::AbstractArray; inner=ntuple(Returns(1), ndims(A)), outer=ntuple(Returns(1), ndims(A)))
+# Construct an array by repeating the entries of A. The i-th element of inner specifies the number of times that the
+# individual entries of the i-th dimension of A should be repeated. The i-th element of outer specifies the number of
+# times that a slice along the i-th dimension of A should be repeated. If inner or outer are omitted, no repetition is
+# performed.
 
 repeat(1:2, inner=2)
-4-element Vector{Int64}:
- 1
- 1
- 2
- 2
+# 4-element Vector{Int64}:
+#  1
+#  1
+#  2
+#  2
 
 repeat(1:2, outer=2)
-4-element Vector{Int64}:
- 1
- 2
- 1
- 2
+# 4-element Vector{Int64}:
+#  1
+#  2
+#  1
+#  2
 
 repeat([1 2; 3 4], inner=(2, 1), outer=(1, 3))
-4×6 Matrix{Int64}:
- 1  2  1  2  1  2
- 1  2  1  2  1  2
- 3  4  3  4  3  4
- 3  4  3  4  3  4
+# 4×6 Matrix{Int64}:
+#  1  2  1  2  1  2
+#  1  2  1  2  1  2
+#  3  4  3  4  3  4
+#  3  4  3  4  3  4
 
-source
-repeat(s::AbstractString, r::Integer)
 
-Repeat a string r times. This can be written as s^r.
-
-See also ^.
-
-Examples
+# repeat(s::AbstractString, r::Integer)
+# Repeat a string r times. This can be written as s^r.
+# See also ^.
 
 repeat("ha", 3)
-"hahaha"
+# "hahaha"
 
-source
-repeat(c::AbstractChar, r::Integer) -> String
-
-Repeat a character r times. This can equivalently be accomplished by calling c^r.
-
-Examples
+# repeat(c::AbstractChar, r::Integer) -> String
+# Repeat a character r times. This can equivalently be accomplished by calling c^r.
 
 repeat('A', 3)
-"AAA"
+# "AAA"
 
 
 # -------------------------------------------------
-Base.rot180
-—
-Function
-rot180(A)
-
-Rotate matrix A 180 degrees.
-
-Examples
+# Base.rot180
+# Function rot180(A)
+# Rotate matrix A 180 degrees.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rot180(a)
-2×2 Matrix{Int64}:
- 4  3
- 2  1
+# 2×2 Matrix{Int64}:
+#  4  3
+#  2  1
 
-source
-rot180(A, k)
 
-Rotate matrix A 180 degrees an integer k number of times. If k is even, this is equivalent to a copy.
-
-Examples
+# rot180(A, k)
+# Rotate matrix A 180 degrees an integer k number of times. If k is even, this is equivalent to a copy.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rot180(a,1)
-2×2 Matrix{Int64}:
- 4  3
- 2  1
+# 2×2 Matrix{Int64}:
+#  4  3
+#  2  1
 
 rot180(a,2)
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
-source
-Base.rotl90
-—
-Function
-rotl90(A)
 
-Rotate matrix A left 90 degrees.
-
-Examples
+# Base.rotl90
+# Function rotl90(A)
+# Rotate matrix A left 90 degrees.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rotl90(a)
-2×2 Matrix{Int64}:
- 2  4
- 1  3
+# 2×2 Matrix{Int64}:
+#  2  4
+#  1  3
 
-source
-rotl90(A, k)
 
-Left-rotate matrix A 90 degrees counterclockwise an integer k number of times. If k is a multiple of four (including zero), this is equivalent to a copy.
-
-Examples
+# rotl90(A, k)
+# Left-rotate matrix A 90 degrees counterclockwise an integer k number of times. If k is a multiple of four (including
+# zero), this is equivalent to a copy.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rotl90(a,1)
-2×2 Matrix{Int64}:
- 2  4
- 1  3
+# 2×2 Matrix{Int64}:
+#  2  4
+#  1  3
 
 rotl90(a,2)
-2×2 Matrix{Int64}:
- 4  3
- 2  1
+# 2×2 Matrix{Int64}:
+#  4  3
+#  2  1
 
 rotl90(a,3)
-2×2 Matrix{Int64}:
- 3  1
- 4  2
+# 2×2 Matrix{Int64}:
+#  3  1
+#  4  2
 
 rotl90(a,4)
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
-source
-Base.rotr90
-—
-Function
-rotr90(A)
 
-Rotate matrix A right 90 degrees.
+# Base.rotr90
+# Function rotr90(A)
+# Rotate matrix A right 90 degrees.
 
 Examples
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rotr90(a)
-2×2 Matrix{Int64}:
- 3  1
- 4  2
+# 2×2 Matrix{Int64}:
+ # 3  1
+ # 4  2
 
-source
-rotr90(A, k)
 
-Right-rotate matrix A 90 degrees clockwise an integer k number of times. If k is a multiple of four (including zero), this is equivalent to a copy.
-
-Examples
+# rotr90(A, k)
+# Right-rotate matrix A 90 degrees clockwise an integer k number of times. If k is a multiple of four (including zero),
+# this is equivalent to a copy.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 rotr90(a,1)
-2×2 Matrix{Int64}:
- 3  1
- 4  2
+# 2×2 Matrix{Int64}:
+# 3  1
+# 4  2
 
 rotr90(a,2)
-2×2 Matrix{Int64}:
- 4  3
- 2  1
+# 2×2 Matrix{Int64}:
+#  4  3
+#  2  1
 
 rotr90(a,3)
-2×2 Matrix{Int64}:
- 2  4
- 1  3
+# 2×2 Matrix{Int64}:
+#  2  4
+#  1  3
 
 rotr90(a,4)
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 
 # -------------------------------------------------
-Base.mapslices
-—
-Function
-mapslices(f, A; dims)
+# Base.mapslices
+# Function mapslices(f, A; dims)
 
-Transform the given dimensions of array A by applying a function f on each slice of the form A[..., :, ..., :, ...], with a colon at each d in dims. The results are concatenated along the remaining dimensions.
-
-For example, if dims = [1,2] and A is 4-dimensional, then f is called on x = A[:,:,i,j] for all i and j, and f(x) becomes R[:,:,i,j] in the result R.
-
-See also eachcol or eachslice, used with map or stack.
-
-Examples
+# Transform the given dimensions of array A by applying a function f on each slice of the form A[..., :, ..., :, ...],
+# with a colon at each d in dims. The results are concatenated along the remaining dimensions.
+# For example, if dims = [1,2] and A is 4-dimensional, then f is called on x = A[:,:,i,j] for all i and j, and f(x)
+# becomes R[:,:,i,j] in the result R.
+# See also eachcol or eachslice, used with map or stack.
 
 A = reshape(1:30,(2,5,3))
-2×5×3 reshape(::UnitRange{Int64}, 2, 5, 3) with eltype Int64:
-[:, :, 1] =
- 1  3  5  7   9
- 2  4  6  8  10
+# 2×5×3 reshape(::UnitRange{Int64}, 2, 5, 3) with eltype Int64:
+# [:, :, 1] =
+#  1  3  5  7   9
+#  2  4  6  8  10
+# 
+# [:, :, 2] =
+#  11  13  15  17  19
+#  12  14  16  18  20
+# 
+# [:, :, 3] =
+#  21  23  25  27  29
+#  22  24  26  28  30
 
-[:, :, 2] =
- 11  13  15  17  19
- 12  14  16  18  20
+f1(x::Matrix) = fill(x[1,1], 1,4);  # returns a 1×4 matrix
 
-[:, :, 3] =
- 21  23  25  27  29
- 22  24  26  28  30
-
-f(x::Matrix) = fill(x[1,1], 1,4);  # returns a 1×4 matrix
-
-B = mapslices(f, A, dims=(1,2))
-1×4×3 Array{Int64, 3}:
-[:, :, 1] =
- 1  1  1  1
-
-[:, :, 2] =
- 11  11  11  11
-
-[:, :, 3] =
- 21  21  21  21
+B = mapslices(f1, A, dims=(1,2))
+# 1×4×3 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  1  1  1
+# 
+# [:, :, 2] =
+#  11  11  11  11
+# 
+# [:, :, 3] =
+#  21  21  21  21
 
 f2(x::AbstractMatrix) = fill(x[1,1], 1,4);
 
 B == stack(f2, eachslice(A, dims=3))
-true
+# true
 
 g(x) = x[begin] // x[end-1];  # returns a number
 
 mapslices(g, A, dims=[1,3])
-1×5×1 Array{Rational{Int64}, 3}:
-[:, :, 1] =
- 1//21  3//23  1//5  7//27  9//29
+# 1×5×1 Array{Rational{Int64}, 3}:
+# [:, :, 1] =
+#  1//21  3//23  1//5  7//27  9//29
 
 map(g, eachslice(A, dims=2))
-5-element Vector{Rational{Int64}}:
- 1//21
- 3//23
- 1//5
- 7//27
- 9//29
+# 5-element Vector{Rational{Int64}}:
+#  1//21
+#  3//23
+#  1//5
+#  7//27
+#  9//29
 
 mapslices(sum, A; dims=(1,3)) == sum(A; dims=(1,3))
-true
+# true
 
-Notice that in eachslice(A; dims=2), the specified dimension is the one without a colon in the slice. This is view(A,:,i,:), whereas mapslices(f, A; dims=(1,3)) uses A[:,i,:]. The function f may mutate values in the slice without affecting A.
+# Notice that in eachslice(A; dims=2), the specified dimension is the one without a colon in the slice. This is
+# view(A,:,i,:), whereas mapslices(f, A; dims=(1,3)) uses A[:,i,:]. The function f may mutate values in the slice
+# without affecting A.
 
-source
-Base.eachrow
-—
-Function
-eachrow(A::AbstractVecOrMat) <: AbstractVector
 
-Create a RowSlices object that is a vector of rows of matrix or vector A. Row slices are returned as AbstractVector views of A.
-
-For the inverse, see stack(rows; dims=1).
-
-See also eachcol, eachslice and mapslices.
-
-Julia 1.1
-This function requires at least Julia 1.1.
-
-Julia 1.9
-Prior to Julia 1.9, this returned an iterator.
-
-Example
+# Base.eachrow
+# Function eachrow(A::AbstractVecOrMat) <: AbstractVector
+# Create a RowSlices object that is a vector of rows of matrix or vector A. Row slices are returned as AbstractVector
+# views of A.
+# For the inverse, see stack(rows; dims=1).
+# See also eachcol, eachslice and mapslices.
+# Julia 1.9: Prior to Julia 1.9, this returned an iterator.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 s = eachrow(a)
-2-element RowSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}}:
- [1, 2]
- [3, 4]
+# 2-element RowSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}}:
+#  [1, 2]
+#  [3, 4]
 
 s[1]
-2-element view(::Matrix{Int64}, 1, :) with eltype Int64:
- 1
- 2
+# 2-element view(::Matrix{Int64}, 1, :) with eltype Int64:
+#  1
+#  2
 
-source
-Base.eachcol
-—
-Function
-eachcol(A::AbstractVecOrMat) <: AbstractVector
 
-Create a ColumnSlices object that is a vector of columns of matrix or vector A. Column slices are returned as AbstractVector views of A.
-
-For the inverse, see stack(cols) or reduce(hcat, cols).
-
-See also eachrow, eachslice and mapslices.
-
-Julia 1.1
-This function requires at least Julia 1.1.
-
-Julia 1.9
-Prior to Julia 1.9, this returned an iterator.
-
-Example
+# Base.eachcol
+# Function eachcol(A::AbstractVecOrMat) <: AbstractVector
+# Create a ColumnSlices object that is a vector of columns of matrix or vector A. Column slices are returned as
+# AbstractVector views of A.
+# For the inverse, see stack(cols) or reduce(hcat, cols).
+# See also eachrow, eachslice and mapslices.
+# Julia 1.9: Prior to Julia 1.9, this returned an iterator.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 s = eachcol(a)
-2-element ColumnSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Base.Slice{Base.OneTo{Int64}}, Int64}, true}}:
- [1, 3]
- [2, 4]
+# 2-element ColumnSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Base.Slice{Base.OneTo{Int64}}, Int64}, true}}:
+#  [1, 3]
+#  [2, 4]
 
 s[1]
-2-element view(::Matrix{Int64}, :, 1) with eltype Int64:
- 1
- 3
+# 2-element view(::Matrix{Int64}, :, 1) with eltype Int64:
+#  1
+#  3
 
-source
-Base.eachslice
-—
-Function
-eachslice(A::AbstractArray; dims, drop=true)
 
-Create a Slices object that is an array of slices over dimensions dims of A, returning views that select all the data from the other dimensions in A. dims can either by an integer or a tuple of integers.
+# Base.eachslice
+# Function eachslice(A::AbstractArray; dims, drop=true)
 
-If drop = true (the default), the outer Slices will drop the inner dimensions, and the ordering of the dimensions will match those in dims. If drop = false, then the Slices will have the same dimensionality as the underlying array, with inner dimensions having size 1.
+# Create a Slices object that is an array of slices over dimensions dims of A, returning views that select all the data
+# from the other dimensions in A. dims can either by an integer or a tuple of integers.
 
-See stack(slices; dims) for the inverse of eachslice(A; dims::Integer).
-
-See also eachrow, eachcol, mapslices and selectdim.
-
-Julia 1.1
-This function requires at least Julia 1.1.
-
-Julia 1.9
-Prior to Julia 1.9, this returned an iterator, and only a single dimension dims was supported.
-
-Example
+# If drop = true (the default), the outer Slices will drop the inner dimensions, and the ordering of the dimensions will
+# match those in dims. If drop = false, then the Slices will have the same dimensionality as the underlying array, with
+# inner dimensions having size 1.
+ 
+# See stack(slices; dims) for the inverse of eachslice(A; dims::Integer).
+# See also eachrow, eachcol, mapslices and selectdim.
+# Julia 1.9: Prior to Julia 1.9, this returned an iterator, and only a single dimension dims was supported.
 
 m = [1 2 3; 4 5 6; 7 8 9]
-3×3 Matrix{Int64}:
- 1  2  3
- 4  5  6
- 7  8  9
+# 3×3 Matrix{Int64}:
+#  1  2  3
+#  4  5  6
+#  7  8  9
 
 s = eachslice(m, dims=1)
-3-element RowSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}}:
- [1, 2, 3]
- [4, 5, 6]
- [7, 8, 9]
+# 3-element RowSlices{Matrix{Int64}, Tuple{Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}}:
+#  [1, 2, 3]
+#  [4, 5, 6]
+#  [7, 8, 9]
 
 s[1]
-3-element view(::Matrix{Int64}, 1, :) with eltype Int64:
- 1
- 2
- 3
+# 3-element view(::Matrix{Int64}, 1, :) with eltype Int64:
+#  1
+#  2
+#  3
 
 eachslice(m, dims=1, drop=false)
-3×1 Slices{Matrix{Int64}, Tuple{Int64, Colon}, Tuple{Base.OneTo{Int64}, Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}, 2}:
- [1, 2, 3]
- [4, 5, 6]
- [7, 8, 9]
-
+# 3×1 Slices{Matrix{Int64}, Tuple{Int64, Colon}, Tuple{Base.OneTo{Int64}, Base.OneTo{Int64}}, SubArray{Int64, 1, Matrix{Int64}, Tuple{Int64, Base.Slice{Base.OneTo{Int64}}}, true}, 2}:
+#  [1, 2, 3]
+#  [4, 5, 6]
+#  [7, 8, 9]
 
 
 # -------------------------------------------------
-Combinatorics
-Base.invperm
-—
-Function
-invperm(v)
+# Combinatorics
 
-Return the inverse permutation of v. If B = A[v], then A == B[invperm(v)].
-
-See also sortperm, invpermute!, isperm, permutedims.
-
-Examples
+# Base.invperm Function
+# invperm(v)
+# Return the inverse permutation of v. If B = A[v], then A == B[invperm(v)].
+# See also sortperm, invpermute!, isperm, permutedims.
 
 p = (2, 3, 1);
 
 invperm(p)
-(3, 1, 2)
+# (3, 1, 2)
 
 v = [2; 4; 3; 1];
 
 invperm(v)
-4-element Vector{Int64}:
- 4
- 1
- 3
- 2
+# 4-element Vector{Int64}:
+#  4
+#  1
+#  3
+#  2
 
 A = ['a','b','c','d'];
 
 B = A[v]
-4-element Vector{Char}:
- 'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
- 'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
- 'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
- 'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
+# 4-element Vector{Char}:
+#  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
+#  'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
+#  'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
+#  'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
 
 B[invperm(v)]
-4-element Vector{Char}:
- 'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
- 'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
- 'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
- 'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
+# 4-element Vector{Char}:
+#  'a': ASCII/Unicode U+0061 (category Ll: Letter, lowercase)
+#  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
+#  'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
+#  'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
 
-source
-Base.isperm
-—
-Function
-isperm(v) -> Bool
 
-Return true if v is a valid permutation.
+# Base.isperm
+# Function isperm(v) -> Bool
+# Return true if v is a valid permutation.
 
-Examples
+isperm([1; 2])          # true
+isperm([1; 3])          # false
 
-isperm([1; 2])
-true
 
-isperm([1; 3])
-false
-
-source
-Base.permute!
-—
-Method
-permute!(v, p)
-
-Permute vector v in-place, according to permutation p. No checking is done to verify that p is a permutation.
-
-To return a new permutation, use v[p]. This is generally faster than permute!(v, p); it is even faster to write into a pre-allocated output array with u .= @view v[p]. (Even though permute! overwrites v in-place, it internally requires some allocation to keep track of which elements have been moved.)
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-See also invpermute!.
-
-Examples
+# Base.permute!
+# Method permute!(v, p)
+# Permute vector v in-place, according to permutation p. No checking is done to verify that p is a permutation.
+# To return a new permutation, use v[p]. This is generally faster than permute!(v, p); it is even faster to write into a
+# pre-allocated output array with u .= @view v[p]. (Even though permute! overwrites v in-place, it internally requires
+# some allocation to keep track of which elements have been moved.)
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
+# See also invpermute!.
 
 A = [1, 1, 3, 4];
-
 perm = [2, 4, 3, 1];
-
 permute!(A, perm);
-
 A
-4-element Vector{Int64}:
- 1
- 4
- 3
- 1
+# 4-element Vector{Int64}:
+#  1
+#  4
+#  3
+#  1
 
-source
-Base.invpermute!
-—
-Function
-invpermute!(v, p)
 
-Like permute!, but the inverse of the given permutation is applied.
-
-Note that if you have a pre-allocated output array (e.g. u = similar(v)), it is quicker to instead employ u[p] = v. (invpermute! internally allocates a copy of the data.)
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+#Base.invpermute!
+#Function invpermute!(v, p)
+# Like permute!, but the inverse of the given permutation is applied.
+# Note that if you have a pre-allocated output array (e.g. u = similar(v)), it is quicker to instead employ u[p] = v.
+# (invpermute! internally allocates a copy of the data.)
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1, 1, 3, 4];
-
 perm = [2, 4, 3, 1];
-
 invpermute!(A, perm);
-
 A
-4-element Vector{Int64}:
- 4
- 1
- 3
- 1
+# 4-element Vector{Int64}:
+#  4
+#  1
+#  3
+#  1
 
-source
-Base.reverse
-—
-Method
-reverse(A; dims=:)
 
-Reverse A along dimension dims, which can be an integer (a single dimension), a tuple of integers (a tuple of dimensions) or : (reverse along all the dimensions, the default). See also reverse! for in-place reversal.
-
-Examples
+# Base.reverse
+# Method reverse(A; dims=:)
+# Reverse A along dimension dims, which can be an integer (a single dimension), a tuple of integers (a tuple of
+# dimensions) or : (reverse along all the dimensions, the default). See also reverse! for in-place reversal.
 
 b = Int64[1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 reverse(b, dims=2)
-2×2 Matrix{Int64}:
- 2  1
- 4  3
+# 2×2 Matrix{Int64}:
+#  2  1
+#  4  3
 
 reverse(b)
-2×2 Matrix{Int64}:
- 4  3
- 2  1
+# 2×2 Matrix{Int64}:
+#  4  3
+#  2  1
 
-Julia 1.6
-Prior to Julia 1.6, only single-integer dims are supported in reverse.
 
-source
-Base.reverseind
-—
-Function
-reverseind(v, i)
+# Base.reverseind
+# Function reverseind(v, i)
+# Given an index i in reverse(v), return the corresponding index in v so that v[reverseind(v,i)] == reverse(v)[i]. (This
+# can be nontrivial in cases where v contains non-ASCII characters.)
 
-Given an index i in reverse(v), return the corresponding index in v so that v[reverseind(v,i)] == reverse(v)[i]. (This can be nontrivial in cases where v contains non-ASCII characters.)
-
-Examples
-
-s = "Julia🚀"
-"Julia🚀"
-
-r = reverse(s)
-"🚀ailuJ"
-
+s = "Julia🚀"       # "Julia🚀"
+r = reverse(s)       # "🚀ailuJ"
 for i in eachindex(s)
-           print(r[reverseind(r, i)])
-       end
-Julia🚀
+    print(r[reverseind(r, i)])
+end
+println()
+# Julia🚀
 
-source
-Base.reverse!
-—
-Function
-reverse!(v [, start=firstindex(v) [, stop=lastindex(v) ]]) -> v
 
-In-place version of reverse.
-
-Examples
+# Base.reverse!
+# Function reverse!(v [, start=firstindex(v) [, stop=lastindex(v) ]]) -> v
+# In-place version of reverse.
 
 A = Vector(1:5)
-5-element Vector{Int64}:
- 1
- 2
- 3
- 4
- 5
+# 5-element Vector{Int64}:
+#  1
+#  2
+#  3
+#  4
+#  5
 
 reverse!(A);
 
 A
-5-element Vector{Int64}:
- 5
- 4
- 3
- 2
- 1
+# 5-element Vector{Int64}:
+#  5
+#  4
+#  3
+#  2
+#  1
 
-source
-reverse!(A; dims=:)
-
-Like reverse, but operates in-place in A.
+# reverse!(A; dims=:)
+# Like reverse, but operates in-place in A.

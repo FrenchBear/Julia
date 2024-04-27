@@ -306,1302 +306,833 @@ unique(A, dims=3)
 # Function unique!(f, A::AbstractVector)
 # Selects one value from A for each unique value produced by f applied to elements of A, then return the modified A.
 
-unique!(x -> x^2, [1, -1, 3, -3, 4])
-3-element Vector{Int64}:
- 1
- 3
- 4
+unique!(x -> x^2, [1, -1, 3, -3, 4])                # 3-element Vector{Int64}: 1 3 4
+unique!(n -> n%3, [5, 1, 8, 9, 3, 4, 10, 7, 2, 6])  # 3-element Vector{Int64}: 5 1 9
+unique!(iseven, [2, 3, 5, 7, 9])                    # 2-element Vector{Int64}: 2 3
 
-unique!(n -> n%3, [5, 1, 8, 9, 3, 4, 10, 7, 2, 6])
-3-element Vector{Int64}:
- 5
- 1
- 9
+# unique!(A::AbstractVector)
+# Remove duplicate items as determined by isequal, then return the modified A. unique! will return the elements of A in the order that they occur. If you do not care about the order of the returned data, then calling (sort!(A); unique!(A)) will be much more efficient as long as the elements of A can be sorted.
 
-unique!(iseven, [2, 3, 5, 7, 9])
-2-element Vector{Int64}:
- 2
- 3
-
-source
-unique!(A::AbstractVector)
-
-Remove duplicate items as determined by isequal, then return the modified A. unique! will return the elements of A in the order that they occur. If you do not care about the order of the returned data, then calling (sort!(A); unique!(A)) will be much more efficient as long as the elements of A can be sorted.
-
-Examples
-
-unique!([1, 1, 1])
-1-element Vector{Int64}:
- 1
-
+unique!([1, 1, 1])                  # 1-element Vector{Int64}: 1
 A = [7, 3, 2, 3, 7, 5];
-
-unique!(A)
-4-element Vector{Int64}:
- 7
- 3
- 2
- 5
-
+unique!(A)                          # 4-element Vector{Int64}: 7 3 2 5
 B = [7, 6, 42, 6, 7, 42];
+sort!(B);                           # unique! is able to process sorted data much more efficiently.
+unique!(B)                          # 3-element Vector{Int64}:  6 7 42
 
-sort!(B);  # unique! is able to process sorted data much more efficiently.
 
-unique!(B)
-3-element Vector{Int64}:
-  6
-  7
- 42
+# Base.allunique
+# Function allunique(itr) -> Bool
+# Return true if all values from itr are distinct when compared with isequal.
+# See also: unique, issorted, allequal.
 
-source
-Base.allunique
-—
-Function
-allunique(itr) -> Bool
+allunique([1, 2, 3])                # true
+allunique([1, 2, 1, 2])             # false
+allunique(Real[1, 1.0, 2])          # false
+allunique([NaN, 2.0, NaN, 4.0])     # false
 
-Return true if all values from itr are distinct when compared with isequal.
 
-See also: unique, issorted, allequal.
+# Base.allequal
+# Function allequal(itr) -> Bool
+# Return true if all values from itr are equal when compared with isequal.
+# See also: unique, allunique.
 
-Examples
+allequal([])                        # true
+allequal([1])                       # true
+allequal([1, 1])                    # true
+allequal([1, 2])                    # false
+allequal(Dict(:a => 1, :b => 1))    # false
 
-allunique([1, 2, 3])
-true
 
-allunique([1, 2, 1, 2])
-false
+# Base.reduce
+# Method reduce(op, itr; [init])
 
-allunique(Real[1, 1.0, 2])
-false
+# Reduce the given collection itr with the given binary operator op. If provided, the initial value init must be a
+# neutral element for op that will be returned for empty collections. It is unspecified whether init is used for
+# non-empty collections.
 
-allunique([NaN, 2.0, NaN, 4.0])
-false
+# For empty collections, providing init will be necessary, except for some special cases (e.g. when op is one of +, *,
+# max, min, &, |) when Julia can determine the neutral element of op.
 
-source
-Base.allequal
-—
-Function
-allequal(itr) -> Bool
+# Reductions for certain commonly-used operators may have special implementations, and should be used instead:
+# maximum(itr), minimum(itr), sum(itr), prod(itr), any(itr), all(itr). There are efficient methods for concatenating
+# certain arrays of arrays by calling reduce(vcat, arr) or reduce(hcat, arr).
 
-Return true if all values from itr are equal when compared with isequal.
+# The associativity of the reduction is implementation dependent. This means that you can't use non-associative
+# operations like - because it is undefined whether reduce(-,[1,2,3]) should be evaluated as (1-2)-3 or 1-(2-3). Use
+# foldl or foldr instead for guaranteed left or right associativity.
+ 
+# Some operations accumulate error. Parallelism will be easier if the reduction can be executed in groups. Future
+# versions of Julia might change the algorithm. Note that the elements are not reordered if you use an ordered
+# collection.
 
-See also: unique, allunique.
+reduce(*, [2; 3; 4])                # 24
+reduce(*, [2; 3; 4]; init=-1)       # -24
 
-Julia 1.8
-The allequal function requires at least Julia 1.8.
 
-Examples
+# Base.reduce
+# Method reduce(f, A::AbstractArray; dims=:, [init])
 
-allequal([])
-true
-
-allequal([1])
-true
-
-allequal([1, 1])
-true
-
-allequal([1, 2])
-false
-
-allequal(Dict(:a => 1, :b => 1))
-false
-
-source
-Base.reduce
-—
-Method
-reduce(op, itr; [init])
-
-Reduce the given collection itr with the given binary operator op. If provided, the initial value init must be a neutral element for op that will be returned for empty collections. It is unspecified whether init is used for non-empty collections.
-
-For empty collections, providing init will be necessary, except for some special cases (e.g. when op is one of +, *, max, min, &, |) when Julia can determine the neutral element of op.
-
-Reductions for certain commonly-used operators may have special implementations, and should be used instead: maximum(itr), minimum(itr), sum(itr), prod(itr), any(itr), all(itr). There are efficient methods for concatenating certain arrays of arrays by calling reduce(vcat, arr) or reduce(hcat, arr).
-
-The associativity of the reduction is implementation dependent. This means that you can't use non-associative operations like - because it is undefined whether reduce(-,[1,2,3]) should be evaluated as (1-2)-3 or 1-(2-3). Use foldl or foldr instead for guaranteed left or right associativity.
-
-Some operations accumulate error. Parallelism will be easier if the reduction can be executed in groups. Future versions of Julia might change the algorithm. Note that the elements are not reordered if you use an ordered collection.
-
-Examples
-
-reduce(*, [2; 3; 4])
-24
-
-reduce(*, [2; 3; 4]; init=-1)
--24
-
-source
-Base.reduce
-—
-Method
-reduce(f, A::AbstractArray; dims=:, [init])
-
-Reduce 2-argument function f along dimensions of A. dims is a vector specifying the dimensions to reduce, and the keyword argument init is the initial value to use in the reductions. For +, *, max and min the init argument is optional.
-
-The associativity of the reduction is implementation-dependent; if you need a particular associativity, e.g. left-to-right, you should write your own loop or consider using foldl or foldr. See documentation for reduce.
-
-Examples
+# Reduce 2-argument function f along dimensions of A. dims is a vector specifying the dimensions to reduce, and the
+# keyword argument init is the initial value to use in the reductions. For +, *, max and min the init argument is
+# optional.
+# The associativity of the reduction is implementation-dependent; if you need a particular associativity, e.g.
+# left-to-right, you should write your own loop or consider using foldl or foldr. See documentation for reduce.
 
 a = reshape(Vector(1:16), (4,4))
-4×4 Matrix{Int64}:
- 1  5   9  13
- 2  6  10  14
- 3  7  11  15
- 4  8  12  16
+# 4×4 Matrix{Int64}:
+#  1  5   9  13
+#  2  6  10  14
+#  3  7  11  15
+#  4  8  12  16
 
 reduce(max, a, dims=2)
-4×1 Matrix{Int64}:
- 13
- 14
- 15
- 16
+# 4×1 Matrix{Int64}:
+#  13
+#  14
+#  15
+#  16
 
 reduce(max, a, dims=1)
-1×4 Matrix{Int64}:
- 4  8  12  16
+# 1×4 Matrix{Int64}:
+#  4  8  12  16
 
-source
-Base.foldl
-—
-Method
-foldl(op, itr; [init])
 
-Like reduce, but with guaranteed left associativity. If provided, the keyword argument init will be used exactly once. In general, it will be necessary to provide init to work with empty collections.
+# Method foldl(op, itr; [init])
+# Like reduce, but with guaranteed left associativity. If provided, the keyword argument init will be used exactly once.
+# In general, it will be necessary to provide init to work with empty collections.
+# See also mapfoldl, foldr, accumulate.
 
-See also mapfoldl, foldr, accumulate.
+foldl(=>, 1:4)              # ((1 => 2) => 3) => 4
+foldl(=>, 1:4; init=0)      # (((0 => 1) => 2) => 3) => 4
+accumulate(=>, (1,2,3,4))   # (1, 1 => 2, (1 => 2) => 3, ((1 => 2) => 3) => 4)
 
-Examples
 
-foldl(=>, 1:4)
-((1 => 2) => 3) => 4
+# Base.foldr
+# Method foldr(op, itr; [init])
+# Like reduce, but with guaranteed right associativity. If provided, the keyword argument init will be used exactly
+# once. In general, it will be necessary to provide init to work with empty collections.
 
-foldl(=>, 1:4; init=0)
-(((0 => 1) => 2) => 3) => 4
+foldr(=>, 1:4)              # 1 => (2 => (3 => 4))
+foldr(=>, 1:4; init=0)      # 1 => (2 => (3 => (4 => 0)))
 
-accumulate(=>, (1,2,3,4))
-(1, 1 => 2, (1 => 2) => 3, ((1 => 2) => 3) => 4)
 
-source
-Base.foldr
-—
-Method
-foldr(op, itr; [init])
+# -------------------------------------------------------------------
+# Base.maximum
+# Function maximum(f, itr; [init])
+# Return the largest result of calling function f on each element of itr.
+# The value returned for empty itr can be specified by init. It must be a neutral element for max (i.e. which is less
+# than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
 
-Like reduce, but with guaranteed right associativity. If provided, the keyword argument init will be used exactly once. In general, it will be necessary to provide init to work with empty collections.
+maximum(length, ["Julion", "Julia", "Jule"])        # 6
+maximum(length, []; init=-1)                        # -1
+maximum(sin, Real[]; init=-1.0)                     # -1.0      good, since output of sin is >= -1
 
-Examples
+# Function maximum(itr; [init])
+# Return the largest element in a collection.
+# The value returned for empty itr can be specified by init. It must be a neutral element for max (i.e. which is less
+# than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
 
-foldr(=>, 1:4)
-1 => (2 => (3 => 4))
+maximum(-20.5:10)       # 9.5
+maximum([1,2,3])        # 3
+# maximum(())           # ERROR: MethodError: reducing over an empty collection is not allowed; consider supplying `init` to the reducer
+maximum((); init=-Inf)  # -Inf
 
-foldr(=>, 1:4; init=0)
-1 => (2 => (3 => (4 => 0)))
 
-source
-Base.maximum
-—
-Function
-maximum(f, itr; [init])
-
-Return the largest result of calling function f on each element of itr.
-
-The value returned for empty itr can be specified by init. It must be a neutral element for max (i.e. which is less than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
-
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
-
-Examples
-
-maximum(length, ["Julion", "Julia", "Jule"])
-6
-
-maximum(length, []; init=-1)
--1
-
-maximum(sin, Real[]; init=-1.0)  # good, since output of sin is >= -1
--1.0
-
-source
-maximum(itr; [init])
-
-Return the largest element in a collection.
-
-The value returned for empty itr can be specified by init. It must be a neutral element for max (i.e. which is less than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
-
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
-
-Examples
-
-maximum(-20.5:10)
-9.5
-
-maximum([1,2,3])
-3
-
-maximum(())
-ERROR: MethodError: reducing over an empty collection is not allowed; consider supplying `init` to the reducer
-Stacktrace:
-[...]
-
-maximum((); init=-Inf)
--Inf
-
-source
-maximum(A::AbstractArray; dims)
-
-Compute the maximum value of an array over the given dimensions. See also the max(a,b) function to take the maximum of two or more arguments, which can be applied elementwise to arrays via max.(a,b).
-
-See also: maximum!, extrema, findmax, argmax.
-
-Examples
+# Function maximum(A::AbstractArray; dims)
+# Compute the maximum value of an array over the given dimensions. See also the max(a,b) function to take the maximum of
+# two or more arguments, which can be applied elementwise to arrays via max.(a,b).
+# See also: maximum!, extrema, findmax, argmax.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 maximum(A, dims=1)
-1×2 Matrix{Int64}:
- 3  4
+# 1×2 Matrix{Int64}:
+#  3  4
 
 maximum(A, dims=2)
-2×1 Matrix{Int64}:
- 2
- 4
+# 2×1 Matrix{Int64}:
+#  2
+#  4
 
-source
-maximum(f, A::AbstractArray; dims)
 
-Compute the maximum value by calling the function f on each element of an array over the given dimensions.
-
-Examples
+# Function maximum(f, A::AbstractArray; dims)
+# Compute the maximum value by calling the function f on each element of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 maximum(abs2, A, dims=1)
-1×2 Matrix{Int64}:
- 9  16
+# 1×2 Matrix{Int64}:
+#  9  16
 
 maximum(abs2, A, dims=2)
-2×1 Matrix{Int64}:
-  4
- 16
+# 2×1 Matrix{Int64}:
+#   4
+#  16
 
-source
-Base.maximum!
-—
-Function
-maximum!(r, A)
 
-Compute the maximum value of A over the singleton dimensions of r, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.maximum!
+# Function maximum!(r, A)
+# Compute the maximum value of A over the singleton dimensions of r, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 maximum!([1; 1], A)
-2-element Vector{Int64}:
- 2
- 4
+# 2-element Vector{Int64}:
+#  2
+#  4
 
 maximum!([1 1], A)
-1×2 Matrix{Int64}:
- 3  4
+# 1×2 Matrix{Int64}:
+#  3  4
 
-source
-Base.minimum
-—
-Function
-minimum(f, itr; [init])
 
-Return the smallest result of calling function f on each element of itr.
+# Base.minimum
+# Function minimum(f, itr; [init])
+# Return the smallest result of calling function f on each element of itr.
+# The value returned for empty itr can be specified by init. It must be a neutral element for min (i.e. which is greater
+# than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
 
-The value returned for empty itr can be specified by init. It must be a neutral element for min (i.e. which is greater than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
+minimum(length, ["Julion", "Julia", "Jule"])    # 4
+minimum(length, []; init=typemax(Int64))        # 9223372036854775807
+minimum(sin, Real[]; init=1.0)                  # 1.0           good, since output of sin is <= 1
 
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
 
-Examples
+# Function minimum(itr; [init])
+# Return the smallest element in a collection.
+# The value returned for empty itr can be specified by init. It must be a neutral element for min (i.e. which is greater
+# than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
 
-minimum(length, ["Julion", "Julia", "Jule"])
-4
+minimum(-20.5:10)       # -20.5
+minimum([1,2,3])        # 1
+# minimum([])           # ERROR: MethodError: reducing over an empty collection is not allowed; consider supplying `init` to the reducer
+minimum([]; init=Inf)   # Inf
 
-minimum(length, []; init=typemax(Int64))
-9223372036854775807
 
-minimum(sin, Real[]; init=1.0)  # good, since output of sin is <= 1
-1.0
-
-source
-minimum(itr; [init])
-
-Return the smallest element in a collection.
-
-The value returned for empty itr can be specified by init. It must be a neutral element for min (i.e. which is greater than or equal to any other element) as it is unspecified whether init is used for non-empty collections.
-
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
-
-Examples
-
-minimum(-20.5:10)
--20.5
-
-minimum([1,2,3])
-1
-
-minimum([])
-ERROR: MethodError: reducing over an empty collection is not allowed; consider supplying `init` to the reducer
-Stacktrace:
-[...]
-
-minimum([]; init=Inf)
-Inf
-
-source
-minimum(A::AbstractArray; dims)
-
-Compute the minimum value of an array over the given dimensions. See also the min(a,b) function to take the minimum of two or more arguments, which can be applied elementwise to arrays via min.(a,b).
-
-See also: minimum!, extrema, findmin, argmin.
-
-Examples
+# Function minimum(A::AbstractArray; dims)
+# Compute the minimum value of an array over the given dimensions. See also the min(a,b) function to take the minimum of
+# two or more arguments, which can be applied elementwise to arrays via min.(a,b).
+# See also: minimum!, extrema, findmin, argmin.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 minimum(A, dims=1)
-1×2 Matrix{Int64}:
- 1  2
+# 1×2 Matrix{Int64}:
+#  1  2
 
 minimum(A, dims=2)
-2×1 Matrix{Int64}:
- 1
- 3
+# 2×1 Matrix{Int64}:
+#  1
+#  3
 
-source
-minimum(f, A::AbstractArray; dims)
 
-Compute the minimum value by calling the function f on each element of an array over the given dimensions.
-
-Examples
+# Function minimum(f, A::AbstractArray; dims)
+# Compute the minimum value by calling the function f on each element of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 minimum(abs2, A, dims=1)
-1×2 Matrix{Int64}:
- 1  4
+# 1×2 Matrix{Int64}:
+#  1  4
 
 minimum(abs2, A, dims=2)
-2×1 Matrix{Int64}:
- 1
- 9
+# 2×1 Matrix{Int64}:
+#  1
+#  9
 
-source
-Base.minimum!
-—
-Function
-minimum!(r, A)
 
-Compute the minimum value of A over the singleton dimensions of r, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.minimum!
+# Function minimum!(r, A)
+# Compute the minimum value of A over the singleton dimensions of r, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 minimum!([1; 1], A)
-2-element Vector{Int64}:
- 1
- 3
+# 2-element Vector{Int64}:
+#  1
+#  3
 
 minimum!([1 1], A)
-1×2 Matrix{Int64}:
- 1  2
+# 1×2 Matrix{Int64}:
+#  1  2
 
-source
-Base.extrema
-—
-Function
-extrema(itr; [init]) -> (mn, mx)
 
-Compute both the minimum mn and maximum mx element in a single pass, and return them as a 2-tuple.
+# Base.extrema
+# Function extrema(itr; [init]) -> (mn, mx)
+# Compute both the minimum mn and maximum mx element in a single pass, and return them as a 2-tuple.
+# The value returned for empty itr can be specified by init. It must be a 2-tuple whose first and second elements are
+# neutral elements for min and max respectively (i.e. which are greater/less than or equal to any other element). As a
+# consequence, when itr is empty the returned (mn, mx) tuple will satisfy mn ≥ mx. When init is specified it may be used
+# even for non-empty itr.
 
-The value returned for empty itr can be specified by init. It must be a 2-tuple whose first and second elements are neutral elements for min and max respectively (i.e. which are greater/less than or equal to any other element). As a consequence, when itr is empty the returned (mn, mx) tuple will satisfy mn ≥ mx. When init is specified it may be used even for non-empty itr.
+extrema(2:10)                           # (2, 10)
+extrema([9,pi,4.5])                     # (3.141592653589793, 9.0)
+extrema([]; init = (Inf, -Inf))         # (Inf, -Inf)
 
-Julia 1.8
-Keyword argument init requires Julia 1.8 or later.
 
-Examples
+# Function extrema(f, itr; [init]) -> (mn, mx)
+# Compute both the minimum mn and maximum mx of f applied to each element in itr and return them as a 2-tuple. Only one
+# pass is made over itr.
+# The value returned for empty itr can be specified by init. It must be a 2-tuple whose first and second elements are
+# neutral elements for min and max respectively (i.e. which are greater/less than or equal to any other element). It is
+# used for non-empty collections. Note: it implies that, for empty itr, the returned value (mn, mx) satisfies mn ≥ mx
+# even though for non-empty itr it satisfies mn ≤ mx. This is a "paradoxical" but yet expected result.
 
-extrema(2:10)
-(2, 10)
+extrema(sin, 0:π)                           # (0.0, 0.9092974268256817)
+extrema(sin, Real[]; init = (1.0, -1.0))    # (1.0, -1.0)               good, since -1 ≤ sin(::Real) ≤ 1
 
-extrema([9,pi,4.5])
-(3.141592653589793, 9.0)
 
-extrema([]; init = (Inf, -Inf))
-(Inf, -Inf)
-
-source
-extrema(f, itr; [init]) -> (mn, mx)
-
-Compute both the minimum mn and maximum mx of f applied to each element in itr and return them as a 2-tuple. Only one pass is made over itr.
-
-The value returned for empty itr can be specified by init. It must be a 2-tuple whose first and second elements are neutral elements for min and max respectively (i.e. which are greater/less than or equal to any other element). It is used for non-empty collections. Note: it implies that, for empty itr, the returned value (mn, mx) satisfies mn ≥ mx even though for non-empty itr it satisfies mn ≤ mx. This is a "paradoxical" but yet expected result.
-
-Julia 1.2
-This method requires Julia 1.2 or later.
-
-Julia 1.8
-Keyword argument init requires Julia 1.8 or later.
-
-Examples
-
-extrema(sin, 0:π)
-(0.0, 0.9092974268256817)
-
-extrema(sin, Real[]; init = (1.0, -1.0))  # good, since -1 ≤ sin(::Real) ≤ 1
-(1.0, -1.0)
-
-source
-extrema(A::AbstractArray; dims) -> Array{Tuple}
-
-Compute the minimum and maximum elements of an array over the given dimensions.
-
-See also: minimum, maximum, extrema!.
-
-Examples
+# Function extrema(A::AbstractArray; dims) -> Array{Tuple}
+# Compute the minimum and maximum elements of an array over the given dimensions.
+# See also: minimum, maximum, extrema!.
 
 A = reshape(Vector(1:2:16), (2,2,2))
-2×2×2 Array{Int64, 3}:
-[:, :, 1] =
- 1  5
- 3  7
-
-[:, :, 2] =
-  9  13
- 11  15
+# 2×2×2 Array{Int64, 3}:
+# [:, :, 1] =
+#  1  5
+#  3  7
+# 
+# [:, :, 2] =
+#   9  13
+#  11  15
 
 extrema(A, dims = (1,2))
-1×1×2 Array{Tuple{Int64, Int64}, 3}:
-[:, :, 1] =
- (1, 7)
+# 1×1×2 Array{Tuple{Int64, Int64}, 3}:
+# [:, :, 1] =
+#  (1, 7)
+# 
+# [:, :, 2] =
+#  (9, 15)
 
-[:, :, 2] =
- (9, 15)
 
-source
-extrema(f, A::AbstractArray; dims) -> Array{Tuple}
+# Function extrema(f, A::AbstractArray; dims) -> Array{Tuple}
+# Compute the minimum and maximum of f applied to each element in the given dimensions of A.
 
-Compute the minimum and maximum of f applied to each element in the given dimensions of A.
 
-Julia 1.2
-This method requires Julia 1.2 or later.
-
-source
-Base.extrema!
-—
-Function
-extrema!(r, A)
-
-Compute the minimum and maximum value of A over the singleton dimensions of r, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Julia 1.8
-This method requires Julia 1.8 or later.
-
-Examples
+# Base.extrema!
+# Function extrema!(r, A)
+# Compute the minimum and maximum value of A over the singleton dimensions of r, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 extrema!([(1, 1); (1, 1)], A)
-2-element Vector{Tuple{Int64, Int64}}:
- (1, 2)
- (3, 4)
+# 2-element Vector{Tuple{Int64, Int64}}:
+#  (1, 2)
+#  (3, 4)
 
 extrema!([(1, 1);; (1, 1)], A)
-1×2 Matrix{Tuple{Int64, Int64}}:
- (1, 3)  (2, 4)
+# 1×2 Matrix{Tuple{Int64, Int64}}:
+#  (1, 3)  (2, 4)
 
-source
-Base.argmax
-—
-Function
-argmax(r::AbstractRange)
 
-Ranges can have multiple maximal elements. In that case argmax will return a maximal index, but not necessarily the first one.
+# Base.argmax
+# Function argmax(r::AbstractRange)
+# Ranges can have multiple maximal elements. In that case argmax will return a maximal index, but not necessarily the first one.
 
-source
-argmax(f, domain)
+# Function argmax(f, domain)
+# Return a value x from domain for which f(x) is maximised. If there are multiple maximal values for f(x) then the first one will be found.
+# domain must be a non-empty iterable.
+# Values are compared with isless.
+# See also argmin, findmax.
 
-Return a value x from domain for which f(x) is maximised. If there are multiple maximal values for f(x) then the first one will be found.
+argmax(abs, -10:5)          # -10
+argmax(cos, 0:π/2:2π)       # 0.0
 
-domain must be a non-empty iterable.
 
-Values are compared with isless.
+# Function argmax(itr)
+# Return the index or key of the maximal element in a collection. If there are multiple maximal elements, then the first
+# one will be returned.
+# The collection must not be empty.
+# Values are compared with isless.
+# See also: argmin, findmax.
 
-Julia 1.7
-This method requires Julia 1.7 or later.
+argmax([8, 0.1, -9, pi])    # 1
+argmax([1, 7, 7, 6])        # 2
+argmax([1, 7, 7, NaN])      # 4
 
-See also argmin, findmax.
 
-Examples
-
-argmax(abs, -10:5)
--10
-
-argmax(cos, 0:π/2:2π)
-0.0
-
-source
-argmax(itr)
-
-Return the index or key of the maximal element in a collection. If there are multiple maximal elements, then the first one will be returned.
-
-The collection must not be empty.
-
-Values are compared with isless.
-
-See also: argmin, findmax.
-
-Examples
-
-argmax([8, 0.1, -9, pi])
-1
-
-argmax([1, 7, 7, 6])
-2
-
-argmax([1, 7, 7, NaN])
-4
-
-source
-argmax(A; dims) -> indices
-
-For an array input, return the indices of the maximum elements over the given dimensions. NaN is treated as greater than all other values except missing.
-
-Examples
+# Function argmax(A; dims) -> indices
+# For an array input, return the indices of the maximum elements over the given dimensions. NaN is treated as greater
+# than all other values except missing.
 
 A = [1.0 2; 3 4]
-2×2 Matrix{Float64}:
- 1.0  2.0
- 3.0  4.0
+# 2×2 Matrix{Float64}:
+#  1.0  2.0
+#  3.0  4.0
 
 argmax(A, dims=1)
-1×2 Matrix{CartesianIndex{2}}:
- CartesianIndex(2, 1)  CartesianIndex(2, 2)
+# 1×2 Matrix{CartesianIndex{2}}:
+#  CartesianIndex(2, 1)  CartesianIndex(2, 2)
 
 argmax(A, dims=2)
-2×1 Matrix{CartesianIndex{2}}:
- CartesianIndex(1, 2)
- CartesianIndex(2, 2)
+# 2×1 Matrix{CartesianIndex{2}}:
+#  CartesianIndex(1, 2)
+#  CartesianIndex(2, 2)
 
-source
-Base.argmin
-—
-Function
-argmin(r::AbstractRange)
 
-Ranges can have multiple minimal elements. In that case argmin will return a minimal index, but not necessarily the first one.
+# Base.argmin
+# Function argmin(r::AbstractRange)
+# Ranges can have multiple minimal elements. In that case argmin will return a minimal index, but not necessarily the first one.
 
-source
-argmin(f, domain)
+# Function argmin(f, domain)
+# Return a value x from domain for which f(x) is minimised. If there are multiple minimal values for f(x) then the first
+# one will be found.
+# domain must be a non-empty iterable.
+# NaN is treated as less than all other values except missing.
+# See also argmax, findmin.
 
-Return a value x from domain for which f(x) is minimised. If there are multiple minimal values for f(x) then the first one will be found.
+argmin(sign, -10:5)                 # -10
+argmin(x -> -x^3 + x^2 - 10, -5:5)  # 5
+argmin(acos, 0:0.1:1)               # 1.0
 
-domain must be a non-empty iterable.
 
-NaN is treated as less than all other values except missing.
+# Function argmin(itr)
+# Return the index or key of the minimal element in a collection. If there are multiple minimal elements, then the first
+# one will be returned.
+# The collection must not be empty.
+# NaN is treated as less than all other values except missing.
+# See also: argmax, findmin.
 
-Julia 1.7
-This method requires Julia 1.7 or later.
+argmin([8, 0.1, -9, pi])            # 3
+argmin([7, 1, 1, 6])                # 2
+argmin([7, 1, 1, NaN])              # 4
 
-See also argmax, findmin.
 
-Examples
-
-argmin(sign, -10:5)
--10
-
-argmin(x -> -x^3 + x^2 - 10, -5:5)
-5
-
-argmin(acos, 0:0.1:1)
-1.0
-
-source
-argmin(itr)
-
-Return the index or key of the minimal element in a collection. If there are multiple minimal elements, then the first one will be returned.
-
-The collection must not be empty.
-
-NaN is treated as less than all other values except missing.
-
-See also: argmax, findmin.
-
-Examples
-
-argmin([8, 0.1, -9, pi])
-3
-
-argmin([7, 1, 1, 6])
-2
-
-argmin([7, 1, 1, NaN])
-4
-
-source
-argmin(A; dims) -> indices
-
-For an array input, return the indices of the minimum elements over the given dimensions. NaN is treated as less than all other values except missing.
-
-Examples
+# Function argmin(A; dims) -> indices
+# For an array input, return the indices of the minimum elements over the given dimensions. NaN is treated as less than
+# all other values except missing.
 
 A = [1.0 2; 3 4]
-2×2 Matrix{Float64}:
- 1.0  2.0
- 3.0  4.0
+# 2×2 Matrix{Float64}:
+#  1.0  2.0
+#  3.0  4.0
 
 argmin(A, dims=1)
-1×2 Matrix{CartesianIndex{2}}:
- CartesianIndex(1, 1)  CartesianIndex(1, 2)
+# 1×2 Matrix{CartesianIndex{2}}:
+#  CartesianIndex(1, 1)  CartesianIndex(1, 2)
 
 argmin(A, dims=2)
-2×1 Matrix{CartesianIndex{2}}:
- CartesianIndex(1, 1)
- CartesianIndex(2, 1)
+# 2×1 Matrix{CartesianIndex{2}}:
+#  CartesianIndex(1, 1)
+#  CartesianIndex(2, 1)
 
-source
-Base.findmax
-—
-Function
-findmax(f, domain) -> (f(x), index)
 
-Return a pair of a value in the codomain (outputs of f) and the index of the corresponding value in the domain (inputs to f) such that f(x) is maximised. If there are multiple maximal points, then the first one will be returned.
+# Base.findmax
+# Function findmax(f, domain) -> (f(x), index)
+# Return a pair of a value in the codomain (outputs of f) and the index of the corresponding value in the domain (inputs
+# to f) such that f(x) is maximised. If there are multiple maximal points, then the first one will be returned.
+# domain must be a non-empty iterable.
+# Values are compared with isless.
 
-domain must be a non-empty iterable.
+findmax(identity, 5:9)                          # (9, 5)
+findmax(-, 1:10)                                # (-1, 1)
+findmax(first, [(1, :a), (3, :b), (3, :c)])     # (3, 2)
+findmax(cos, 0:π/2:2π)                          # (1.0, 1)
 
-Values are compared with isless.
 
-Julia 1.7
-This method requires Julia 1.7 or later.
+# Function findmax(itr) -> (x, index)
+# Return the maximal element of the collection itr and its index or key. If there are multiple maximal elements, then
+# the first one will be returned. Values are compared with isless.
+# See also: findmin, argmax, maximum.
 
-Examples
+findmax([8, 0.1, -9, pi])       # (8.0, 1)
+findmax([1, 7, 7, 6])           # (7, 2)
+findmax([1, 7, 7, NaN])         # (NaN, 4)
 
-findmax(identity, 5:9)
-(9, 5)
 
-findmax(-, 1:10)
-(-1, 1)
-
-findmax(first, [(1, :a), (3, :b), (3, :c)])
-(3, 2)
-
-findmax(cos, 0:π/2:2π)
-(1.0, 1)
-
-source
-findmax(itr) -> (x, index)
-
-Return the maximal element of the collection itr and its index or key. If there are multiple maximal elements, then the first one will be returned. Values are compared with isless.
-
-See also: findmin, argmax, maximum.
-
-Examples
-
-findmax([8, 0.1, -9, pi])
-(8.0, 1)
-
-findmax([1, 7, 7, 6])
-(7, 2)
-
-findmax([1, 7, 7, NaN])
-(NaN, 4)
-
-source
-findmax(A; dims) -> (maxval, index)
-
-For an array input, returns the value and index of the maximum over the given dimensions. NaN is treated as greater than all other values except missing.
-
-Examples
+# Function findmax(A; dims) -> (maxval, index)
+# For an array input, returns the value and index of the maximum over the given dimensions. NaN is treated as greater
+# than all other values except missing.
 
 A = [1.0 2; 3 4]
-2×2 Matrix{Float64}:
- 1.0  2.0
- 3.0  4.0
+# 2×2 Matrix{Float64}:
+#  1.0  2.0
+#  3.0  4.0
 
-findmax(A, dims=1)
-([3.0 4.0], CartesianIndex{2}[CartesianIndex(2, 1) CartesianIndex(2, 2)])
+findmax(A, dims=1)              # ([3.0 4.0], CartesianIndex{2}[CartesianIndex(2, 1) CartesianIndex(2, 2)])
+findmax(A, dims=2)              # ([2.0; 4.0;;], CartesianIndex{2}[CartesianIndex(1, 2); CartesianIndex(2, 2);;])
 
-findmax(A, dims=2)
-([2.0; 4.0;;], CartesianIndex{2}[CartesianIndex(1, 2); CartesianIndex(2, 2);;])
 
-source
-findmax(f, A; dims) -> (f(x), index)
-
-For an array input, returns the value in the codomain and index of the corresponding value which maximize f over the given dimensions.
-
-Examples
+# Function findmax(f, A; dims) -> (f(x), index)
+# For an array input, returns the value in the codomain and index of the corresponding value which maximize f over the
+# given dimensions.
 
 A = [-1.0 1; -0.5 2]
-2×2 Matrix{Float64}:
- -1.0  1.0
- -0.5  2.0
+# 2×2 Matrix{Float64}:
+#  -1.0  1.0
+#  -0.5  2.0
 
-findmax(abs2, A, dims=1)
-([1.0 4.0], CartesianIndex{2}[CartesianIndex(1, 1) CartesianIndex(2, 2)])
+findmax(abs2, A, dims=1)        # ([1.0 4.0], CartesianIndex{2}[CartesianIndex(1, 1) CartesianIndex(2, 2)])
+findmax(abs2, A, dims=2)        # ([1.0; 4.0;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 2);;])
 
-findmax(abs2, A, dims=2)
-([1.0; 4.0;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 2);;])
 
-source
-Base.findmin
-—
-Function
-findmin(f, domain) -> (f(x), index)
+# Base.findmin
+# Function findmin(f, domain) -> (f(x), index)
+# Return a pair of a value in the codomain (outputs of f) and the index of the corresponding value in the domain (inputs
+# to f) such that f(x) is minimised. If there are multiple minimal points, then the first one will be returned.
+# domain must be a non-empty iterable.
+# NaN is treated as less than all other values except missing.
 
-Return a pair of a value in the codomain (outputs of f) and the index of the corresponding value in the domain (inputs to f) such that f(x) is minimised. If there are multiple minimal points, then the first one will be returned.
+findmin(identity, 5:9)          # (5, 1)
+findmin(-, 1:10)                # (-10, 10)
+findmin(first, [(2, :a), (2, :b), (3, :c)])     # (2, 1)
+findmin(cos, 0:π/2:2π)          # (-1.0, 3)
 
-domain must be a non-empty iterable.
 
-NaN is treated as less than all other values except missing.
+# Function findmin(itr) -> (x, index)
+# Return the minimal element of the collection itr and its index or key. If there are multiple minimal elements, then
+# the first one will be returned. NaN is treated as less than all other values except missing.
+# See also: findmax, argmin, minimum.
 
-Julia 1.7
-This method requires Julia 1.7 or later.
+findmin([8, 0.1, -9, pi])       # (-9.0, 3)
+findmin([1, 7, 7, 6])           # (1, 1)
+findmin([1, 7, 7, NaN])         # (NaN, 4)
 
-Examples
 
-findmin(identity, 5:9)
-(5, 1)
-
-findmin(-, 1:10)
-(-10, 10)
-
-findmin(first, [(2, :a), (2, :b), (3, :c)])
-(2, 1)
-
-findmin(cos, 0:π/2:2π)
-(-1.0, 3)
-
-source
-findmin(itr) -> (x, index)
-
-Return the minimal element of the collection itr and its index or key. If there are multiple minimal elements, then the first one will be returned. NaN is treated as less than all other values except missing.
-
-See also: findmax, argmin, minimum.
-
-Examples
-
-findmin([8, 0.1, -9, pi])
-(-9.0, 3)
-
-findmin([1, 7, 7, 6])
-(1, 1)
-
-findmin([1, 7, 7, NaN])
-(NaN, 4)
-
-source
-findmin(A; dims) -> (minval, index)
-
-For an array input, returns the value and index of the minimum over the given dimensions. NaN is treated as less than all other values except missing.
-
-Examples
+# Function findmin(A; dims) -> (minval, index)
+# For an array input, returns the value and index of the minimum over the given dimensions. NaN is treated as less than
+# all other values except missing.
 
 A = [1.0 2; 3 4]
-2×2 Matrix{Float64}:
- 1.0  2.0
- 3.0  4.0
+# 2×2 Matrix{Float64}:
+#  1.0  2.0
+#  3.0  4.0
 
-findmin(A, dims=1)
-([1.0 2.0], CartesianIndex{2}[CartesianIndex(1, 1) CartesianIndex(1, 2)])
+findmin(A, dims=1)              # ([1.0 2.0], CartesianIndex{2}[CartesianIndex(1, 1) CartesianIndex(1, 2)])
+findmin(A, dims=2)              # ([1.0; 3.0;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 1);;])
 
-findmin(A, dims=2)
-([1.0; 3.0;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 1);;])
 
-source
-findmin(f, A; dims) -> (f(x), index)
-
-For an array input, returns the value in the codomain and index of the corresponding value which minimize f over the given dimensions.
-
-Examples
+# Function findmin(f, A; dims) -> (f(x), index)
+# For an array input, returns the value in the codomain and index of the corresponding value which minimize f over the
+# given dimensions.
 
 A = [-1.0 1; -0.5 2]
-2×2 Matrix{Float64}:
- -1.0  1.0
- -0.5  2.0
+# 2×2 Matrix{Float64}:
+#  -1.0  1.0
+#  -0.5  2.0
 
-findmin(abs2, A, dims=1)
-([0.25 1.0], CartesianIndex{2}[CartesianIndex(2, 1) CartesianIndex(1, 2)])
+findmin(abs2, A, dims=1)        # ([0.25 1.0], CartesianIndex{2}[CartesianIndex(2, 1) CartesianIndex(1, 2)])
+findmin(abs2, A, dims=2)        # ([1.0; 0.25;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 1);;])
 
-findmin(abs2, A, dims=2)
-([1.0; 0.25;;], CartesianIndex{2}[CartesianIndex(1, 1); CartesianIndex(2, 1);;])
 
-source
-Base.findmax!
-—
-Function
-findmax!(rval, rind, A) -> (maxval, index)
+# Base.findmax!
+# Function findmax!(rval, rind, A) -> (maxval, index)
+# Find the maximum of A and the corresponding linear index along singleton dimensions of rval and rind, and store the
+# results in rval and rind. NaN is treated as greater than all other values except missing.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
-Find the maximum of A and the corresponding linear index along singleton dimensions of rval and rind, and store the results in rval and rind. NaN is treated as greater than all other values except missing.
 
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
+# Base.findmin!
+# Function findmin!(rval, rind, A) -> (minval, index)
+# Find the minimum of A and the corresponding linear index along singleton dimensions of rval and rind, and store the
+# results in rval and rind. NaN is treated as less than all other values except missing.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
-source
-Base.findmin!
-—
-Function
-findmin!(rval, rind, A) -> (minval, index)
 
-Find the minimum of A and the corresponding linear index along singleton dimensions of rval and rind, and store the results in rval and rind. NaN is treated as less than all other values except missing.
+# -------------------------------------------------------------------
+# Base.sum
+# Function sum(f, itr; [init])
+# Sum the results of calling function f on each element of itr.
+# The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than
+# system word size. For all other arguments, a common return type is found to which all arguments are promoted.
+# The value returned for empty itr can be specified by init. It must be the additive identity (i.e. zero) as it is
+# unspecified whether init is used for non-empty collections.
 
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
+sum(abs2, [2; 3; 4])            # 29
 
-source
-Base.sum
-—
-Function
-sum(f, itr; [init])
+# Note the important difference between sum(A) and reduce(+, A) for arrays with small integer eltype:
+sum(Int8[100, 28])              # 128
+reduce(+, Int8[100, 28])        # -128
 
-Sum the results of calling function f on each element of itr.
+# In the former case, the integers are widened to system word size and therefore the result is 128. In the latter case,
+# no such widening happens and integer overflow results in -128.
 
-The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than system word size. For all other arguments, a common return type is found to which all arguments are promoted.
 
-The value returned for empty itr can be specified by init. It must be the additive identity (i.e. zero) as it is unspecified whether init is used for non-empty collections.
+# Function sum(itr; [init])
+# Return the sum of all elements in a collection.
+# The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than
+# system word size. For all other arguments, a common return type is found to which all arguments are promoted.
+# The value returned for empty itr can be specified by init. It must be the additive identity (i.e. zero) as it is
+# unspecified whether init is used for non-empty collections.
+# See also: reduce, mapreduce, count, union.
 
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
+sum(1:20)                       # 210
+sum(1:20; init = 0.0)           # 210.0
 
-Examples
 
-sum(abs2, [2; 3; 4])
-29
-
-Note the important difference between sum(A) and reduce(+, A) for arrays with small integer eltype:
-
-sum(Int8[100, 28])
-128
-
-reduce(+, Int8[100, 28])
--128
-
-In the former case, the integers are widened to system word size and therefore the result is 128. In the latter case, no such widening happens and integer overflow results in -128.
-
-source
-sum(itr; [init])
-
-Return the sum of all elements in a collection.
-
-The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than system word size. For all other arguments, a common return type is found to which all arguments are promoted.
-
-The value returned for empty itr can be specified by init. It must be the additive identity (i.e. zero) as it is unspecified whether init is used for non-empty collections.
-
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
-
-See also: reduce, mapreduce, count, union.
-
-Examples
-
-sum(1:20)
-210
-
-sum(1:20; init = 0.0)
-210.0
-
-source
-sum(A::AbstractArray; dims)
-
-Sum elements of an array over the given dimensions.
-
-Examples
+# Function sum(A::AbstractArray; dims)
+# Sum elements of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 sum(A, dims=1)
-1×2 Matrix{Int64}:
- 4  6
+# 1×2 Matrix{Int64}:
+#  4  6
 
 sum(A, dims=2)
-2×1 Matrix{Int64}:
- 3
- 7
+# 2×1 Matrix{Int64}:
+#  3
+#  7
 
-source
-sum(f, A::AbstractArray; dims)
 
-Sum the results of calling function f on each element of an array over the given dimensions.
-
-Examples
+# Function sum(f, A::AbstractArray; dims)
+# Sum the results of calling function f on each element of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 sum(abs2, A, dims=1)
-1×2 Matrix{Int64}:
- 10  20
+# 1×2 Matrix{Int64}:
+#  10  20
 
 sum(abs2, A, dims=2)
-2×1 Matrix{Int64}:
-  5
- 25
+# 2×1 Matrix{Int64}:
+#   5
+#  25
 
-source
-Base.sum!
-—
-Function
-sum!(r, A)
 
-Sum elements of A over the singleton dimensions of r, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.sum!
+# Function sum!(r, A)
+# Sum elements of A over the singleton dimensions of r, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 sum!([1; 1], A)
-2-element Vector{Int64}:
- 3
- 7
+# 2-element Vector{Int64}:
+#  3
+#  7
 
 sum!([1 1], A)
-1×2 Matrix{Int64}:
- 4  6
+# 1×2 Matrix{Int64}:
+#  4  6
 
-source
-Base.prod
-—
-Function
-prod(f, itr; [init])
 
-Return the product of f applied to each element of itr.
+# Base.prod
+# Function prod(f, itr; [init])
+# Return the product of f applied to each element of itr.
+# The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than
+# system word size. For all other arguments, a common return type is found to which all arguments are promoted.
+# The value returned for empty itr can be specified by init. It must be the multiplicative identity (i.e. one) as it is
+# unspecified whether init is used for non-empty collections.
 
-The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than system word size. For all other arguments, a common return type is found to which all arguments are promoted.
+prod(abs2, [2; 3; 4])           # 576
 
-The value returned for empty itr can be specified by init. It must be the multiplicative identity (i.e. one) as it is unspecified whether init is used for non-empty collections.
 
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
+# Function prod(itr; [init])
+# Return the product of all elements of a collection.
+# The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than
+# system word size. For all other arguments, a common return type is found to which all arguments are promoted.
+# The value returned for empty itr can be specified by init. It must be the multiplicative identity (i.e. one) as it is
+# unspecified whether init is used for non-empty collections.
+# See also: reduce, cumprod, any.
 
-Examples
+prod(1:5)                       # 120
+prod(1:5; init = 1.0)           # 120.0
 
-prod(abs2, [2; 3; 4])
-576
 
-source
-prod(itr; [init])
-
-Return the product of all elements of a collection.
-
-The return type is Int for signed integers of less than system word size, and UInt for unsigned integers of less than system word size. For all other arguments, a common return type is found to which all arguments are promoted.
-
-The value returned for empty itr can be specified by init. It must be the multiplicative identity (i.e. one) as it is unspecified whether init is used for non-empty collections.
-
-Julia 1.6
-Keyword argument init requires Julia 1.6 or later.
-
-See also: reduce, cumprod, any.
-
-Examples
-
-prod(1:5)
-120
-
-prod(1:5; init = 1.0)
-120.0
-
-source
-prod(A::AbstractArray; dims)
-
-Multiply elements of an array over the given dimensions.
-
-Examples
+# Function prod(A::AbstractArray; dims)
+# Multiply elements of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 prod(A, dims=1)
-1×2 Matrix{Int64}:
- 3  8
+# 1×2 Matrix{Int64}:
+#  3  8
 
 prod(A, dims=2)
-2×1 Matrix{Int64}:
-  2
- 12
+# 2×1 Matrix{Int64}:
+#   2
+#  12
 
-source
-prod(f, A::AbstractArray; dims)
 
-Multiply the results of calling the function f on each element of an array over the given dimensions.
-
-Examples
+# Function prod(f, A::AbstractArray; dims)
+# Multiply the results of calling the function f on each element of an array over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 prod(abs2, A, dims=1)
-1×2 Matrix{Int64}:
- 9  64
+# 1×2 Matrix{Int64}:
+#  9  64
 
 prod(abs2, A, dims=2)
-2×1 Matrix{Int64}:
-   4
- 144
+# 2×1 Matrix{Int64}:
+#    4
+#  144
 
-source
-Base.prod!
-—
-Function
-prod!(r, A)
 
-Multiply elements of A over the singleton dimensions of r, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.prod!
+# Function prod!(r, A)
+# Multiply elements of A over the singleton dimensions of r, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 prod!([1; 1], A)
-2-element Vector{Int64}:
-  2
- 12
+# 2-element Vector{Int64}:
+#   2
+#  12
 
 prod!([1 1], A)
-1×2 Matrix{Int64}:
- 3  8
+# 1×2 Matrix{Int64}:
+#  3  8
 
-source
-Base.any
-—
-Method
-any(itr) -> Bool
 
-Test whether any elements of a boolean collection are true, returning true as soon as the first true value in itr is encountered (short-circuiting). To short-circuit on false, use all.
+# -------------------------------------------------------------------
+# Base.any
 
-If the input contains missing values, return missing if all non-missing values are false (or equivalently, if the input contains no true value), following three-valued logic.
-
-See also: all, count, sum, |, , ||.
-
-Examples
+# Method any(itr) -> Bool
+# Test whether any elements of a boolean collection are true, returning true as soon as the first true value in itr is
+# encountered (short-circuiting). To short-circuit on false, use all.
+# If the input contains missing values, return missing if all non-missing values are false (or equivalently, if the
+# input contains no true value), following three-valued logic.
+# See also: all, count, sum, |, , ||.
 
 a = [true,false,false,true]
-4-element Vector{Bool}:
- 1
- 0
- 0
- 1
+# 4-element Vector{Bool}:
+#  1
+#  0
+#  0
+#  1
 
-any(a)
-true
-
+any(a)                      #  true
 any((println(i); v) for (i, v) in enumerate(a))
-1
-true
+# 1
+# true
+any([missing, true])        # true
+any([false, missing])       # missing
 
-any([missing, true])
-true
 
-any([false, missing])
-missing
+# Method any(p, itr) -> Bool
+# Determine whether predicate p returns true for any elements of itr, returning true as soon as the first item in itr
+# for which p returns true is encountered (short-circuiting). To short-circuit on false, use all.
+# If the input contains missing values, return missing if all non-missing values are false (or equivalently, if the
+# input contains no true value), following three-valued logic.
 
-source
-Base.any
-—
-Method
-any(p, itr) -> Bool
-
-Determine whether predicate p returns true for any elements of itr, returning true as soon as the first item in itr for which p returns true is encountered (short-circuiting). To short-circuit on false, use all.
-
-If the input contains missing values, return missing if all non-missing values are false (or equivalently, if the input contains no true value), following three-valued logic.
-
-Examples
-
-any(i->(4<=i<=6), [3,5,7])
-true
-
+any(i->(4<=i<=6), [3,5,7])          # true
 any(i -> (println(i); i > 3), 1:10)
-1
-2
-3
-4
-true
+# 1
+# 2
+# 3
+# 4
+# true
 
-any(i -> i > 0, [1, missing])
-true
+any(i -> i > 0, [1, missing])       # true
+any(i -> i > 0, [-1, missing])      # missing
+any(i -> i > 0, [-1, 0])            # false
 
-any(i -> i > 0, [-1, missing])
-missing
 
-any(i -> i > 0, [-1, 0])
-false
-
-source
-Base.any!
-—
-Function
-any!(r, A)
-
-Test whether any values in A along the singleton dimensions of r are true, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.any!
+# Function any!(r, A)
+# Test whether any values in A along the singleton dimensions of r are true, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [true false; true false]
-2×2 Matrix{Bool}:
- 1  0
- 1  0
+# 2×2 Matrix{Bool}:
+#  1  0
+#  1  0
 
 any!([1; 1], A)
-2-element Vector{Int64}:
- 1
- 1
+# 2-element Vector{Int64}:
+#  1
+#  1
 
 any!([1 1], A)
-1×2 Matrix{Int64}:
- 1  0
+# 1×2 Matrix{Int64}:
+#  1  0
 
-source
-Base.all
-—
-Method
-all(itr) -> Bool
 
-Test whether all elements of a boolean collection are true, returning false as soon as the first false value in itr is encountered (short-circuiting). To short-circuit on true, use any.
+# Base.all
+# Method all(itr) -> Bool
+# Test whether all elements of a boolean collection are true, returning false as soon as the first false value in itr is
+# encountered (short-circuiting). To short-circuit on true, use any.
+# If the input contains missing values, return missing if all non-missing values are true (or equivalently, if the input
+# contains no false value), following three-valued logic.
+# See also: all!, any, count, &, , &&, allunique.
 
-If the input contains missing values, return missing if all non-missing values are true (or equivalently, if the input contains no false value), following three-valued logic.
-
-See also: all!, any, count, &, , &&, allunique.
-
-Examples
-
-a = [true,false,false,true]
-4-element Vector{Bool}:
- 1
- 0
- 0
- 1
-
-all(a)
-false
-
+a = [true,false,false,true]     # 4-element Vector{Bool}: 1 0 0 1
+all(a)                          # false
 all((println(i); v) for (i, v) in enumerate(a))
-1
-2
-false
+# 1
+# 2
+# false
+all([missing, false])           # false
+all([true, missing])            # missing
 
-all([missing, false])
-false
 
-all([true, missing])
-missing
+# Base.all
+# Method all(p, itr) -> Bool
+# Determine whether predicate p returns true for all elements of itr, returning false as soon as the first item in itr
+# for which p returns false is encountered (short-circuiting). To short-circuit on true, use any.
+# If the input contains missing values, return missing if all non-missing values are true (or equivalently, if the input
+# contains no false value), following three-valued logic.
 
-source
-Base.all
-—
-Method
-all(p, itr) -> Bool
+all(i->(4<=i<=6), [4,5,6])          # true
+all(i -> (println(i); i < 3), 1:10) # 1 2 3 false
+all(i -> i > 0, [1, missing])       # missing
+all(i -> i > 0, [-1, missing])      # false
+all(i -> i > 0, [1, 2])             # true
 
-Determine whether predicate p returns true for all elements of itr, returning false as soon as the first item in itr for which p returns false is encountered (short-circuiting). To short-circuit on true, use any.
 
-If the input contains missing values, return missing if all non-missing values are true (or equivalently, if the input contains no false value), following three-valued logic.
-
-Examples
-
-all(i->(4<=i<=6), [4,5,6])
-true
-
-all(i -> (println(i); i < 3), 1:10)
-1
-2
-3
-false
-
-all(i -> i > 0, [1, missing])
-missing
-
-all(i -> i > 0, [-1, missing])
-false
-
-all(i -> i > 0, [1, 2])
-true
-
-source
-Base.all!
-—
-Function
-all!(r, A)
-
-Test whether all values in A along the singleton dimensions of r are true, and write results to r.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-Examples
+# Base.all!
+# Function all!(r, A)
+# Test whether all values in A along the singleton dimensions of r are true, and write results to r.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
 A = [true false; true false]
-2×2 Matrix{Bool}:
- 1  0
- 1  0
+# 2×2 Matrix{Bool}:
+#  1  0
+#  1  0
 
 all!([1; 1], A)
-2-element Vector{Int64}:
- 0
- 0
+# 2-element Vector{Int64}:
+#  0
+#  0
 
 all!([1 1], A)
-1×2 Matrix{Int64}:
- 1  0
+# 1×2 Matrix{Int64}:
+#  1  0
 
 source
 Base.count
