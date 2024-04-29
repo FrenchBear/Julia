@@ -1134,840 +1134,546 @@ all!([1 1], A)
 # 1×2 Matrix{Int64}:
 #  1  0
 
-source
-Base.count
-—
-Function
-count([f=identity,] itr; init=0) -> Integer
 
-Count the number of elements in itr for which the function f returns true. If f is omitted, count the number of true elements in itr (which should be a collection of boolean values). init optionally specifies the value to start counting from and therefore also determines the output type.
+# -------------------------------------------------------------------
+# Base.count
+# Function count([f=identity,] itr; init=0) -> Integer
+# Count the number of elements in itr for which the function f returns true. If f is omitted, count the number of true elements in itr (which should be a collection of boolean values). init optionally specifies the value to start counting from and therefore also determines the output type.
+# See also: any, sum.
 
-Julia 1.6
-init keyword was added in Julia 1.6.
+count(i->(4<=i<=6), [2,3,4,5,6])        # 3
+count([true, false, true, true])        # 3
+count(>(3), 1:7, init=0x03)             # 0x07
 
-See also: any, sum.
+# Function count(
+#     pattern::Union{AbstractChar,AbstractString,AbstractPattern},
+#     string::AbstractString;
+#     overlap::Bool = false,
+# )
+# Return the number of matches for pattern in string. This is equivalent to calling length(findall(pattern, string)) but
+# more efficient.
+# If overlap=true, the matching sequences are allowed to overlap indices in the original string, otherwise they must be
+# from disjoint character ranges.
 
-Examples
+count('a', "JuliaLang")                         # 2
+count(r"a(.)a", "cabacabac", overlap=true)      # 3
+count(r"a(.)a", "cabacabac")                    # 2
 
-count(i->(4<=i<=6), [2,3,4,5,6])
-3
 
-count([true, false, true, true])
-3
-
-count(>(3), 1:7, init=0x03)
-0x07
-
-source
-count(
-    pattern::Union{AbstractChar,AbstractString,AbstractPattern},
-    string::AbstractString;
-    overlap::Bool = false,
-)
-
-Return the number of matches for pattern in string. This is equivalent to calling length(findall(pattern, string)) but more efficient.
-
-If overlap=true, the matching sequences are allowed to overlap indices in the original string, otherwise they must be from disjoint character ranges.
-
-Julia 1.3
-This method requires at least Julia 1.3.
-
-Julia 1.7
-Using a character as the pattern requires at least Julia 1.7.
-
-Examples
-
-count('a', "JuliaLang")
-2
-
-count(r"a(.)a", "cabacabac", overlap=true)
-3
-
-count(r"a(.)a", "cabacabac")
-2
-
-source
-count([f=identity,] A::AbstractArray; dims=:)
-
-Count the number of elements in A for which f returns true over the given dimensions.
-
-Julia 1.5
-dims keyword was added in Julia 1.5.
-
-Julia 1.6
-init keyword was added in Julia 1.6.
-
-Examples
+# Function count([f=identity,] A::AbstractArray; dims=:)
+# Count the number of elements in A for which f returns true over the given dimensions.
 
 A = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
 count(<=(2), A, dims=1)
-1×2 Matrix{Int64}:
- 1  1
+# 1×2 Matrix{Int64}:
+#  1  1
 
 count(<=(2), A, dims=2)
-2×1 Matrix{Int64}:
- 2
- 0
+# 2×1 Matrix{Int64}:
+#  2
+#  0
 
-source
-Base.foreach
-—
-Function
-foreach(f, c...) -> Nothing
 
-Call function f on each element of iterable c. For multiple iterable arguments, f is called elementwise, and iteration stops when any iterator is finished.
-
-foreach should be used instead of map when the results of f are not needed, for example in foreach(println, array).
-
-Examples
+# -------------------------------------------------------------------
+# Base.foreach
+# Function foreach(f, c...) -> Nothing
+# Call function f on each element of iterable c. For multiple iterable arguments, f is called elementwise, and iteration stops when any iterator is finished.
+# foreach should be used instead of map when the results of f are not needed, for example in foreach(println, array).
 
 tri = 1:3:7; res = Int[];
-
 foreach(x -> push!(res, x^2), tri)
+res                                                         # 3-element Vector{Int64}:  1 16 49
+foreach((x, y) -> println(x, " with ", y), tri, 'a':'z')    # 1 with a\n 4 with b\n 7 with c
 
-res
-3-element Vector{Int64}:
-  1
- 16
- 49
 
-foreach((x, y) -> println(x, " with ", y), tri, 'a':'z')
-1 with a
-4 with b
-7 with c
+# -------------------------------------------------------------------
+# Base.map
+# Function map(f, c...) -> collection
+# Transform collection c by applying f to each element. For multiple collection arguments, apply f elementwise, and stop when any of them is exhausted.
+# See also map!, foreach, mapreduce, mapslices, zip, Iterators.map.
 
-source
-Base.map
-—
-Function
-map(f, c...) -> collection
+map(x -> x * 2, [1, 2, 3])                  # 3-element Vector{Int64}: 2 4 6
+map(+, [1, 2, 3], [10, 20, 30, 400, 5000])  # 3-element Vector{Int64}: 11 22 33
 
-Transform collection c by applying f to each element. For multiple collection arguments, apply f elementwise, and stop when any of them is exhausted.
 
-See also map!, foreach, mapreduce, mapslices, zip, Iterators.map.
-
-Examples
-
-map(x -> x * 2, [1, 2, 3])
-3-element Vector{Int64}:
- 2
- 4
- 6
-
-map(+, [1, 2, 3], [10, 20, 30, 400, 5000])
-3-element Vector{Int64}:
- 11
- 22
- 33
-
-source
-map(f, A::AbstractArray...) -> N-array
-
-When acting on multi-dimensional arrays of the same ndims, they must all have the same axes, and the answer will too.
-
-See also broadcast, which allows mismatched sizes.
-
-Examples
+# Function map(f, A::AbstractArray...) -> N-array
+# When acting on multi-dimensional arrays of the same ndims, they must all have the same axes, and the answer will too.
+# See also broadcast, which allows mismatched sizes.
 
 map(//, [1 2; 3 4], [4 3; 2 1])
-2×2 Matrix{Rational{Int64}}:
- 1//4  2//3
- 3//2  4//1
+# 2×2 Matrix{Rational{Int64}}:
+#  1//4  2//3
+#  3//2  4//1
 
-map(+, [1 2; 3 4], zeros(2,1))
-ERROR: DimensionMismatch
+# map(+, [1 2; 3 4], zeros(2,1))
+# ERROR: DimensionMismatch
 
 map(+, [1 2; 3 4], [1,10,100,1000], zeros(3,1))  # iterates until 3rd is exhausted
-3-element Vector{Float64}:
-   2.0
-  13.0
- 102.0
+# 3-element Vector{Float64}:
+#    2.0
+#   13.0
+#  102.0
 
-source
-Base.map!
-—
-Function
-map!(function, destination, collection...)
 
-Like map, but stores the result in destination rather than a new collection. destination must be at least as large as the smallest collection.
-
-Warning
-Behavior can be unexpected when any mutated argument shares memory with any other argument.
-
-See also: map, foreach, zip, copyto!.
-
-Examples
+# Base.map!
+# Function map!(function, destination, collection...)
+# Like map, but stores the result in destination rather than a new collection. destination must be at least as large as the smallest collection.
+# Warning: Behavior can be unexpected when any mutated argument shares memory with any other argument.
+# See also: map, foreach, zip, copyto!.
 
 a = zeros(3);
-
 map!(x -> x * 2, a, [1, 2, 3]);
+a                                       # 3-element Vector{Float64}: 2.0 4.0 6.0
+map!(+, zeros(Int, 5), 100:999, 1:3)    # 5-element Vector{Int64}: 101 103 105   0   0
 
-a
-3-element Vector{Float64}:
- 2.0
- 4.0
- 6.0
 
-map!(+, zeros(Int, 5), 100:999, 1:3)
-5-element Vector{Int64}:
- 101
- 103
- 105
-   0
-   0
-
-source
-map!(f, values(dict::AbstractDict))
-
-Modifies dict by transforming each value from val to f(val). Note that the type of dict cannot be changed: if f(val) is not an instance of the value type of dict then it will be converted to the value type if possible and otherwise raise an error.
-
-Julia 1.2
-map!(f, values(dict::AbstractDict)) requires Julia 1.2 or later.
-
-Examples
+# map!(f, values(dict::AbstractDict))
+# Modifies dict by transforming each value from val to f(val). Note that the type of dict cannot be changed: if f(val)
+# is not an instance of the value type of dict then it will be converted to the value type if possible and otherwise
+# raise an error.
 
 d = Dict(:a => 1, :b => 2)
-Dict{Symbol, Int64} with 2 entries:
-  :a => 1
-  :b => 2
+# Dict{Symbol, Int64} with 2 entries:
+#   :a => 1
+#   :b => 2
 
 map!(v -> v-1, values(d))
-ValueIterator for a Dict{Symbol, Int64} with 2 entries. Values:
-  0
-  1
+# ValueIterator for a Dict{Symbol, Int64} with 2 entries. Values:
+#   0
+#   1
 
-source
-Base.mapreduce
-—
-Method
-mapreduce(f, op, itrs...; [init])
 
-Apply function f to each element(s) in itrs, and then reduce the result using the binary function op. If provided, init must be a neutral element for op that will be returned for empty collections. It is unspecified whether init is used for non-empty collections. In general, it will be necessary to provide init to work with empty collections.
+# Base.mapreduce
+# Method mapreduce(f, op, itrs...; [init])
+# Apply function f to each element(s) in itrs, and then reduce the result using the binary function op. If provided,
+# init must be a neutral element for op that will be returned for empty collections. It is unspecified whether init is
+# used for non-empty collections. In general, it will be necessary to provide init to work with empty collections.
+# mapreduce is functionally equivalent to calling reduce(op, map(f, itr); init=init), but will in general execute faster
+# since no intermediate collection needs to be created. See documentation for reduce and map.
 
-mapreduce is functionally equivalent to calling reduce(op, map(f, itr); init=init), but will in general execute faster since no intermediate collection needs to be created. See documentation for reduce and map.
+mapreduce(x->x^2, +, [1:3;])        # 14            == 1 + 4 + 9
 
-Julia 1.2
-mapreduce with multiple iterators requires Julia 1.2 or later.
+# The associativity of the reduction is implementation-dependent. Additionally, some implementations may reuse the
+# return value of f for elements that appear multiple times in itr. Use mapfoldl or mapfoldr instead for guaranteed left
+# or right associativity and invocation of f for every value.
 
-Examples
 
-mapreduce(x->x^2, +, [1:3;]) # == 1 + 4 + 9
-14
+# Base.mapfoldl
+# Method mapfoldl(f, op, itr; [init])
+# Like mapreduce, but with guaranteed left associativity, as in foldl. If provided, the keyword argument init will be
+# used exactly once. In general, it will be necessary to provide init to work with empty collections.
 
-The associativity of the reduction is implementation-dependent. Additionally, some implementations may reuse the return value of f for elements that appear multiple times in itr. Use mapfoldl or mapfoldr instead for guaranteed left or right associativity and invocation of f for every value.
+# Base.mapfoldr
+# Method mapfoldr(f, op, itr; [init])
+# Like mapreduce, but with guaranteed right associativity, as in foldr. If provided, the keyword argument init will be
+# used exactly once. In general, it will be necessary to provide init to work with empty collections.
 
-source
-Base.mapfoldl
-—
-Method
-mapfoldl(f, op, itr; [init])
 
-Like mapreduce, but with guaranteed left associativity, as in foldl. If provided, the keyword argument init will be used exactly once. In general, it will be necessary to provide init to work with empty collections.
+# -------------------------------------------------------------------
+# Base.first
+# Function first(coll)
+# Get the first element of an iterable collection. Return the start point of an AbstractRange even if it is empty.
+# See also: only, firstindex, last.
 
-source
-Base.mapfoldr
-—
-Method
-mapfoldr(f, op, itr; [init])
+first(2:2:10)                       # 2
+first([1; 2; 3; 4])                 # 1
 
-Like mapreduce, but with guaranteed right associativity, as in foldr. If provided, the keyword argument init will be used exactly once. In general, it will be necessary to provide init to work with empty collections.
 
-source
-Base.first
-—
-Function
-first(coll)
+# Function first(itr, n::Integer)
+# Get the first n elements of the iterable collection itr, or fewer elements if itr is not long enough.
+# See also: startswith, Iterators.take.
 
-Get the first element of an iterable collection. Return the start point of an AbstractRange even if it is empty.
+first(["foo", "bar", "qux"], 2)     # 2-element Vector{String}: "foo" "bar"
+first(1:6, 10)                      # 1:6
+first(Bool[], 1)                    # Bool[]
 
-See also: only, firstindex, last.
+# Function first(s::AbstractString, n::Integer)
+# Get a string consisting of the first n characters of s.
 
-Examples
+first("∀ϵ≠0: ϵ²>0", 0)              # ""
+first("∀ϵ≠0: ϵ²>0", 1)              # "∀"
+first("∀ϵ≠0: ϵ²>0", 3)              # "∀ϵ≠"
 
-first(2:2:10)
-2
 
-first([1; 2; 3; 4])
-1
+# Base.last
+# Function last(coll)
+# Get the last element of an ordered collection, if it can be computed in O(1) time. This is accomplished by calling
+# lastindex to get the last index. Return the end point of an AbstractRange even if it is empty.
+# See also first, endswith.
 
-source
-first(itr, n::Integer)
+last(1:2:10)                        # 9
+last([1; 2; 3; 4])                  # 4
 
-Get the first n elements of the iterable collection itr, or fewer elements if itr is not long enough.
 
-See also: startswith, Iterators.take.
+# Function last(itr, n::Integer)
+# Get the last n elements of the iterable collection itr, or fewer elements if itr is not long enough.
 
-Julia 1.6
-This method requires at least Julia 1.6.
+last(["foo", "bar", "qux"], 2)      # 2-element Vector{String}: "bar" "qux"
+last(1:6, 10)                       # 1:6
+last(Float64[], 1)                  # Float64[]
 
-Examples
 
-first(["foo", "bar", "qux"], 2)
-2-element Vector{String}:
- "foo"
- "bar"
+# Function last(s::AbstractString, n::Integer)
+# Get a string consisting of the last n characters of s.
 
-first(1:6, 10)
-1:6
+last("∀ϵ≠0: ϵ²>0", 0)               # ""
+last("∀ϵ≠0: ϵ²>0", 1)               # "0"
+last("∀ϵ≠0: ϵ²>0", 3)               # "²>0"
 
-first(Bool[], 1)
-Bool[]
 
-source
-first(s::AbstractString, n::Integer)
+# Base.front
+# Function front(x::Tuple)::Tuple
+# Return a Tuple consisting of all but the last component of x.
+# See also: first, tail.
 
-Get a string consisting of the first n characters of s.
+Base.front((1,2,3))                 # (1, 2)
+# Base.front(())                    # ERROR: ArgumentError: Cannot call front on an empty tuple.
 
-Examples
 
-first("∀ϵ≠0: ϵ²>0", 0)
-""
+# Base.tail
+# Function tail(x::Tuple)::Tuple
+# Return a Tuple consisting of all but the first component of x.
+# See also: front, rest, first, Iterators.peel.
 
-first("∀ϵ≠0: ϵ²>0", 1)
-"∀"
+Base.tail((1,2,3))                  # (2, 3)
+# Base.tail(())                     # ERROR: ArgumentError: Cannot call tail on an empty tuple.
 
-first("∀ϵ≠0: ϵ²>0", 3)
-"∀ϵ≠"
 
-source
-Base.last
-—
-Function
-last(coll)
-
-Get the last element of an ordered collection, if it can be computed in O(1) time. This is accomplished by calling lastindex to get the last index. Return the end point of an AbstractRange even if it is empty.
-
-See also first, endswith.
-
-Examples
-
-last(1:2:10)
-9
-
-last([1; 2; 3; 4])
-4
-
-source
-last(itr, n::Integer)
-
-Get the last n elements of the iterable collection itr, or fewer elements if itr is not long enough.
-
-Julia 1.6
-This method requires at least Julia 1.6.
-
-Examples
-
-last(["foo", "bar", "qux"], 2)
-2-element Vector{String}:
- "bar"
- "qux"
-
-last(1:6, 10)
-1:6
-
-last(Float64[], 1)
-Float64[]
-
-source
-last(s::AbstractString, n::Integer)
-
-Get a string consisting of the last n characters of s.
-
-Examples
-
-last("∀ϵ≠0: ϵ²>0", 0)
-""
-
-last("∀ϵ≠0: ϵ²>0", 1)
-"0"
-
-last("∀ϵ≠0: ϵ²>0", 3)
-"²>0"
-
-source
-Base.front
-—
-Function
-front(x::Tuple)::Tuple
-
-Return a Tuple consisting of all but the last component of x.
-
-See also: first, tail.
-
-Examples
-
-Base.front((1,2,3))
-(1, 2)
-
-Base.front(())
-ERROR: ArgumentError: Cannot call front on an empty tuple.
-
-source
-Base.tail
-—
-Function
-tail(x::Tuple)::Tuple
-
-Return a Tuple consisting of all but the first component of x.
-
-See also: front, rest, first, Iterators.peel.
-
-Examples
-
-Base.tail((1,2,3))
-(2, 3)
-
-Base.tail(())
-ERROR: ArgumentError: Cannot call tail on an empty tuple.
-
-source
-Base.step
-—
-Function
-step(r)
-
-Get the step size of an AbstractRange object.
-
-Examples
-
-step(1:10)
-1
-
-step(1:2:10)
-2
-
-step(2.5:0.3:10.9)
-0.3
-
-step(range(2.5, stop=10.9, length=85))
-0.1
-
-source
-Base.collect
-—
-Method
-collect(collection)
-
-Return an Array of all items in a collection or iterator. For dictionaries, returns Vector{Pair{KeyType, ValType}}. If the argument is array-like or is an iterator with the HasShape trait, the result will have the same shape and number of dimensions as the argument.
-
-Used by comprehensions to turn a generator into an Array.
-
-Examples
+# -------------------------------------------------------------------
+# Base.step
+# Function step(r)
+# Get the step size of an AbstractRange object.
+
+step(1:10)                          # 1
+step(1:2:10)                        # 2
+step(2.5:0.3:10.9)                  # 0.3
+step(range(2.5, stop=10.9, length=85))  # 0.1
+
+
+# -------------------------------------------------------------------
+# Base.collect
+# Method collect(collection)
+# Return an Array of all items in a collection or iterator. For dictionaries, returns Vector{Pair{KeyType, ValType}}. If
+# the argument is array-like or is an iterator with the HasShape trait, the result will have the same shape and number
+# of dimensions as the argument.
+# Used by comprehensions to turn a generator into an Array.
 
 collect(1:2:13)
-7-element Vector{Int64}:
-  1
-  3
-  5
-  7
-  9
- 11
- 13
+# 7-element Vector{Int64}:
+#   1
+#   3
+#   5
+#   7
+#   9
+#  11
+#  13
 
-[x^2 for x in 1:8 if isodd(x)]
-4-element Vector{Int64}:
-  1
-  9
- 25
- 49
+# [x^2 for x in 1:8 if isodd(x)]
+# 4-element Vector{Int64}:
+#   1
+#   9
+#  25
+#  49
 
-source
-Base.collect
-—
-Method
-collect(element_type, collection)
 
-Return an Array with the given element type of all items in a collection or iterable. The result has the same shape and number of dimensions as collection.
-
-Examples
+# Base.collect
+# Method collect(element_type, collection)
+# Return an Array with the given element type of all items in a collection or iterable. The result has the same shape
+# and number of dimensions as collection.
 
 collect(Float64, 1:2:5)
-3-element Vector{Float64}:
- 1.0
- 3.0
- 5.0
+# 3-element Vector{Float64}:
+#  1.0
+#  3.0
+#  5.0
 
-source
-Base.filter
-—
-Function
-filter(f, a)
 
-Return a copy of collection a, removing elements for which f is false. The function f is passed one argument.
+# -------------------------------------------------------------------
+# Base.filter
+# Function filter(f, a)
+# Return a copy of collection a, removing elements for which f is false. The function f is passed one argument.
+# See also: filter!, Iterators.filter.
 
-Julia 1.4
-Support for a as a tuple requires at least Julia 1.4.
+a = 1:10                    # 1:10
+filter(isodd, a)            # 5-element Vector{Int64}: 1 3 5 7 9
 
-See also: filter!, Iterators.filter.
 
-Examples
-
-a = 1:10
-1:10
-
-filter(isodd, a)
-5-element Vector{Int64}:
- 1
- 3
- 5
- 7
- 9
-
-source
-filter(f)
-
-Create a function that filters its arguments with function f using filter, i.e. a function equivalent to x -> filter(f, x).
-
-The returned function is of type Base.Fix1{typeof(filter)}, which can be used to implement specialized methods.
-
-Examples
+# Function filter(f)
+# Create a function that filters its arguments with function f using filter, i.e. a function equivalent to x -> filter(f, x).
+# The returned function is of type Base.Fix1{typeof(filter)}, which can be used to implement specialized methods.
 
 (1, 2, Inf, 4, NaN, 6) |> filter(isfinite)
-(1, 2, 4, 6)
+# (1, 2, 4, 6)
 
 map(filter(iseven), [1:3, 2:4, 3:5])
-3-element Vector{Vector{Int64}}:
- [2]
- [2, 4]
- [4]
+# 3-element Vector{Vector{Int64}}:
+#  [2]
+#  [2, 4]
+#  [4]
 
-Julia 1.9
-This method requires at least Julia 1.9.
 
-source
-filter(f, d::AbstractDict)
-
-Return a copy of d, removing elements for which f is false. The function f is passed key=>value pairs.
-
-Examples
+# Function filter(f, d::AbstractDict)
+# Return a copy of d, removing elements for which f is false. The function f is passed key=>value pairs.
 
 d = Dict(1=>"a", 2=>"b")
-Dict{Int64, String} with 2 entries:
-  2 => "b"
-  1 => "a"
+# Dict{Int64, String} with 2 entries:
+#   2 => "b"
+#   1 => "a"
 
 filter(p->isodd(p.first), d)
-Dict{Int64, String} with 1 entry:
-  1 => "a"
+# Dict{Int64, String} with 1 entry:
+#   1 => "a"
 
-source
-filter(f, itr::SkipMissing{<:AbstractArray})
-
-Return a vector similar to the array wrapped by the given SkipMissing iterator but with all missing elements and those for which f returns false removed.
-
-Julia 1.2
-This method requires Julia 1.2 or later.
-
-Examples
+# Function filter(f, itr::SkipMissing{<:AbstractArray})
+# Return a vector similar to the array wrapped by the given SkipMissing iterator but with all missing elements and those
+# for which f returns false removed.
 
 x = [1 2; missing 4]
-2×2 Matrix{Union{Missing, Int64}}:
- 1         2
-  missing  4
+# 2×2 Matrix{Union{Missing, Int64}}:
+#  1         2
+#   missing  4
 
 filter(isodd, skipmissing(x))
-1-element Vector{Int64}:
- 1
+# 1-element Vector{Int64}:
+#  1
 
-source
-Base.filter!
-—
-Function
-filter!(f, a)
 
-Update collection a, removing elements for which f is false. The function f is passed one argument.
-
-Examples
+# Base.filter!
+# Function filter!(f, a)
+# Update collection a, removing elements for which f is false. The function f is passed one argument.
 
 filter!(isodd, Vector(1:10))
-5-element Vector{Int64}:
- 1
- 3
- 5
- 7
- 9
+# 5-element Vector{Int64}:
+#  1
+#  3
+#  5
+#  7
+#  9
 
-source
-filter!(f, d::AbstractDict)
 
-Update d, removing elements for which f is false. The function f is passed key=>value pairs.
-
-Example
+# Function filter!(f, d::AbstractDict)
+# Update d, removing elements for which f is false. The function f is passed key=>value pairs.
 
 d = Dict(1=>"a", 2=>"b", 3=>"c")
-Dict{Int64, String} with 3 entries:
-  2 => "b"
-  3 => "c"
-  1 => "a"
+# Dict{Int64, String} with 3 entries:
+#   2 => "b"
+#   3 => "c"
+#   1 => "a"
 
 filter!(p->isodd(p.first), d)
-Dict{Int64, String} with 2 entries:
-  3 => "c"
-  1 => "a"
+# Dict{Int64, String} with 2 entries:
+#   3 => "c"
+#   1 => "a"
 
-source
-Base.replace
-—
-Method
-replace(A, old_new::Pair...; [count::Integer])
 
-Return a copy of collection A where, for each pair old=>new in old_new, all occurrences of old are replaced by new. Equality is determined using isequal. If count is specified, then replace at most count occurrences in total.
+# -------------------------------------------------------------------
+# Base.replace
+# Method replace(A, old_new::Pair...; [count::Integer])
 
-The element type of the result is chosen using promotion (see promote_type) based on the element type of A and on the types of the new values in pairs. If count is omitted and the element type of A is a Union, the element type of the result will not include singleton types which are replaced with values of a different type: for example, Union{T,Missing} will become T if missing is replaced.
+# Return a copy of collection A where, for each pair old=>new in old_new, all occurrences of old are replaced by new.
+# Equality is determined using isequal. If count is specified, then replace at most count occurrences in total.
 
-See also replace!, splice!, delete!, insert!.
+# The element type of the result is chosen using promotion (see promote_type) based on the element type of A and on the
+# types of the new values in pairs. If count is omitted and the element type of A is a Union, the element type of the
+# result will not include singleton types which are replaced with values of a different type: for example,
+# Union{T,Missing} will become T if missing is replaced.
 
-Julia 1.7
-Version 1.7 is required to replace elements of a Tuple.
-
-Examples
+# See also replace!, splice!, delete!, insert!.
 
 replace([1, 2, 1, 3], 1=>0, 2=>4, count=2)
-4-element Vector{Int64}:
- 0
- 4
- 1
- 3
+# 4-element Vector{Int64}:
+#  0
+#  4
+#  1
+#  3
 
 replace([1, missing], missing=>0)
-2-element Vector{Int64}:
- 1
- 0
+# 2-element Vector{Int64}:
+#  1
+#  0
 
-source
-Base.replace
-—
-Method
-replace(new::Union{Function, Type}, A; [count::Integer])
 
-Return a copy of A where each value x in A is replaced by new(x). If count is specified, then replace at most count values in total (replacements being defined as new(x) !== x).
+# Base.replace
+# Method replace(new::Union{Function, Type}, A; [count::Integer])
 
-Julia 1.7
-Version 1.7 is required to replace elements of a Tuple.
-
-Examples
+# Return a copy of A where each value x in A is replaced by new(x). If count is specified, then replace at most count
+# values in total (replacements being defined as new(x) !== x).
 
 replace(x -> isodd(x) ? 2x : x, [1, 2, 3, 4])
-4-element Vector{Int64}:
- 2
- 2
- 6
- 4
+# 4-element Vector{Int64}:
+#  2
+#  2
+#  6
+#  4
 
 replace(Dict(1=>2, 3=>4)) do kv
-           first(kv) < 3 ? first(kv)=>3 : kv
-       end
-Dict{Int64, Int64} with 2 entries:
-  3 => 4
-  1 => 3
+    first(kv) < 3 ? first(kv)=>3 : kv
+end
+#Dict{Int64, Int64} with 2 entries:
+#  3 => 4
+#  1 => 3
 
-source
-Base.replace!
-—
-Function
-replace!(A, old_new::Pair...; [count::Integer])
 
-For each pair old=>new in old_new, replace all occurrences of old in collection A by new. Equality is determined using isequal. If count is specified, then replace at most count occurrences in total. See also replace.
-
-Examples
+# Base.replace!
+# Function replace!(A, old_new::Pair...; [count::Integer])
+# For each pair old=>new in old_new, replace all occurrences of old in collection A by new. Equality is determined using
+# isequal. If count is specified, then replace at most count occurrences in total. See also replace.
 
 replace!([1, 2, 1, 3], 1=>0, 2=>4, count=2)
-4-element Vector{Int64}:
- 0
- 4
- 1
- 3
+# 4-element Vector{Int64}:
+#  0
+#  4
+#  1
+#  3
 
 replace!(Set([1, 2, 3]), 1=>0)
-Set{Int64} with 3 elements:
-  0
-  2
-  3
+# Set{Int64} with 3 elements:
+#   0
+#   2
+#   3
 
-source
-replace!(new::Union{Function, Type}, A; [count::Integer])
-
-Replace each element x in collection A by new(x). If count is specified, then replace at most count values in total (replacements being defined as new(x) !== x).
-
-Examples
+# Function replace!(new::Union{Function, Type}, A; [count::Integer])
+# Replace each element x in collection A by new(x). If count is specified, then replace at most count values in total
+# (replacements being defined as new(x) !== x).
 
 replace!(x -> isodd(x) ? 2x : x, [1, 2, 3, 4])
-4-element Vector{Int64}:
- 2
- 2
- 6
- 4
+# 4-element Vector{Int64}:
+#  2
+#  2
+#  6
+#  4
 
 replace!(Dict(1=>2, 3=>4)) do kv
-           first(kv) < 3 ? first(kv)=>3 : kv
-       end
-Dict{Int64, Int64} with 2 entries:
-  3 => 4
-  1 => 3
+    first(kv) < 3 ? first(kv)=>3 : kv
+end
+# Dict{Int64, Int64} with 2 entries:
+#   3 => 4
+#   1 => 3
 
 replace!(x->2x, Set([3, 6]))
-Set{Int64} with 2 elements:
-  6
-  12
+# Set{Int64} with 2 elements:
+#   6
+#   12
 
-source
-Base.rest
-—
-Function
-Base.rest(collection[, itr_state])
 
-Generic function for taking the tail of collection, starting from a specific iteration state itr_state. Return a Tuple, if collection itself is a Tuple, a subtype of AbstractVector, if collection is an AbstractArray, a subtype of AbstractString if collection is an AbstractString, and an arbitrary iterator, falling back to Iterators.rest(collection[, itr_state]), otherwise.
-
-Can be overloaded for user-defined collection types to customize the behavior of slurping in assignments in final position, like a, b... = collection.
-
-Julia 1.6
-Base.rest requires at least Julia 1.6.
-
-See also: first, Iterators.rest, Base.split_rest.
-
-Examples
+# Base.rest
+# Function Base.rest(collection[, itr_state])
+# Generic function for taking the tail of collection, starting from a specific iteration state itr_state. Return a
+# Tuple, if collection itself is a Tuple, a subtype of AbstractVector, if collection is an AbstractArray, a subtype of
+# AbstractString if collection is an AbstractString, and an arbitrary iterator, falling back to
+# Iterators.rest(collection[, itr_state]), otherwise.
+# Can be overloaded for user-defined collection types to customize the behavior of slurping in assignments in final
+# position, like a, b... = collection.
+# See also: first, Iterators.rest, Base.split_rest.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
-first, state = iterate(a)
-(1, 2)
+first, state = iterate(a)           # (1, 2)
+first, Base.rest(a, state)          # (1, [3, 2, 4])
 
-first, Base.rest(a, state)
-(1, [3, 2, 4])
 
-source
-Base.split_rest
-—
-Function
-Base.split_rest(collection, n::Int[, itr_state]) -> (rest_but_n, last_n)
+# Base.split_rest
+# Function Base.split_rest(collection, n::Int[, itr_state]) -> (rest_but_n, last_n)
 
-Generic function for splitting the tail of collection, starting from a specific iteration state itr_state. Returns a tuple of two new collections. The first one contains all elements of the tail but the n last ones, which make up the second collection.
+# Generic function for splitting the tail of collection, starting from a specific iteration state itr_state. Returns a
+# tuple of two new collections. The first one contains all elements of the tail but the n last ones, which make up the
+# second collection.
 
-The type of the first collection generally follows that of Base.rest, except that the fallback case is not lazy, but is collected eagerly into a vector.
+# The type of the first collection generally follows that of Base.rest, except that the fallback case is not lazy, but
+# is collected eagerly into a vector.
 
-Can be overloaded for user-defined collection types to customize the behavior of slurping in assignments in non-final position, like a, b..., c = collection.
+# Can be overloaded for user-defined collection types to customize the behavior of slurping in assignments in non-final
+# position, like a, b..., c = collection.
 
-Julia 1.9
-Base.split_rest requires at least Julia 1.9.
-
-See also: Base.rest.
-
-Examples
+# See also: Base.rest.
 
 a = [1 2; 3 4]
-2×2 Matrix{Int64}:
- 1  2
- 3  4
+# 2×2 Matrix{Int64}:
+#  1  2
+#  3  4
 
-first, state = iterate(a)
-(1, 2)
+first, state = iterate(a)           # (1, 2)
+first, Base.split_rest(a, 1, state) # (1, ([3, 2], [4]))
 
-first, Base.split_rest(a, 1, state)
-(1, ([3, 2], [4]))
 
-source
-Indexable Collections
-Base.getindex
-—
-Function
-getindex(collection, key...)
+# -------------------------------------------------------------------
+# Indexable Collections
 
-Retrieve the value(s) stored at the given key or index within a collection. The syntax a[i,j,...] is converted by the compiler to getindex(a, i, j, ...).
-
-See also get, keys, eachindex.
-
-Examples
+# Base.getindex
+# Function getindex(collection, key...)
+# Retrieve the value(s) stored at the given key or index within a collection. The syntax a[i,j,...] is converted by the
+# compiler to getindex(a, i, j, ...).
+# See also get, keys, eachindex.
 
 A = Dict("a" => 1, "b" => 2)
-Dict{String, Int64} with 2 entries:
-  "b" => 2
-  "a" => 1
+# Dict{String, Int64} with 2 entries:
+#   "b" => 2
+#   "a" => 1
 
-getindex(A, "a")
-1
+getindex(A, "a")                    # 1
 
-source
-Base.setindex!
-—
-Function
-setindex!(collection, value, key...)
 
-Store the given value at the given key or index within a collection. The syntax a[i,j,...] = x is converted by the compiler to (setindex!(a, x, i, j, ...); x).
-
-Examples
+# Base.setindex!
+# Function setindex!(collection, value, key...)
+# Store the given value at the given key or index within a collection. The syntax a[i,j,...] = x is converted by the
+# compiler to (setindex!(a, x, i, j, ...); x).
 
 a = Dict("a"=>1)
-Dict{String, Int64} with 1 entry:
-  "a" => 1
+# Dict{String, Int64} with 1 entry:
+#   "a" => 1
 
 setindex!(a, 2, "b")
-Dict{String, Int64} with 2 entries:
-  "b" => 2
-  "a" => 1
+# Dict{String, Int64} with 2 entries:
+#   "b" => 2
+#   "a" => 1
 
-source
-Base.firstindex
-—
-Function
-firstindex(collection) -> Integer
-firstindex(collection, d) -> Integer
 
-Return the first index of collection. If d is given, return the first index of collection along dimension d.
+# Base.firstindex
+# Function firstindex(collection) -> Integer
+# Function firstindex(collection, d) -> Integer
+# Return the first index of collection. If d is given, return the first index of collection along dimension d.
+# The syntaxes A[begin] and A[1, begin] lower to A[firstindex(A)] and A[1, firstindex(A, 2)], respectively.
+# See also: first, axes, lastindex, nextind.
 
-The syntaxes A[begin] and A[1, begin] lower to A[firstindex(A)] and A[1, firstindex(A, 2)], respectively.
+firstindex([1,2,4])                 # 1
+firstindex(rand(3,4,5), 2)          # 1
 
-See also: first, axes, lastindex, nextind.
+# Base.lastindex
+# Function lastindex(collection) -> Integer
+# Function lastindex(collection, d) -> Integer
+# Return the last index of collection. If d is given, return the last index of collection along dimension d.
+# The syntaxes A[end] and A[end, end] lower to A[lastindex(A)] and A[lastindex(A, 1), lastindex(A, 2)], respectively.
+# See also: axes, firstindex, eachindex, prevind.
 
-Examples
+lastindex([1,2,4])                  # 3
+lastindex(rand(3,4,5), 2)           # 4
 
-firstindex([1,2,4])
-1
 
-firstindex(rand(3,4,5), 2)
-1
 
-source
-Base.lastindex
-—
-Function
-lastindex(collection) -> Integer
-lastindex(collection, d) -> Integer
 
-Return the last index of collection. If d is given, return the last index of collection along dimension d.
 
-The syntaxes A[end] and A[end, end] lower to A[lastindex(A)] and A[lastindex(A, 1), lastindex(A, 2)], respectively.
 
-See also: axes, firstindex, eachindex, prevind.
 
-Examples
 
-lastindex([1,2,4])
-3
+# Fully implemented by:
+# - Array
+# - BitArray
+# - AbstractArray
+# - SubArray
 
-lastindex(rand(3,4,5), 2)
-4
-
-source
-Fully implemented by:
-
-Array
-BitArray
-AbstractArray
-SubArray
-Partially implemented by:
-
-AbstractRange
-UnitRange
-Tuple
-AbstractString
-Dict
-IdDict
-WeakKeyDict
-NamedTuple
+# Partially implemented by:
+# - AbstractRange
+# - UnitRange
+# - Tuple
+# - AbstractString
+# - Dict
+# - IdDict
+# - WeakKeyDict
+# - NamedTuple
