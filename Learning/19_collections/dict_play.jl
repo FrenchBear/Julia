@@ -14,32 +14,47 @@ function fibo(n, dic = fibdic)
 	end
 end
 
-for i in 0:5
+for i in 0:8
 	println("F$i = $(fibo(i))")
 end
 println()
 
 println("pairs:")
 for p in pairs(fibdic)
-    println(p)
+	println(p)
 end
 println()
 
 println("keys:")
 for k in keys(fibdic)
-    println(k)
+	println(k)
 end
 println()
 
 # Insertion order is nor preserved (use OrderedDict for that), but order of keys() and values() are the same
 println("values:")
 for v in values(fibdic)
-    println(v)
+	println(v)
 end
 println()
 
 # Beware! In Julia, direct enumeration returns pairs, while in Python, direct enumeration return keys...
 println("direct:")
 for z in fibdic
-    println(z)
+	println(z)
 end
+println()
+
+
+# Print dictionary sorted by keys
+println("Dictionary sorted by keys")
+for k in sort(collect(keys(fibdic)))
+	println("$k => $(fibdic[k])")
+end
+println()
+
+println("Dictionary sorted by values (as strings in this example)")
+for (k, v) in sort(collect(fibdic), by = ((k, v),) -> string(v))
+	println("$k => $(fibdic[k])")
+end
+println()

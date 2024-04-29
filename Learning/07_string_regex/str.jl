@@ -6,6 +6,7 @@
 # 2024-04-01    PV      Trimming (strip)
 # 2024-04-10    PV      first, last, chop
 # 2024-04-23    PV      conversions
+# 2024-04-29    PV      Access individual char by index in a (UTF-8) string
 
 using Unicode
 
@@ -77,6 +78,7 @@ ls = [
 for s in ls
 	#   nb = lastindex(s * "?") - 1 # bytes (UTF8 representation)
 	nb = ncodeunits(s)          # bytes (UTF8 representation)
+	@assert nb == sizeof(s)     # sizeof also return length in bytes
 	nc = length(s)              # characters (codepoints)
 	ng = length(Unicode.graphemes(s))   # graphemes (glyphs)
 	println("nb=$(lpad(string(nb), 2)) nc=$(lpad(string(nc), 2)) ng=$(lpad(string(ng), 2))  $s")
@@ -297,25 +299,31 @@ println("lstrip: <$(lstrip(chaine))>")      # Trim left (heading) whitespaces
 println("rstrip: <$(rstrip(chaine))>")      # Trim right (tailing) whitespaces
 chaine = "\t\t  Hello \r\n\r\n"
 println("strip: <$(strip(chaine))>")        # Whitespaces include (not limited to) space, \t, \r, \n
-chaine="__Main__"
+chaine = "__Main__"
 println("strip: <$(strip(chaine, '_' ))>")  # Can specify char, or vector or set of chars 
 println()
 
 # Other string operations
-str = "😄 Hello! 👋"                       # "😄 Hello! 👋"
-last(first(str, 9), 7)                      # "Hello! "
-chop(str, head=2, tail=length(str)-9)       # "Hello! "
-chop(first(str, 9), head=2, tail=0)         # "Hello! "
-str[(:)(nextind.(str, 0, (3, 9))...)]       # "Hello! "
+str = "😄 Hello! 👋"                           # "😄 Hello! 👋"
+last(first(str, 9), 7)                          # "Hello! "
+chop(str, head = 2, tail = length(str) - 9)     # "Hello! "
+chop(first(str, 9), head = 2, tail = 0)         # "Hello! "
+str[(:)(nextind.(str, 0, (3, 9))...)]           # "Hello! "
 
-chop("Hello")                               # "Hell"
-chop("Hello", tail=2)                       # "Hel"
-chop("Hello", head=2, tail=0)               # "llo"     (by default, tail=1)
+chop("Hello")                                   # "Hell"
+chop("Hello", tail = 2)                         # "Hel"
+chop("Hello", head = 2, tail = 0)               # "llo"     (by default, tail=1)
 
 # Replace, reached/replace argument is a pair. Can also use a regex as search (see re.jl)
-println(replace("Bonjour", "jour"=>"soir")) # Bonsoir
-println(replace("Bonjour", Pair('o', 'ô'))) # Bônjôur
+println(replace("Bonjour", "jour" => "soir"))   # Bonsoir
+println(replace("Bonjour", Pair('o', 'ô')))     # Bônjôur
 
+# Remove prefix/suffix
+println(chopprefix("Hamburger", "Ham"))         # burger
+println(chopsuffix("Hamburger", "er"))          # Hamburg
+
+# Remove single trailing \n from string
+println(chomp("Hello\n"))                       # Hello
 
 # -------------------------------------------------------------------------
 # Conversions
@@ -327,12 +335,12 @@ s = String(v)
 
 v2 = codeunits("Aé♫山𝄞🐗")
 v3 = Vector{UInt8}([0x41,
-                    0xC3, 0xA9,
-                    0xE2, 0x99, 0xAB,
-                    0xE5, 0xB1, 0xB1,
-                    0xF0, 0x9D, 0x84, 0x9E,
-                    0xF0, 0x9F, 0x90, 0x97, ])
-@assert v2==v3
+	0xC3, 0xA9,
+	0xE2, 0x99, 0xAB,
+	0xE5, 0xB1, 0xB1,
+	0xF0, 0x9D, 0x84, 0x9E,
+	0xF0, 0x9F, 0x90, 0x97])
+@assert v2 == v3
 
 v = transcode(UInt8, "Hello")
 @assert v == [0x48, 0x65, 0x6C, 0x6C, 0x6F]
@@ -356,4 +364,40 @@ s = transcode(String, v)
 @assert codepoint('🐗') == 128023
 
 
+# -------------------------------------------------------------------------
+# Access individual char by index in a (UTF-8) string
+
+s = "M̄M̄"
+println(length(s))      # 4 chars
+println(ncodeunits(s))  # 6 bytes
+println()
+
+# String iterator iterates over chars
+for c in s
+    println(Int(c))
+end
+println()
+
+# Enumerate adds index, but does not allow direct access
+for (i, c) in enumerate(s) 
+    println(i,": ", Int(c))
+end
+println()
+
+# collect() returns a vector of chars that allow direct access, but calling collect each time is expensive
+for pos in 1:4
+    println(pos, ": ", Int(collect(s)[pos]))
+end
+println()
+
+# nextind(s, startindex, n) (also prevind) gives direct access to (start) position of character n (if startindex is 0)
+for pos in 1:4
+    println(pos, ": ", Int(s[nextind(s, 0, pos)]))
+end
+
+
+# Helper, return codepoint of char pos (1..length(s)) in s, working with UTF-8 strings
+codept(s::String, pos::Int) = Int(s[nextind(s, 0, pos)])
+# Helper, returns char at a specified pos (1..length(s)) in s
+charat(s::String, pos::Int)::Char = s[nextind(s, 0, pos)]
 
