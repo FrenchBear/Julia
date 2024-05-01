@@ -4,8 +4,8 @@
 #
 # 2024-04-26    PV
 
-
-# ToDo: Look at InteractiveUtils
+# See 40_lib_InteractiveUtils
+# See 39_base_introspection
 
 using InteractiveUtils
 

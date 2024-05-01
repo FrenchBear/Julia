@@ -281,7 +281,7 @@ println(1:5 .|> [x -> x^2, inv, x -> 2 * x, -, isodd])      # [1, 0.5, 6, -4, tr
 "Tell whether there are too foo items in the array."
 foo(xs::Array) = nothing
 
-# julia> include("f1.jl")     # foo
+# include("f1.jl")     # foo
 # help?> foo  
 # search: foo floor fourthroot pointer_from_objref OverflowError RoundFromZero unsafe_copyto! functionloc
 # 
@@ -308,7 +308,7 @@ If `y` is unspecified, compute the Bar index between all pairs of columns of `x`
 
 # Examples
 ```julia-repl
-julia> bar([1, 2], [1, 2])
+bar([1, 2], [1, 2])
 1
 ```
 
@@ -335,7 +335,7 @@ bar(x, y) = nothing
 #   Examples
 #   ≡≡≡≡≡≡≡≡
 # 
-#   julia> bar([1, 2], [1, 2])
+#   bar([1, 2], [1, 2])
 #   1
 # 
 #   See also bar!, baz, baaz.
