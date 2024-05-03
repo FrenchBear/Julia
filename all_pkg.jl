@@ -6,6 +6,7 @@
 import Pkg
 
 function u(m::String)
+    println("--- Package $m")
     Pkg.add(m)
 end
 
