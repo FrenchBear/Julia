@@ -254,6 +254,7 @@ typeof(m.a)                         # Float32
 # It's quite instructive to compare the sheer amount of code generated for a simple function:
 func(m::MyType) = m.a+1
 
+using InteractiveUtils
 code_llvm(func, Tuple{MyType{Float64}})
 # ;  @ REPL[3]:1 within `func`
 # ; Function Attrs: uwtable
@@ -428,7 +429,7 @@ end
 # snippet, as soon as b is constructed, it can be passed to another function k, the kernel. If, for example, function k
 # declares b as an argument of type Complex{T}, where T is a type parameter, then a type annotation appearing in an
 # assignment statement within k of the form:
-c = (b + 1.0f0)::Complex{T}
+# c = (b + 1.0f0)::Complex{T}
 
 # does not hinder performance (but does not help either) since the compiler can determine the type of c at the time k is
 # compiled.
@@ -627,7 +628,7 @@ array3(5.0, 2)
 function array3(fillval, ::Val{N}) where N
     fill(fillval, ntuple(d->3, Val(N)))
 end
-array3 (generic function with 1 method)
+# array3 (generic function with 1 method)
 
 array3(5.0, Val(2))
 # 3×3 Matrix{Float64}:
@@ -776,10 +777,10 @@ x = randn(10000);
 fmt(f) = println(rpad(string(f)*": ", 14, ' '), @elapsed f(x))
 
 map(fmt, [copy_cols, copy_rows, copy_col_row, copy_row_col]);
-copy_cols:    0.331706323
-copy_rows:    1.799009911
-copy_col_row: 0.415630047
-copy_row_col: 1.721531501
+# copy_cols:    0.331706323
+# copy_rows:    1.799009911
+# copy_col_row: 0.415630047
+# copy_row_col: 1.721531501
 
 # Notice that copy_cols is much faster than copy_rows. This is expected because copy_cols respects the column-based
 # memory layout of the Matrix and fills it one column at a time. Additionally, copy_col_row is much faster than
@@ -837,170 +838,206 @@ end;
 #   0.030850 seconds (6 allocations: 288 bytes)
 # 50000015000000
 
-Preallocation has other advantages, for example by allowing the caller to control the "output" type from an algorithm. In the example above, we could have passed a SubArray rather than an Array, had we so desired.
+# Preallocation has other advantages, for example by allowing the caller to control the "output" type from an algorithm.
+# In the example above, we could have passed a SubArray rather than an Array, had we so desired.
 
-Taken to its extreme, pre-allocation can make your code uglier, so performance measurements and some judgment may be required. However, for "vectorized" (element-wise) functions, the convenient syntax x .= f.(y) can be used for in-place operations with fused loops and no temporary arrays (see the dot syntax for vectorizing functions).
+# Taken to its extreme, pre-allocation can make your code uglier, so performance measurements and some judgment may be
+# required. However, for "vectorized" (element-wise) functions, the convenient syntax x .= f.(y) can be used for
+# in-place operations with fused loops and no temporary arrays (see the dot syntax for vectorizing functions).
 
 
 # ---------------------------------------------------------------------------------------------
-More dots: Fuse vectorized operations
-Julia has a special dot syntax that converts any scalar function into a "vectorized" function call, and any operator into a "vectorized" operator, with the special property that nested "dot calls" are fusing: they are combined at the syntax level into a single loop, without allocating temporary arrays. If you use .= and similar assignment operators, the result can also be stored in-place in a pre-allocated array (see above).
+# More dots: Fuse vectorized operations
 
-In a linear-algebra context, this means that even though operations like vector + vector and vector * scalar are defined, it can be advantageous to instead use vector .+ vector and vector .* scalar because the resulting loops can be fused with surrounding computations. For example, consider the two functions:
+# Julia has a special dot syntax that converts any scalar function into a "vectorized" function call, and any operator
+# into a "vectorized" operator, with the special property that nested "dot calls" are fusing: they are combined at the
+# syntax level into a single loop, without allocating temporary arrays. If you use .= and similar assignment operators,
+# the result can also be stored in-place in a pre-allocated array (see above).
 
+# In a linear-algebra context, this means that even though operations like vector + vector and vector * scalar are
+# defined, it can be advantageous to instead use vector .+ vector and vector .* scalar because the resulting loops can
+# be fused with surrounding computations. For example, consider the two functions:
 f(x) = 3x.^2 + 4x + 7x.^3;
-
 fdot(x) = @. 3x^2 + 4x + 7x^3; # equivalent to 3 .* x.^2 .+ 4 .* x .+ 7 .* x.^3
 
-Both f and fdot compute the same thing. However, fdot (defined with the help of the @. macro) is significantly faster when applied to an array:
-
+# Both f and fdot compute the same thing. However, fdot (defined with the help of the @. macro) is significantly faster when applied to an array:
 x = rand(10^6);
 
-@time f(x);
-  0.019049 seconds (16 allocations: 45.777 MiB, 18.59% gc time)
+@time f(x);         # 0.019049 seconds (16 allocations: 45.777 MiB, 18.59% gc time)
+@time fdot(x);      # 0.002790 seconds (6 allocations: 7.630 MiB)
+@time f.(x);        # 0.002626 seconds (8 allocations: 7.630 MiB)
 
-@time fdot(x);
-  0.002790 seconds (6 allocations: 7.630 MiB)
-
-@time f.(x);
-  0.002626 seconds (8 allocations: 7.630 MiB)
-
-That is, fdot(x) is ten times faster and allocates 1/6 the memory of f(x), because each * and + operation in f(x) allocates a new temporary array and executes in a separate loop. In this example f.(x) is as fast as fdot(x) but in many contexts it is more convenient to sprinkle some dots in your expressions than to define a separate function for each vectorized operation.
+# That is, fdot(x) is ten times faster and allocates 1/6 the memory of f(x), because each * and + operation in f(x)
+# allocates a new temporary array and executes in a separate loop. In this example f.(x) is as fast as fdot(x) but in
+# many contexts it is more convenient to sprinkle some dots in your expressions than to define a separate function for
+# each vectorized operation.
 
 
 # ---------------------------------------------------------------------------------------------
-Consider using views for slices
-In Julia, an array "slice" expression like array[1:5, :] creates a copy of that data (except on the left-hand side of an assignment, where array[1:5, :] = ... assigns in-place to that portion of array). If you are doing many operations on the slice, this can be good for performance because it is more efficient to work with a smaller contiguous copy than it would be to index into the original array. On the other hand, if you are just doing a few simple operations on the slice, the cost of the allocation and copy operations can be substantial.
+# Consider using views for slices
 
-An alternative is to create a "view" of the array, which is an array object (a SubArray) that actually references the data of the original array in-place, without making a copy. (If you write to a view, it modifies the original array's data as well.) This can be done for individual slices by calling view, or more simply for a whole expression or block of code by putting @views in front of that expression. For example:
+# In Julia, an array "slice" expression like array[1:5, :] creates a copy of that data (except on the left-hand side of
+# an assignment, where array[1:5, :] = ... assigns in-place to that portion of array). If you are doing many operations
+# on the slice, this can be good for performance because it is more efficient to work with a smaller contiguous copy
+# than it would be to index into the original array. On the other hand, if you are just doing a few simple operations on
+# the slice, the cost of the allocation and copy operations can be substantial.
 
+# An alternative is to create a "view" of the array, which is an array object (a SubArray) that actually references the
+# data of the original array in-place, without making a copy. (If you write to a view, it modifies the original array's
+# data as well.) This can be done for individual slices by calling view, or more simply for a whole expression or block
+# of code by putting @views in front of that expression. For example:
 fcopy(x) = sum(x[2:end-1]);
-
 @views fview(x) = sum(x[2:end-1]);
 
 x = rand(10^6);
 
-@time fcopy(x);
-  0.003051 seconds (3 allocations: 7.629 MB)
+@time fcopy(x);     # 0.003051 seconds (3 allocations: 7.629 MB)
+@time fview(x);     # 0.001020 seconds (1 allocation: 16 bytes)
 
-@time fview(x);
-  0.001020 seconds (1 allocation: 16 bytes)
-
-Notice both the 3× speedup and the decreased memory allocation of the fview version of the function.
+# Notice both the 3× speedup and the decreased memory allocation of the fview version of the function.
 
 
 # ---------------------------------------------------------------------------------------------
-Copying data is not always bad
-Arrays are stored contiguously in memory, lending themselves to CPU vectorization and fewer memory accesses due to caching. These are the same reasons that it is recommended to access arrays in column-major order (see above). Irregular access patterns and non-contiguous views can drastically slow down computations on arrays because of non-sequential memory access.
+# Copying data is not always bad
 
-Copying irregularly-accessed data into a contiguous array before repeated access it can result in a large speedup, such as in the example below. Here, a matrix is being accessed at randomly-shuffled indices before being multiplied. Copying into plain arrays speeds up the multiplication even with the added cost of copying and allocation.
+# Arrays are stored contiguously in memory, lending themselves to CPU vectorization and fewer memory accesses due to
+# caching. These are the same reasons that it is recommended to access arrays in column-major order (see above).
+# Irregular access patterns and non-contiguous views can drastically slow down computations on arrays because of
+# non-sequential memory access.
 
+# Copying irregularly-accessed data into a contiguous array before repeated access it can result in a large speedup,
+# such as in the example below. Here, a matrix is being accessed at randomly-shuffled indices before being multiplied.
+# Copying into plain arrays speeds up the multiplication even with the added cost of copying and allocation.
 using Random
-
 A = randn(3000, 3000);
-
 x = randn(2000);
-
 inds = shuffle(1:3000)[1:2000];
-
 function iterated_neural_network(A, x, depth)
-           for _ in 1:depth
-               x .= max.(0, A * x)
-           end
-           argmax(x)
-       end
+    for _ in 1:depth
+        x .= max.(0, A * x)
+    end
+    argmax(x)
+end
 
 @time iterated_neural_network(view(A, inds, inds), x, 10)
-  0.324903 seconds (12 allocations: 157.562 KiB)
-1569
+#   0.324903 seconds (12 allocations: 157.562 KiB)
+# 1569
 
 @time iterated_neural_network(A[inds, inds], x, 10)
-  0.054576 seconds (13 allocations: 30.671 MiB, 13.33% gc time)
-1569
+#   0.054576 seconds (13 allocations: 30.671 MiB, 13.33% gc time)
+# 1569
 
-Provided there is enough memory, the cost of copying the view to an array is outweighed by the speed boost from doing the repeated matrix multiplications on a contiguous array.
-
-
-# ---------------------------------------------------------------------------------------------
-Consider StaticArrays.jl for small fixed-size vector/matrix operations
-If your application involves many small (< 100 element) arrays of fixed sizes (i.e. the size is known prior to execution), then you might want to consider using the StaticArrays.jl package. This package allows you to represent such arrays in a way that avoids unnecessary heap allocations and allows the compiler to specialize code for the size of the array, e.g. by completely unrolling vector operations (eliminating the loops) and storing elements in CPU registers.
-
-For example, if you are doing computations with 2d geometries, you might have many computations with 2-component vectors. By using the SVector type from StaticArrays.jl, you can use convenient vector notation and operations like norm(3v - w) on vectors v and w, while allowing the compiler to unroll the code to a minimal computation equivalent to @inbounds hypot(3v[1]-w[1], 3v[2]-w[2]).
+# Provided there is enough memory, the cost of copying the view to an array is outweighed by the speed boost from doing
+# the repeated matrix multiplications on a contiguous array.
 
 
 # ---------------------------------------------------------------------------------------------
-Avoid string interpolation for I/O
-When writing data to a file (or other I/O device), forming extra intermediate strings is a source of overhead. Instead of:
+# Consider StaticArrays.jl for small fixed-size vector/matrix operations
 
+# If your application involves many small (< 100 element) arrays of fixed sizes (i.e. the size is known prior to
+# execution), then you might want to consider using the StaticArrays.jl package. This package allows you to represent
+# such arrays in a way that avoids unnecessary heap allocations and allows the compiler to specialize code for the size
+# of the array, e.g. by completely unrolling vector operations (eliminating the loops) and storing elements in CPU
+# registers.
+
+# For example, if you are doing computations with 2d geometries, you might have many computations with 2-component
+# vectors. By using the SVector type from StaticArrays.jl, you can use convenient vector notation and operations like
+# norm(3v - w) on vectors v and w, while allowing the compiler to unroll the code to a minimal computation equivalent to
+# @inbounds hypot(3v[1]-w[1], 3v[2]-w[2]).
+
+
+# ---------------------------------------------------------------------------------------------
+# Avoid string interpolation for I/O
+
+file = raw"c:\temp\f1.txt"
+a = 12
+b = "Hello"
+f(x) = x*x
+
+# When writing data to a file (or other I/O device), forming extra intermediate strings is a source of overhead. Instead of:
 println(file, "$a $b")
 
-use:
-
+# use:
 println(file, a, " ", b)
 
-The first version of the code forms a string, then writes it to the file, while the second version writes values directly to the file. Also notice that in some cases string interpolation can be harder to read. Consider:
-
+# The first version of the code forms a string, then writes it to the file, while the second version writes values
+# directly to the file. Also notice that in some cases string interpolation can be harder to read. Consider:
 println(file, "$(f(a))$(f(b))")
 
-versus:
-
+# versus:
 println(file, f(a), f(b))
 
 
 # ---------------------------------------------------------------------------------------------
-Optimize network I/O during parallel execution
-When executing a remote function in parallel:
+# Optimize network I/O during parallel execution
 
-using Distributed
+# When executing a remote function in parallel:
+# using Distributed
+# responses = Vector{Any}(undef, nworkers())
+# @sync begin
+#     for (idx, pid) in enumerate(workers())
+#         @async responses[idx] = remotecall_fetch(foo, pid, args...)
+#     end
+# end
 
-responses = Vector{Any}(undef, nworkers())
-@sync begin
-    for (idx, pid) in enumerate(workers())
-        @async responses[idx] = remotecall_fetch(foo, pid, args...)
-    end
-end
+# is faster than:
+# using Distributed
+# refs = Vector{Any}(undef, nworkers())
+# for (idx, pid) in enumerate(workers())
+#     refs[idx] = @spawnat pid foo(args...)
+# end
+# responses = [fetch(r) for r in refs]
 
-is faster than:
-
-using Distributed
-
-refs = Vector{Any}(undef, nworkers())
-for (idx, pid) in enumerate(workers())
-    refs[idx] = @spawnat pid foo(args...)
-end
-responses = [fetch(r) for r in refs]
-
-The former results in a single network round-trip to every worker, while the latter results in two network calls - first by the @spawnat and the second due to the fetch (or even a wait). The fetch/wait is also being executed serially resulting in an overall poorer performance.
-
-
-# ---------------------------------------------------------------------------------------------
-Fix deprecation warnings
-A deprecated function internally performs a lookup in order to print a relevant warning only once. This extra lookup can cause a significant slowdown, so all uses of deprecated functions should be modified as suggested by the warnings.
+# The former results in a single network round-trip to every worker, while the latter results in two network calls -
+# first by the @spawnat and the second due to the fetch (or even a wait). The fetch/wait is also being executed serially
+# resulting in an overall poorer performance.
 
 
 # ---------------------------------------------------------------------------------------------
-Tweaks
-These are some minor points that might help in tight inner loops.
+# Fix deprecation warnings
 
-Avoid unnecessary arrays. For example, instead of sum([x,y,z]) use x+y+z.
-Use abs2(z) instead of abs(z)^2 for complex z. In general, try to rewrite code to use abs2 instead of abs for complex arguments.
-Use div(x,y) for truncating division of integers instead of trunc(x/y), fld(x,y) instead of floor(x/y), and cld(x,y) instead of ceil(x/y).
+# A deprecated function internally performs a lookup in order to print a relevant warning only once. This extra lookup
+# can cause a significant slowdown, so all uses of deprecated functions should be modified as suggested by the warnings.
 
 
 # ---------------------------------------------------------------------------------------------
-Performance Annotations
-Sometimes you can enable better optimization by promising certain program properties.
+# Tweaks
 
-Use @inbounds to eliminate array bounds checking within expressions. Be certain before doing this. If the subscripts are ever out of bounds, you may suffer crashes or silent corruption.
-Use @fastmath to allow floating point optimizations that are correct for real numbers, but lead to differences for IEEE numbers. Be careful when doing this, as this may change numerical results. This corresponds to the -ffast-math option of clang.
-Write @simd in front of for loops to promise that the iterations are independent and may be reordered. Note that in many cases, Julia can automatically vectorize code without the @simd macro; it is only beneficial in cases where such a transformation would otherwise be illegal, including cases like allowing floating-point re-associativity and ignoring dependent memory accesses (@simd ivdep). Again, be very careful when asserting @simd as erroneously annotating a loop with dependent iterations may result in unexpected results. In particular, note that setindex! on some AbstractArray subtypes is inherently dependent upon iteration order. This feature is experimental and could change or disappear in future versions of Julia.
-The common idiom of using 1:n to index into an AbstractArray is not safe if the Array uses unconventional indexing, and may cause a segmentation fault if bounds checking is turned off. Use LinearIndices(x) or eachindex(x) instead (see also Arrays with custom indices).
+# These are some minor points that might help in tight inner loops.
+# - Avoid unnecessary arrays. For example, instead of sum([x,y,z]) use x+y+z.
+# - Use abs2(z) instead of abs(z)^2 for complex z. In general, try to rewrite code to use abs2 instead of abs for
+#   complex arguments.
+# - Use div(x,y) for truncating division of integers instead of trunc(x/y), fld(x,y) instead of floor(x/y), and cld(x,y)
+#   instead of ceil(x/y).
 
-Note
-While @simd needs to be placed directly in front of an innermost for loop, both @inbounds and @fastmath can be applied to either single expressions or all the expressions that appear within nested blocks of code, e.g., using @inbounds begin or @inbounds for ....
 
-Here is an example with both @inbounds and @simd markup (we here use @noinline to prevent the optimizer from trying to be too clever and defeat our benchmark):
+# ---------------------------------------------------------------------------------------------
+# Performance Annotations
 
+# Sometimes you can enable better optimization by promising certain program properties.
+# - Use @inbounds to eliminate array bounds checking within expressions. Be certain before doing this. If the subscripts
+#   are ever out of bounds, you may suffer crashes or silent corruption.
+# - Use @fastmath to allow floating point optimizations that are correct for real numbers, but lead to differences for
+#   IEEE numbers. Be careful when doing this, as this may change numerical results. This corresponds to the -ffast-math
+#   option of clang.
+# - Write @simd in front of for loops to promise that the iterations are independent and may be reordered. Note that in
+#   many cases, Julia can automatically vectorize code without the @simd macro; it is only beneficial in cases where
+#   such a transformation would otherwise be illegal, including cases like allowing floating-point re-associativity and
+#   ignoring dependent memory accesses (@simd ivdep). Again, be very careful when asserting @simd as erroneously
+#   annotating a loop with dependent iterations may result in unexpected results. In particular, note that setindex! on
+#   some AbstractArray subtypes is inherently dependent upon iteration order. This feature is experimental and could
+#   change or disappear in future versions of Julia.
+
+# The common idiom of using 1:n to index into an AbstractArray is not safe if the Array uses unconventional indexing,
+# and may cause a segmentation fault if bounds checking is turned off. Use LinearIndices(x) or eachindex(x) instead (see
+# also Arrays with custom indices).
+
+# Note: While @simd needs to be placed directly in front of an innermost for loop, both @inbounds and @fastmath can be
+# applied to either single expressions or all the expressions that appear within nested blocks of code, e.g., using
+# @inbounds begin or @inbounds for ....
+
+# Here is an example with both @inbounds and @simd markup (we here use @noinline to prevent the optimizer from trying to
+# be too clever and defeat our benchmark):
 @noinline function inner(x, y)
     s = zero(eltype(x))
     for i=eachindex(x)
@@ -1033,15 +1070,12 @@ end
 
 timeit(1000, 1000)
 
-On a computer with a 2.4GHz Intel Core i5 processor, this produces:
+# On a computer with a 2.4GHz Intel Core i5 processor, this produces: (GFlop/sec measures the performance, and larger
+# numbers are better.)
+# GFlop/sec        = 1.9467069505224963
+# GFlop/sec (SIMD) = 17.578554163920018
 
-GFlop/sec        = 1.9467069505224963
-GFlop/sec (SIMD) = 17.578554163920018
-
-(GFlop/sec measures the performance, and larger numbers are better.)
-
-Here is an example with all three kinds of markup. This program first calculates the finite difference of a one-dimensional array, and then evaluates the L2-norm of the result:
-
+# Here is an example with all three kinds of markup. This program first calculates the finite difference of a one-dimensional array, and then evaluates the L2-norm of the result:
 function init!(u::Vector)
     n = length(u)
     dx = 1.0 / (n-1)
@@ -1089,41 +1123,48 @@ end
 
 main()
 
-On a computer with a 2.7 GHz Intel Core i7 processor, this produces:
+# On a computer with a 2.7 GHz Intel Core i7 processor, this produces:
+# $ julia wave.jl;
+#   1.207814709 seconds
+# 4.443986180758249
+# 
+# $ julia --math-mode=ieee wave.jl;
+#   4.487083643 seconds
+# 4.443986180758249
 
-$ julia wave.jl;
-  1.207814709 seconds
-4.443986180758249
+# Here, the option --math-mode=ieee disables the @fastmath macro, so that we can compare results.
 
-$ julia --math-mode=ieee wave.jl;
-  4.487083643 seconds
-4.443986180758249
+# In this case, the speedup due to @fastmath is a factor of about 3.7. This is unusually large – in general, the speedup
+# will be smaller. (In this particular example, the working set of the benchmark is small enough to fit into the L1
+# cache of the processor, so that memory access latency does not play a role, and computing time is dominated by CPU
+# usage. In many real world programs this is not the case.) Also, in this case this optimization does not change the
+# result – in general, the result will be slightly different. In some cases, especially for numerically unstable
+# algorithms, the result can be very different.
 
-Here, the option --math-mode=ieee disables the @fastmath macro, so that we can compare results.
+# The annotation @fastmath re-arranges floating point expressions, e.g. changing the order of evaluation, or assuming
+# that certain special cases (inf, nan) cannot occur. In this case (and on this particular computer), the main
+# difference is that the expression 1 / (2*dx) in the function deriv is hoisted out of the loop (i.e. calculated outside
+# the loop), as if one had written idx = 1 / (2*dx). In the loop, the expression ... / (2*dx) then becomes ... * idx,
+# which is much faster to evaluate. Of course, both the actual optimization that is applied by the compiler as well as
+# the resulting speedup depend very much on the hardware. You can examine the change in generated code by using Julia's
+# code_native function.
 
-In this case, the speedup due to @fastmath is a factor of about 3.7. This is unusually large – in general, the speedup will be smaller. (In this particular example, the working set of the benchmark is small enough to fit into the L1 cache of the processor, so that memory access latency does not play a role, and computing time is dominated by CPU usage. In many real world programs this is not the case.) Also, in this case this optimization does not change the result – in general, the result will be slightly different. In some cases, especially for numerically unstable algorithms, the result can be very different.
-
-The annotation @fastmath re-arranges floating point expressions, e.g. changing the order of evaluation, or assuming that certain special cases (inf, nan) cannot occur. In this case (and on this particular computer), the main difference is that the expression 1 / (2*dx) in the function deriv is hoisted out of the loop (i.e. calculated outside the loop), as if one had written idx = 1 / (2*dx). In the loop, the expression ... / (2*dx) then becomes ... * idx, which is much faster to evaluate. Of course, both the actual optimization that is applied by the compiler as well as the resulting speedup depend very much on the hardware. You can examine the change in generated code by using Julia's code_native function.
-
-Note that @fastmath also assumes that NaNs will not occur during the computation, which can lead to surprising behavior:
-
+# Note that @fastmath also assumes that NaNs will not occur during the computation, which can lead to surprising behavior:
 f(x) = isnan(x);
-
-f(NaN)
-true
-
+f(NaN)                              # true
 f_fast(x) = @fastmath isnan(x);
-
-f_fast(NaN)
-false
+f_fast(NaN)                         # false
 
 
 # ---------------------------------------------------------------------------------------------
-Treat Subnormal Numbers as Zeros
-Subnormal numbers, formerly called denormal numbers, are useful in many contexts, but incur a performance penalty on some hardware. A call set_zero_subnormals(true) grants permission for floating-point operations to treat subnormal inputs or outputs as zeros, which may improve performance on some hardware. A call set_zero_subnormals(false) enforces strict IEEE behavior for subnormal numbers.
+# Treat Subnormal Numbers as Zeros
 
-Below is an example where subnormals noticeably impact performance on some hardware:
+# Subnormal numbers, formerly called denormal numbers, are useful in many contexts, but incur a performance penalty on
+# some hardware. A call set_zero_subnormals(true) grants permission for floating-point operations to treat subnormal
+# inputs or outputs as zeros, which may improve performance on some hardware. A call set_zero_subnormals(false) enforces
+# strict IEEE behavior for subnormal numbers.
 
+# Below is an example where subnormals noticeably impact performance on some hardware:
 function timestep(b::Vector{T}, a::Vector{T}, Δt::T) where T
     @assert length(a)==length(b)
     n = length(b)
@@ -1149,90 +1190,107 @@ for trial=1:6
     @time heatflow(a,1000)
 end
 
-This gives an output similar to
+# This gives an output similar to
+#  0.002202 seconds (1 allocation: 4.063 KiB)
+#  0.001502 seconds (1 allocation: 4.063 KiB)
+#  0.002139 seconds (1 allocation: 4.063 KiB)
+#  0.001454 seconds (1 allocation: 4.063 KiB)
+#  0.002115 seconds (1 allocation: 4.063 KiB)
+#  0.001455 seconds (1 allocation: 4.063 KiB)
 
-  0.002202 seconds (1 allocation: 4.063 KiB)
-  0.001502 seconds (1 allocation: 4.063 KiB)
-  0.002139 seconds (1 allocation: 4.063 KiB)
-  0.001454 seconds (1 allocation: 4.063 KiB)
-  0.002115 seconds (1 allocation: 4.063 KiB)
-  0.001455 seconds (1 allocation: 4.063 KiB)
+# Note how each even iteration is significantly faster.
 
-Note how each even iteration is significantly faster.
+# This example generates many subnormal numbers because the values in a become an exponentially decreasing curve, which
+# slowly flattens out over time.
 
-This example generates many subnormal numbers because the values in a become an exponentially decreasing curve, which slowly flattens out over time.
-
-Treating subnormals as zeros should be used with caution, because doing so breaks some identities, such as x-y == 0 implies x == y:
-
+# Treating subnormals as zeros should be used with caution, because doing so breaks some identities, such as x-y == 0
+# implies x == y:
 x = 3f-38; y = 2f-38;
+set_zero_subnormals(true); (x - y, x == y)      # (0.0f0, false)
+set_zero_subnormals(false); (x - y, x == y)     # (1.0000001f-38, false)
 
-set_zero_subnormals(true); (x - y, x == y)
-(0.0f0, false)
-
-set_zero_subnormals(false); (x - y, x == y)
-(1.0000001f-38, false)
-
-In some applications, an alternative to zeroing subnormal numbers is to inject a tiny bit of noise. For example, instead of initializing a with zeros, initialize it with:
-
+# In some applications, an alternative to zeroing subnormal numbers is to inject a tiny bit of noise. For example,
+# instead of initializing a with zeros, initialize it with:
 a = rand(Float32,1000) * 1.f-9
 
 
 # ---------------------------------------------------------------------------------------------
-@code_warntype
-The macro @code_warntype (or its function variant code_warntype) can sometimes be helpful in diagnosing type-related problems. Here's an example:
+# @code_warntype
 
+# The macro @code_warntype (or its function variant code_warntype) can sometimes be helpful in diagnosing type-related
+# problems. Here's an example:
 @noinline pos(x) = x < 0 ? 0 : x;
 
 function f(x)
-           y = pos(x)
-           return sin(y*x + 1)
-       end;
+    y = pos(x)
+    return sin(y*x + 1)
+end;
 
 @code_warntype f(3.2)
-MethodInstance for f(::Float64)
-  from f(x) @ Main REPL[9]:1
-Arguments
-  #self#::Core.Const(f)
-  x::Float64
-Locals
-  y::Union{Float64, Int64}
-Body::Float64
-1 ─      (y = Main.pos(x))
-│   %2 = (y * x)::Float64
-│   %3 = (%2 + 1)::Float64
-│   %4 = Main.sin(%3)::Float64
-└──      return %4
+# MethodInstance for f(::Float64)
+#   from f(x) @ Main REPL[9]:1
+# Arguments
+#   #self#::Core.Const(f)
+#   x::Float64
+# Locals
+#   y::Union{Float64, Int64}
+# Body::Float64
+# 1 ─      (y = Main.pos(x))
+# │   %2 = (y * x)::Float64
+# │   %3 = (%2 + 1)::Float64
+# │   %4 = Main.sin(%3)::Float64
+# └──      return %4
 
-Interpreting the output of @code_warntype, like that of its cousins @code_lowered, @code_typed, @code_llvm, and @code_native, takes a little practice. Your code is being presented in form that has been heavily digested on its way to generating compiled machine code. Most of the expressions are annotated by a type, indicated by the ::T (where T might be Float64, for example). The most important characteristic of @code_warntype is that non-concrete types are displayed in red; since this document is written in Markdown, which has no color, in this document, red text is denoted by uppercase.
+# Interpreting the output of @code_warntype, like that of its cousins @code_lowered, @code_typed, @code_llvm, and
+# @code_native, takes a little practice. Your code is being presented in form that has been heavily digested on its way
+# to generating compiled machine code. Most of the expressions are annotated by a type, indicated by the ::T (where T
+# might be Float64, for example). The most important characteristic of @code_warntype is that non-concrete types are
+# displayed in red; since this document is written in Markdown, which has no color, in this document, red text is
+# denoted by uppercase.
 
-At the top, the inferred return type of the function is shown as Body::Float64. The next lines represent the body of f in Julia's SSA IR form. The numbered boxes are labels and represent targets for jumps (via goto) in your code. Looking at the body, you can see that the first thing that happens is that pos is called and the return value has been inferred as the Union type Union{Float64, Int64} shown in uppercase since it is a non-concrete type. This means that we cannot know the exact return type of pos based on the input types. However, the result of y*xis a Float64 no matter if y is a Float64 or Int64 The net result is that f(x::Float64) will not be type-unstable in its output, even if some of the intermediate computations are type-unstable.
+# At the top, the inferred return type of the function is shown as Body::Float64. The next lines represent the body of f
+# in Julia's SSA IR form. The numbered boxes are labels and represent targets for jumps (via goto) in your code. Looking
+# at the body, you can see that the first thing that happens is that pos is called and the return value has been
+# inferred as the Union type Union{Float64, Int64} shown in uppercase since it is a non-concrete type. This means that
+# we cannot know the exact return type of pos based on the input types. However, the result of y*xis a Float64 no matter
+# if y is a Float64 or Int64 The net result is that f(x::Float64) will not be type-unstable in its output, even if some
+# of the intermediate computations are type-unstable.
 
-How you use this information is up to you. Obviously, it would be far and away best to fix pos to be type-stable: if you did so, all of the variables in f would be concrete, and its performance would be optimal. However, there are circumstances where this kind of ephemeral type instability might not matter too much: for example, if pos is never used in isolation, the fact that f's output is type-stable (for Float64 inputs) will shield later code from the propagating effects of type instability. This is particularly relevant in cases where fixing the type instability is difficult or impossible. In such cases, the tips above (e.g., adding type annotations and/or breaking up functions) are your best tools to contain the "damage" from type instability. Also, note that even Julia Base has functions that are type unstable. For example, the function findfirst returns the index into an array where a key is found, or nothing if it is not found, a clear type instability. In order to make it easier to find the type instabilities that are likely to be important, Unions containing either missing or nothing are color highlighted in yellow, instead of red.
+# How you use this information is up to you. Obviously, it would be far and away best to fix pos to be type-stable: if
+# you did so, all of the variables in f would be concrete, and its performance would be optimal. However, there are
+# circumstances where this kind of ephemeral type instability might not matter too much: for example, if pos is never
+# used in isolation, the fact that f's output is type-stable (for Float64 inputs) will shield later code from the
+# propagating effects of type instability. This is particularly relevant in cases where fixing the type instability is
+# difficult or impossible. In such cases, the tips above (e.g., adding type annotations and/or breaking up functions)
+# are your best tools to contain the "damage" from type instability. Also, note that even Julia Base has functions that
+# are type unstable. For example, the function findfirst returns the index into an array where a key is found, or
+# nothing if it is not found, a clear type instability. In order to make it easier to find the type instabilities that
+# are likely to be important, Unions containing either missing or nothing are color highlighted in yellow, instead of
+# red.
 
-The following examples may help you interpret expressions marked as containing non-leaf types:
+# The following examples may help you interpret expressions marked as containing non-leaf types:
 
-Function body starting with Body::Union{T1,T2})
+# - Function body starting with Body::Union{T1,T2})
+#     Interpretation: function with unstable return type
+#     Suggestion: make the return value type-stable, even if you have to annotate it
 
-Interpretation: function with unstable return type
-Suggestion: make the return value type-stable, even if you have to annotate it
-invoke Main.g(%%x::Int64)::Union{Float64, Int64}
+# - invoke Main.g(%%x::Int64)::Union{Float64, Int64}
+#     Interpretation: call to a type-unstable function g.
+#     Suggestion: fix the function, or if necessary annotate the return value
 
-Interpretation: call to a type-unstable function g.
-Suggestion: fix the function, or if necessary annotate the return value
-invoke Base.getindex(%%x::Array{Any,1}, 1::Int64)::Any
+# - invoke Base.getindex(%%x::Array{Any,1}, 1::Int64)::Any
+#     Interpretation: accessing elements of poorly-typed arrays
+#     Suggestion: use arrays with better-defined types, or if necessary annotate the type of individual element accesses
 
-Interpretation: accessing elements of poorly-typed arrays
-Suggestion: use arrays with better-defined types, or if necessary annotate the type of individual element accesses
-Base.getfield(%%x, :(:data))::Array{Float64,N} where N
-
-Interpretation: getting a field that is of non-leaf type. In this case, the type of x, say ArrayContainer, had a field data::Array{T}. But Array needs the dimension N, too, to be a concrete type.
-Suggestion: use concrete types like Array{T,3} or Array{T,N}, where N is now a parameter of ArrayContainer
+# - Base.getfield(%%x, :(:data))::Array{Float64,N} where N
+#     Interpretation: getting a field that is of non-leaf type. In this case, the type of x, say ArrayContainer, had a field data::Array{T}. But Array needs the dimension N, too, to be a concrete type.
+#     Suggestion: use concrete types like Array{T,3} or Array{T,N}, where N is now a parameter of ArrayContainer
 
 
 # ---------------------------------------------------------------------------------------------
-Performance of captured variable
-Consider the following example that defines an inner function:
+# Performance of captured variable
 
+# Consider the following example that defines an inner function:
 function abmult(r::Int)
     if r < 0
         r = -r
@@ -1241,16 +1299,30 @@ function abmult(r::Int)
     return f
 end
 
-Function abmult returns a function f that multiplies its argument by the absolute value of r. The inner function assigned to f is called a "closure". Inner functions are also used by the language for do-blocks and for generator expressions.
+# Function abmult returns a function f that multiplies its argument by the absolute value of r. The inner function
+# assigned to f is called a "closure". Inner functions are also used by the language for do-blocks and for generator
+# expressions.
 
-This style of code presents performance challenges for the language. The parser, when translating it into lower-level instructions, substantially reorganizes the above code by extracting the inner function to a separate code block. "Captured" variables such as r that are shared by inner functions and their enclosing scope are also extracted into a heap-allocated "box" accessible to both inner and outer functions because the language specifies that r in the inner scope must be identical to r in the outer scope even after the outer scope (or another inner function) modifies r.
+# This style of code presents performance challenges for the language. The parser, when translating it into lower-level
+# instructions, substantially reorganizes the above code by extracting the inner function to a separate code block.
+# "Captured" variables such as r that are shared by inner functions and their enclosing scope are also extracted into a
+# heap-allocated "box" accessible to both inner and outer functions because the language specifies that r in the inner
+# scope must be identical to r in the outer scope even after the outer scope (or another inner function) modifies r.
 
-The discussion in the preceding paragraph referred to the "parser", that is, the phase of compilation that takes place when the module containing abmult is first loaded, as opposed to the later phase when it is first invoked. The parser does not "know" that Int is a fixed type, or that the statement r = -r transforms an Int to another Int. The magic of type inference takes place in the later phase of compilation.
+# The discussion in the preceding paragraph referred to the "parser", that is, the phase of compilation that takes place
+# when the module containing abmult is first loaded, as opposed to the later phase when it is first invoked. The parser
+# does not "know" that Int is a fixed type, or that the statement r = -r transforms an Int to another Int. The magic of
+# type inference takes place in the later phase of compilation.
 
-Thus, the parser does not know that r has a fixed type (Int). nor that r does not change value once the inner function is created (so that the box is unneeded). Therefore, the parser emits code for box that holds an object with an abstract type such as Any, which requires run-time type dispatch for each occurrence of r. This can be verified by applying @code_warntype to the above function. Both the boxing and the run-time type dispatch can cause loss of performance.
+# Thus, the parser does not know that r has a fixed type (Int). nor that r does not change value once the inner function
+# is created (so that the box is unneeded). Therefore, the parser emits code for box that holds an object with an
+# abstract type such as Any, which requires run-time type dispatch for each occurrence of r. This can be verified by
+# applying @code_warntype to the above function. Both the boxing and the run-time type dispatch can cause loss of
+# performance.
 
-If captured variables are used in a performance-critical section of the code, then the following tips help ensure that their use is performant. First, if it is known that a captured variable does not change its type, then this can be declared explicitly with a type annotation (on the variable, not the right-hand side):
-
+# If captured variables are used in a performance-critical section of the code, then the following tips help ensure that
+# their use is performant. First, if it is known that a captured variable does not change its type, then this can be
+# declared explicitly with a type annotation (on the variable, not the right-hand side):
 function abmult2(r0::Int)
     r::Int = r0
     if r < 0
@@ -1260,7 +1332,9 @@ function abmult2(r0::Int)
     return f
 end
 
-The type annotation partially recovers lost performance due to capturing because the parser can associate a concrete type to the object in the box. Going further, if the captured variable does not need to be boxed at all (because it will not be reassigned after the closure is created), this can be indicated with let blocks as follows.
+# The type annotation partially recovers lost performance due to capturing because the parser can associate a concrete
+# type to the object in the box. Going further, if the captured variable does not need to be boxed at all (because it
+# will not be reassigned after the closure is created), this can be indicated with let blocks as follows.
 
 function abmult3(r::Int)
     if r < 0
@@ -1272,25 +1346,45 @@ function abmult3(r::Int)
     return f
 end
 
-The let block creates a new variable r whose scope is only the inner function. The second technique recovers full language performance in the presence of captured variables. Note that this is a rapidly evolving aspect of the compiler, and it is likely that future releases will not require this degree of programmer annotation to attain performance. In the mean time, some user-contributed packages like FastClosures automate the insertion of let statements as in abmult3.
+# The let block creates a new variable r whose scope is only the inner function. The second technique recovers full
+# language performance in the presence of captured variables. Note that this is a rapidly evolving aspect of the
+# compiler, and it is likely that future releases will not require this degree of programmer annotation to attain
+# performance. In the mean time, some user-contributed packages like FastClosures automate the insertion of let
+# statements as in abmult3.
 
 
 # ---------------------------------------------------------------------------------------------
-Multithreading and linear algebra
-This section applies to multithreaded Julia code which, in each thread, performs linear algebra operations. Indeed, these linear algebra operations involve BLAS / LAPACK calls, which are themselves multithreaded. In this case, one must ensure that cores aren't oversubscribed due to the two different types of multithreading.
+# Multithreading and linear algebra
 
-Julia compiles and uses its own copy of OpenBLAS for linear algebra, whose number of threads is controlled by the environment variable OPENBLAS_NUM_THREADS. It can either be set as a command line option when launching Julia, or modified during the Julia session with BLAS.set_num_threads(N) (the submodule BLAS is exported by using LinearAlgebra). Its current value can be accessed with BLAS.get_num_threads().
+# This section applies to multithreaded Julia code which, in each thread, performs linear algebra operations. Indeed,
+# these linear algebra operations involve BLAS / LAPACK calls, which are themselves multithreaded. In this case, one
+# must ensure that cores aren't oversubscribed due to the two different types of multithreading.
 
-When the user does not specify anything, Julia tries to choose a reasonable value for the number of OpenBLAS threads (e.g. based on the platform, the Julia version, etc.). However, it is generally recommended to check and set the value manually. The OpenBLAS behavior is as follows:
+# Julia compiles and uses its own copy of OpenBLAS for linear algebra, whose number of threads is controlled by the
+# environment variable OPENBLAS_NUM_THREADS. It can either be set as a command line option when launching Julia, or
+# modified during the Julia session with BLAS.set_num_threads(N) (the submodule BLAS is exported by using
+# LinearAlgebra). Its current value can be accessed with BLAS.get_num_threads().
 
-If OPENBLAS_NUM_THREADS=1, OpenBLAS uses the calling Julia thread(s), i.e. it "lives in" the Julia thread that runs the computation.
-If OPENBLAS_NUM_THREADS=N>1, OpenBLAS creates and manages its own pool of threads (N in total). There is just one OpenBLAS thread pool shared among all Julia threads.
-When you start Julia in multithreaded mode with JULIA_NUM_THREADS=X, it is generally recommended to set OPENBLAS_NUM_THREADS=1. Given the behavior described above, increasing the number of BLAS threads to N>1 can very easily lead to worse performance, in particular when N<<X. However this is just a rule of thumb, and the best way to set each number of threads is to experiment on your specific application.
+# When the user does not specify anything, Julia tries to choose a reasonable value for the number of OpenBLAS threads
+# (e.g. based on the platform, the Julia version, etc.). However, it is generally recommended to check and set the value
+# manually. The OpenBLAS behavior is as follows:
+# - If OPENBLAS_NUM_THREADS=1, OpenBLAS uses the calling Julia thread(s), i.e. it "lives in" the Julia thread that runs
+#   the computation.
+# - If OPENBLAS_NUM_THREADS=N>1, OpenBLAS creates and manages its own pool of threads (N in total). There is just one
+#   OpenBLAS thread pool shared among all Julia threads.
+
+# When you start Julia in multithreaded mode with JULIA_NUM_THREADS=X, it is generally recommended to set
+# OPENBLAS_NUM_THREADS=1. Given the behavior described above, increasing the number of BLAS threads to N>1 can very
+# easily lead to worse performance, in particular when N<<X. However this is just a rule of thumb, and the best way to
+# set each number of threads is to experiment on your specific application.
 
 
 # ---------------------------------------------------------------------------------------------
-Alternative linear algebra backends
-As an alternative to OpenBLAS, there exist several other backends that can help with linear algebra performance. Prominent examples include MKL.jl and AppleAccelerate.jl.
+# Alternative linear algebra backends
 
-These are external packages, so we will not discuss them in detail here. Please refer to their respective documentations (especially because they have different behaviors than OpenBLAS with respect to multithreading).
+# As an alternative to OpenBLAS, there exist several other backends that can help with linear algebra performance.
+# Prominent examples include MKL.jl and AppleAccelerate.jl.
+
+# These are external packages, so we will not discuss them in detail here. Please refer to their respective
+# documentations (especially because they have different behaviors than OpenBLAS with respect to multithreading).
 

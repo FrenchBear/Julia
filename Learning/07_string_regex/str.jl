@@ -159,7 +159,7 @@ println()
 @assert 'a' + 1 == 'b'
 
 # Iterate over a string
-s = "Aé♫𝄞"                     # 4 chars, 4 grapheles
+s = "Aé♫𝄞"                         # 4 chars, 4 grapheles
 for c in s
 	print("<$c>")
 end
@@ -234,16 +234,16 @@ println(tqs)
 println()
 
 # Search char in string
-println(findfirst('o', "xylophone"))    # 4
-println(findlast('o', "xylophone"))     # 7
-println(findfirst('z', "xylophone"))    # nothing
+println(findfirst('o', "xylophone"))        # 4
+println(findlast('o', "xylophone"))         # 7
+println(findfirst('z', "xylophone"))        # nothing
 println()
 
 # check if a substring (or char) is found within a string:
-println(occursin("world", "Hello, world."))     # true
-println(occursin("o", "Xylophon"))              # true
-println(occursin("a", "Xylophon"))              # false
-println(occursin('o', "Xylophon"))              # true
+println(occursin("world", "Hello, world.")) # true
+println(occursin("o", "Xylophon"))          # true
+println(occursin("a", "Xylophon"))          # false
+println(occursin('o', "Xylophon"))          # true
 println()
 
 #=
@@ -294,13 +294,13 @@ println()
 
 # Trimming strings
 chaine = "  Hello  "
-println("strip:  <$(strip(chaine))>")       # Trim whitespaces on both ends
-println("lstrip: <$(lstrip(chaine))>")      # Trim left (heading) whitespaces
-println("rstrip: <$(rstrip(chaine))>")      # Trim right (tailing) whitespaces
+println("strip:  <$(strip(chaine))>")           # Trim whitespaces on both ends
+println("lstrip: <$(lstrip(chaine))>")          # Trim left (heading) whitespaces
+println("rstrip: <$(rstrip(chaine))>")          # Trim right (tailing) whitespaces
 chaine = "\t\t  Hello \r\n\r\n"
-println("strip: <$(strip(chaine))>")        # Whitespaces include (not limited to) space, \t, \r, \n
+println("strip: <$(strip(chaine))>")            # Whitespaces include (not limited to) space, \t, \r, \n
 chaine = "__Main__"
-println("strip: <$(strip(chaine, '_' ))>")  # Can specify char, or vector or set of chars 
+println("strip: <$(strip(chaine, '_' ))>")      # Can specify char, or vector or set of chars 
 println()
 
 # Other string operations
@@ -400,4 +400,3 @@ end
 codept(s::String, pos::Int) = Int(s[nextind(s, 0, pos)])
 # Helper, returns char at a specified pos (1..length(s)) in s
 charat(s::String, pos::Int)::Char = s[nextind(s, 0, pos)]
-
