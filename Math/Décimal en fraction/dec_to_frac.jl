@@ -1,12 +1,11 @@
 # Algorithme de Stern-Brocot pour convertir une suite décimale péridique en fraction
 #
 # 2024-04-21    PV
+# 2024-05-07    PV      Actually Julia contains Base.rationalize([T<:Integer=Int,] x; tol::Real=eps(x)) which does the same thing...
 
 Fraction = Rational{Int64}
 
-function double_to_fraction(f::Float64)::Fraction
-	epsilon = 1e-6
-
+function double_to_fraction(f::Float64, epsilon=1e-6)::Fraction
 	# Special case
 	f == 0 && return 1 // 0
 
@@ -43,8 +42,11 @@ function double_to_fraction(f::Float64)::Fraction
 end
 
 println("Stern-Brocot algorithm to transform a periodic decimal suite into a fraction\n")
+
+epsilon=1e-6
 f = 0.1415926535
 println("$f = $(double_to_fraction(f))")
+println("$f = $(rationalize(f, tol=epsilon)) (Base.rationalize)")
 
 f = 3.1415926535
 println("$f = $(double_to_fraction(f))")
