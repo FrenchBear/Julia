@@ -13,9 +13,9 @@
 # Method -(x)
 # Unary minus operator.
 # See also: abs, flipsign.
--1                  # -1
--(2)                # -2
--[1 2; 3 4]         # 2×2 Matrix{Int64}: -1  -2\n -3  -4
+-1                      # -1
+-(2)                    # -2
+-[1 2; 3 4]             # 2×2 Matrix{Int64}: -1  -2\n -3  -4
 
 # -----------------------------
 # Base.:+
@@ -24,33 +24,35 @@
 # are used along with the year, month, and day of the Date to create the new DateTime. Non-zero microseconds or
 # nanoseconds in the Time type will result in an InexactError being thrown.
 
+# ---------
 # Function +(x, y...)
 # Addition operator. x+y+z+... calls this function with all arguments, i.e. +(x, y, z, ...).
-1 + 20 + 4          # 25
-+(1, 20, 4)         # 25
+1 + 20 + 4              # 25
++(1, 20, 4)             # 25
 
 # -----------------------------
 # Base.:-
 # Method -(x, y)
 # Subtraction operator.
-2 - 3               # -1
--(2, 4.5)           # -2.5
+2 - 3                   # -1
+-(2, 4.5)               # -2.5
 
 # -----------------------------
 # Base.:*
 # Method *(x, y...)
 # Multiplication operator. x*y*z*... calls this function with all arguments, i.e. *(x, y, z, ...).
-2 * 7 * 8           # 112
-*(2, 7, 8)          # 112
+2 * 7 * 8               # 112
+*(2, 7, 8)              # 112
 
 # -----------------------------
 # Base.:/
 # Function /(x, y)
 # Right division operator: multiplication of x by the inverse of y on the right. Gives floating-point results for integer arguments.
-1/2                 # 0.5
-4/2                 # 2.0
-4.5/2               # 2.25
+1/2                     # 0.5
+4/2                     # 2.0
+4.5/2                   # 2.25
 
+# ---------
 # A / B
 # Matrix right-division: A / B is equivalent to (B' \ A')' where \ is the left-division operator. For square matrices,
 # the result X is such that A == X*B.
@@ -58,7 +60,7 @@
 A = Float64[1 4 5; 3 9 2]; B = Float64[1 4 2; 3 4 2; 8 7 1];
 X = A / B               # 2×3 Matrix{Float64}: -0.65   3.75  -1.2\n   3.25  -2.75   1.0
 isapprox(A, X*B)        # true
-isapprox(X, A*pinv(B))  # true
+isapprox(X, A*inv(B))   # true
 
 # -----------------------------
 # Base.:\
@@ -99,6 +101,7 @@ A^3                     # 2×2 Matrix{Int64}:  37   54\n 81  118
 muladd(3, 2, 1)         # 7
 3 * 2 + 1               # 7
 
+# ---------
 # Function muladd(A, y, z)
 # Combined multiply-add, A*y .+ z, for matrix-matrix or matrix-vector multiplication. The result is always the same size
 # as A*y, but z may be smaller, or a scalar.
@@ -177,6 +180,7 @@ mod(eps(), 3)           # 2.220446049250313e-16
 mod(-eps(), 3)          # 3.0
 mod.(-5:5, 3)'          # 1×11 adjoint(::Vector{Int64}) with eltype Int64: 1  2  0  1  2  0  1  2  0  1  2
 
+# ---------
 # Function rem(x::Integer, T::Type{<:Integer}) -> T
 # Function mod(x::Integer, T::Type{<:Integer}) -> T
 # Function %(x::Integer, T::Type{<:Integer}) -> T
@@ -307,6 +311,7 @@ Int8(3) << 2                            # 12
 bitstring(Int8(3))                      # "00000011"
 bitstring(Int8(12))                     # "00001100"
 
+# ---------
 # Function  <<(B::BitVector, n) -> BitVector
 # Left bit shift operator, B << n. For n >= 0, the result is B with elements shifted n positions backwards, filling with
 # false values. If n < 0, elements are shifted forwards. Equivalent to B >> -n.
@@ -327,6 +332,7 @@ Int8(-14) >> 2                          # -4
 bitstring(Int8(-14))                    # "11110010"
 bitstring(Int8(-4))                     # "11111100"
 
+# ---------
 # Function >>(B::BitVector, n) -> BitVector
 # Right bit shift operator, B >> n. For n >= 0, the result is B with elements shifted n positions forward, filling with
 # false values. If n < 0, elements are shifted backwards. Equivalent to B << -n.
@@ -347,6 +353,7 @@ Int8(-14) >>> 2                         # 60
 bitstring(Int8(-14))                    # "11110010"
 bitstring(Int8(60))                     # "00111100"
 
+# ---------
 # Function >>>(B::BitVector, n) -> BitVector
 # Unsigned right bitshift operator, B >>> n. Equivalent to B >> n. See >> for details and examples.
 
@@ -378,6 +385,7 @@ typeof((expr, sym, value))              # Tuple{Expr, Symbol, UInt8}
 # Function range(start, stop; length, step)
 # Function range(start; length, stop, step)
 # Function range(;start, length, stop, step)
+#
 # Construct a specialized array with evenly spaced elements and optimized storage (an AbstractRange) from the arguments.
 # Mathematically a range is uniquely determined by any three of start, step, stop and length. Valid invocations of range are:
 # - Call range with any three of start, step, stop, length.
@@ -465,10 +473,12 @@ range(1, 3.5, step=2)                   # 1.0:2.0:3.0
 3 != 2                  # true
 "foo" ≠ "foo"           # false
 
+# ---------
 # Function !=(x)
 # Create a function that compares its argument to x using !=, i.e. a function equivalent to y -> y != x. The returned
 # function is of type Base.Fix2{typeof(!=)}, which can be used to implement specialized methods.
 
+# ---------
 # Base.:!== (! = =)
 # Function !==(x, y)
 # Function ≢(x,y)
@@ -490,6 +500,7 @@ a ≢ a                   # false
 "abc" < "abd"           # true
 5 < 3                   # false
 
+# ---------
 # Function <(x)
 # Create a function that compares its argument to x using <, i.e. a function equivalent to y -> y < x. The returned
 # function is of type Base.Fix2{typeof(<)}, which can be used to implement specialized methods.
@@ -504,6 +515,7 @@ a ≢ a                   # false
 "abc" ≤ "abc"           # true
 5 <= 3                  # false
 
+# ---------
 # Function <=(x)
 # Create a function that compares its argument to x using <=, i.e. a function equivalent to y -> y <= x. The returned
 # function is of type Base.Fix2{typeof(<=)}, which can be used to implement specialized methods.
@@ -519,6 +531,7 @@ a ≢ a                   # false
 "abc" > "abd"           # false
 5 > 3                   # true
 
+# ---------
 # Function >(x)
 # Create a function that compares its argument to x using >, i.e. a function equivalent to y -> y > x. The returned
 # function is of type Base.Fix2{typeof(>)}, which can be used to implement specialized methods.
@@ -533,6 +546,7 @@ a ≢ a                   # false
 "abc" ≥ "abc"           # true
 5 >= 3                  # true
 
+# ---------
 # Function >=(x)
 # Create a function that compares its argument to x using >=, i.e. a function equivalent to y -> y >= x. The returned
 # function is of type Base.Fix2{typeof(>=)}, which can be used to implement specialized methods.
@@ -546,6 +560,7 @@ cmp(1, 2)               # -1
 cmp(2, 1)               # 1
 # cmp(2+im, 3-im)       # ERROR: MethodError: no method matching isless(::Complex{Int64}, ::Complex{Int64})
 
+# ---------
 # cmp(<, x, y)
 # Return -1, 0, or 1 depending on whether x is less than, equal to, or greater than y, respectively. The first argument
 # specifies a less-than comparison function to use.
@@ -642,7 +657,7 @@ false ⊽ missing         # missing
 !missing                # missing
 .![true false true]     # 1×3 BitMatrix: 0  1  0
 
-!f::Function
+# !f::Function
 # Predicate function negation: when the argument of ! is a function, it returns a composed function which computes the
 # boolean negation of f.
 # See also ∘.
@@ -707,7 +722,6 @@ isapprox([10.0^9, 1.0], [10.0^9, 2.0])  # true           # using `norm`
 # Function isapprox(x; kwargs...) / ≈(x; kwargs...)
 # Create a function that compares its argument to x using ≈, i.e. a function equivalent to y -> y ≈ x.
 # The keyword arguments supported here are the same as those in the 2-argument isapprox.
-
 
 # -----------------------------
 # Base.sin
@@ -791,6 +805,7 @@ round(exp(im*pi/6), digits=3)       # 0.866 + 0.5im
 # Method tanh(x)
 # Compute hyperbolic tangent of x.
 # See also tan, atanh.
+
 tanh.(-3:3f0)  # Here 3f0 isa Float32
 #7-element Vector{Float32}:
 # -0.9950548
@@ -1586,790 +1601,235 @@ rad2deg(angle(1 - im))      # -45.0
 rad2deg(angle(-1 - im))     # -135.0
 
 # -----------------------------
-Base.cis
-Function cis(x)
-
-More efficient method for exp(im*x) by using Euler's formula: 
-𝑐
-𝑜
-𝑠
-(
-𝑥
-)
-+
-𝑖
-𝑠
-𝑖
-𝑛
-(
-𝑥
-)
-=
-exp
-⁡
-(
-𝑖
-𝑥
-)
-cos(x)+isin(x)=exp(ix).
-
-See also cispi, sincos, exp, angle.
-
-Examples
-
-cis(π) ≈ -1
-true
+# Base.cis
+# Function cis(x)
+# More efficient method for exp(im*x) by using Euler's formula: cos(x)+isin(x)=exp(ix).
+# See also cispi, sincos, exp, angle.
+cis(π) ≈ -1                 # true
 
 # -----------------------------
-Base.cispi
-—
-Function
-cispi(x)
-
-More accurate method for cis(pi*x) (especially for large x).
-
-See also cis, sincospi, exp, angle.
-
-Examples
-
-cispi(10000)
-1.0 + 0.0im
-
-cispi(0.25 + 1im)
-0.030556854645954562 + 0.03055685464595456im
-
-Julia 1.6
-This function requires Julia 1.6 or later.
+# Base.cispi
+# Function cispi(x)
+# More accurate method for cis(pi*x) (especially for large x).
+# See also cis, sincospi, exp, angle.
+cispi(10000)                # 1.0 + 0.0im
+cispi(0.25 + 1im)           # 0.030556854645954562 + 0.03055685464595456im
 
 # -----------------------------
-Base.binomial
-—
-Function
-binomial(n::Integer, k::Integer)
+# Base.binomial
+# Function binomial(n::Integer, k::Integer)
+# The binomial coefficient (n k), being the coefficient of the kth term in the polynomial expansion of (1+x)ⁿ.
+# If n is non-negative, then it is the number of ways to choose k out of n items: (n k) = k!/((n−k)!n!)
+# If n is negative, then it is defined in terms of the identity (n k) = (−1)ᵏ×(k−n−1 k)
+# See also factorial.
+binomial(5, 3)                                      # 10
+factorial(5) ÷ (factorial(5-3) * factorial(3))      # 10
+binomial(-5, 3)                                     # -35
 
-The binomial coefficient 
-(
-𝑛
-𝑘
-)
-( 
-k
-n
-​
- ), being the coefficient of the 
-𝑘
-kth term in the polynomial expansion of 
-(
-1
-+
-𝑥
-)
-𝑛
-(1+x) 
-n
- .
-
-If 
-𝑛
-n is non-negative, then it is the number of ways to choose k out of n items:
-
-(
-𝑛
-𝑘
-)
-=
-𝑛
-!
-𝑘
-!
-(
-𝑛
-−
-𝑘
-)
-!
-( 
-k
-n
-​
- )= 
-k!(n−k)!
-n!
-​
- 
-
-where 
-𝑛
-!
-n! is the factorial function.
-
-If 
-𝑛
-n is negative, then it is defined in terms of the identity
-
-(
-𝑛
-𝑘
-)
-=
-(
-−
-1
-)
-𝑘
-(
-𝑘
-−
-𝑛
-−
-1
-𝑘
-)
-( 
-k
-n
-​
- )=(−1) 
-k
- ( 
-k
-k−n−1
-​
- )
-
-See also factorial.
-
-Examples
-
-binomial(5, 3)
-10
-
-factorial(5) ÷ (factorial(5-3) * factorial(3))
-10
-
-binomial(-5, 3)
--35
-
-External links
-
-Binomial coefficient on Wikipedia.
-# -----------------------------
-binomial(x::Number, k::Integer)
-
-The generalized binomial coefficient, defined for k ≥ 0 by the polynomial
-
-1
-𝑘
-!
-∏
-𝑗
-=
-0
-𝑘
-−
-1
-(
-𝑥
-−
-𝑗
-)
-k!
-1
-​
-  
-j=0
-∏
-k−1
-​
- (x−j)
-
-When k < 0 it returns zero.
-
-For the case of integer x, this is equivalent to the ordinary integer binomial coefficient
-
-(
-𝑛
-𝑘
-)
-=
-𝑛
-!
-𝑘
-!
-(
-𝑛
-−
-𝑘
-)
-!
-( 
-k
-n
-​
- )= 
-k!(n−k)!
-n!
-​
- 
-
-Further generalizations to non-integer k are mathematically possible, but involve the Gamma function and/or the beta function, which are not provided by the Julia standard library but are available in external packages such as SpecialFunctions.jl.
-
-External links
-
-Binomial coefficient on Wikipedia.
-# -----------------------------
-Base.factorial
-—
-Function
-factorial(n::Integer)
-
-Factorial of n. If n is an Integer, the factorial is computed as an integer (promoted to at least 64 bits). Note that this may overflow if n is not small, but you can use factorial(big(n)) to compute the result exactly in arbitrary precision.
-
-See also binomial.
-
-Examples
-
-factorial(6)
-720
-
-factorial(21)
-ERROR: OverflowError: 21 is too large to look up in the table; consider using `factorial(big(21))` instead
-Stacktrace:
-[...]
-
-factorial(big(21))
-51090942171709440000
-
-External links
-
-Factorial on Wikipedia.
-# -----------------------------
-Base.gcd
-—
-Function
-gcd(x, y...)
-
-Greatest common (positive) divisor (or zero if all arguments are zero). The arguments may be integer and rational numbers.
-
-Julia 1.4
-Rational arguments require Julia 1.4 or later.
-
-Examples
-
-gcd(6, 9)
-3
-
-gcd(6, -9)
-3
-
-gcd(6, 0)
-6
-
-gcd(0, 0)
-0
-
-gcd(1//3, 2//3)
-1//3
-
-gcd(1//3, -2//3)
-1//3
-
-gcd(1//3, 2)
-1//3
-
-gcd(0, 0, 10, 15)
-5
+# Binomial coefficient on Wikipedia: https://en.wikipedia.org/wiki/Binomial_coefficient
 
 # -----------------------------
-Base.lcm
-—
-Function
-lcm(x, y...)
+# binomial(x::Number, k::Integer)
+# The generalized binomial coefficient, defined for k ≥ 0 by the polynomial
+# 1/k! ∏{j=0..k-1}(x-j)
+# When k < 0 it returns zero.
+# For the case of integer x, this is equivalent to the ordinary integer binomial coefficient (n k) = k!/((n−k)!n!)
+#
+# Further generalizations to non-integer k are mathematically possible, but involve the Gamma function and/or the beta
+# function, which are not provided by the Julia standard library but are available in external packages such as
+# SpecialFunctions.jl.
 
-Least common (positive) multiple (or zero if any argument is zero). The arguments may be integer and rational numbers.
-
-Julia 1.4
-Rational arguments require Julia 1.4 or later.
-
-Examples
-
-lcm(2, 3)
-6
-
-lcm(-2, 3)
-6
-
-lcm(0, 3)
-0
-
-lcm(0, 0)
-0
-
-lcm(1//3, 2//3)
-2//3
-
-lcm(1//3, -2//3)
-2//3
-
-lcm(1//3, 2)
-2//1
-
-lcm(1, 3, 5, 7)
-105
+# Binomial coefficient on Wikipedia: https://en.wikipedia.org/wiki/Binomial_coefficient
 
 # -----------------------------
-Base.gcdx
-—
-Function
-gcdx(a, b)
+#Base.factorial
+#Function factorial(n::Integer)
+# Factorial of n. If n is an Integer, the factorial is computed as an integer (promoted to at least 64 bits). Note that
+# this may overflow if n is not small, but you can use factorial(big(n)) to compute the result exactly in arbitrary
+# precision.
+# See also binomial.
+factorial(6)                # 720
+# factorial(21)             # ERROR: OverflowError: 21 is too large to look up in the table; consider using `factorial(big(21))` instead
+factorial(big(21))          # 51090942171709440000
 
-Computes the greatest common (positive) divisor of a and b and their Bézout coefficients, i.e. the integer coefficients u and v that satisfy 
-𝑢
-𝑎
-+
-𝑣
-𝑏
-=
-𝑑
-=
-𝑔
-𝑐
-𝑑
-(
-𝑎
-,
-𝑏
-)
-ua+vb=d=gcd(a,b). 
-𝑔
-𝑐
-𝑑
-𝑥
-(
-𝑎
-,
-𝑏
-)
-gcdx(a,b) returns 
-(
-𝑑
-,
-𝑢
-,
-𝑣
-)
-(d,u,v).
-
-The arguments may be integer and rational numbers.
-
-Julia 1.4
-Rational arguments require Julia 1.4 or later.
-
-Examples
-
-gcdx(12, 42)
-(6, -3, 1)
-
-gcdx(240, 46)
-(2, -9, 47)
-
-Note
-Bézout coefficients are not uniquely defined. gcdx returns the minimal Bézout coefficients that are computed by the extended Euclidean algorithm. (Ref: D. Knuth, TAoCP, 2/e, p. 325, Algorithm X.) For signed integers, these coefficients u and v are minimal in the sense that 
-∣
-𝑢
-∣
-<
-∣
-𝑏
-/
-𝑑
-∣
-∣u∣<∣b/d∣ and 
-∣
-𝑣
-∣
-<
-∣
-𝑎
-/
-𝑑
-∣
-∣v∣<∣a/d∣. Furthermore, the signs of u and v are chosen so that d is positive. For unsigned integers, the coefficients u and v might be near their typemax, and the identity then holds only via the unsigned integers' modulo arithmetic.
+# Factorial on Wikipedia: https://en.wikipedia.org/wiki/Factorial
 
 # -----------------------------
-Base.ispow2
-—
-Function
-ispow2(n::Number) -> Bool
-
-Test whether n is an integer power of two.
-
-See also count_ones, prevpow, nextpow.
-
-Examples
-
-ispow2(4)
-true
-
-ispow2(5)
-false
-
-ispow2(4.5)
-false
-
-ispow2(0.25)
-true
-
-ispow2(1//8)
-true
-
-Julia 1.6
-Support for non-Integer arguments was added in Julia 1.6.
+# Base.gcd
+# Function gcd(x, y...)
+# Greatest common (positive) divisor (or zero if all arguments are zero). The arguments may be integer and rational numbers.
+gcd(6, 9)                   # 3
+gcd(6, -9)                  # 3
+gcd(6, 0)                   # 6
+gcd(0, 0)                   # 0
+gcd(1//3, 2//3)             # 1//3
+gcd(1//3, -2//3)            # 1//3
+gcd(1//3, 2)                # 1//3
+gcd(0, 0, 10, 15)           # 5
 
 # -----------------------------
-Base.nextpow
-—
-Function
-nextpow(a, x)
-
-The smallest a^n not less than x, where n is a non-negative integer. a must be greater than 1, and x must be greater than 0.
-
-See also prevpow.
-
-Examples
-
-nextpow(2, 7)
-8
-
-nextpow(2, 9)
-16
-
-nextpow(5, 20)
-25
-
-nextpow(4, 16)
-16
+# Base.lcm
+# Function lcm(x, y...)
+# Least common (positive) multiple (or zero if any argument is zero). The arguments may be integer and rational numbers.
+lcm(2, 3)                   # 6
+lcm(-2, 3)                  # 6
+lcm(0, 3)                   # 0
+lcm(0, 0)                   # 0
+lcm(1//3, 2//3)             # 2//3
+lcm(1//3, -2//3)            # 2//3
+lcm(1//3, 2)                # 2//1
+lcm(1, 3, 5, 7)             # 105
 
 # -----------------------------
-Base.prevpow
-—
-Function
-prevpow(a, x)
+# Base.gcdx
+# Function gcdx(a, b)
+# Computes the greatest common (positive) divisor of a and b and their Bézout coefficients, i.e. the integer
+# coefficients u and v that satisfy ua+vb = d = gcd(a,b).gcdx(a,b) returns (d, u, v).
+# The arguments may be integer and rational numbers.
+gcdx(12, 42)                # (6, -3, 1)
+gcdx(240, 46)               # (2, -9, 47)
 
-The largest a^n not greater than x, where n is a non-negative integer. a must be greater than 1, and x must not be less than 1.
-
-See also nextpow, isqrt.
-
-Examples
-
-prevpow(2, 7)
-4
-
-prevpow(2, 9)
-8
-
-prevpow(5, 20)
-5
-
-prevpow(4, 16)
-16
+# Note: Bézout coefficients are not uniquely defined. gcdx returns the minimal Bézout coefficients that are computed by
+# the extended Euclidean algorithm. (Ref: D. Knuth, TAoCP, 2/e, p. 325, Algorithm X.) For signed integers, these
+# coefficients u and v are minimal in the sense that |u|<|b/d| and |v|<|a/d|. Furthermore, the signs of u and v are
+# chosen so that d is positive. For unsigned integers, the coefficients u and v might be near their typemax, and the
+# identity then holds only via the unsigned integers' modulo arithmetic.
 
 # -----------------------------
-Base.nextprod
-—
-Function
-nextprod(factors::Union{Tuple,AbstractVector}, n)
-
-Next integer greater than or equal to n that can be written as 
-∏
-𝑘
-𝑖
-𝑝
-𝑖
-∏k 
-i
-p 
-i
-​
- 
-​
-  for integers 
-𝑝
-1
-p 
-1
-​
- , 
-𝑝
-2
-p 
-2
-​
- , etcetera, for factors 
-𝑘
-𝑖
-k 
-i
-​
-  in factors.
-
-Examples
-
-nextprod((2, 3), 105)
-108
-
-2^2 * 3^3
-108
-
-Julia 1.6
-The method that accepts a tuple requires Julia 1.6 or later.
+# Base.ispow2
+# Function ispow2(n::Number) -> Bool
+# Test whether n is an integer power of two.
+# See also count_ones, prevpow, nextpow.
+ispow2(4)                   # true
+ispow2(5)                   # false
+ispow2(4.5)                 # false
+ispow2(0.25)                # true
+ispow2(1//8)                # true
 
 # -----------------------------
-Base.invmod
-—
-Function
-invmod(n, m)
-
-Take the inverse of n modulo m: y such that 
-𝑛
-𝑦
-=
-1
-(
-m
-o
-d
-𝑚
-)
-ny=1(modm), and 
-𝑑
-𝑖
-𝑣
-(
-𝑦
-,
-𝑚
-)
-=
-0
-div(y,m)=0. This will throw an error if 
-𝑚
-=
-0
-m=0, or if 
-𝑔
-𝑐
-𝑑
-(
-𝑛
-,
-𝑚
-)
-≠
-1
-gcd(n,m)
-
-=1.
-
-Examples
-
-invmod(2, 5)
-3
-
-invmod(2, 3)
-2
-
-invmod(5, 6)
-5
+# Base.nextpow
+# Function nextpow(a, x)
+# The smallest a^n not less than x, where n is a non-negative integer. a must be greater than 1, and x must be greater
+# than 0.
+# See also prevpow.
+nextpow(2, 7)               # 8
+nextpow(2, 9)               # 16
+nextpow(5, 20)              # 25
+nextpow(4, 16)              # 16
 
 # -----------------------------
-Base.powermod
-—
-Function
-powermod(x::Integer, p::Integer, m)
-
-Compute 
-𝑥
-𝑝
-(
-m
-o
-d
-𝑚
-)
-x 
-p
- (modm).
-
-Examples
-
-powermod(2, 6, 5)
-4
-
-mod(2^6, 5)
-4
-
-powermod(5, 2, 20)
-5
-
-powermod(5, 2, 19)
-6
-
-powermod(5, 3, 19)
-11
+# Base.prevpow
+# Function prevpow(a, x)
+# The largest a^n not greater than x, where n is a non-negative integer. a must be greater than 1, and x must not be
+# less than 1.
+# See also nextpow, isqrt.
+prevpow(2, 7)               # 4
+prevpow(2, 9)               # 8
+prevpow(5, 20)              # 5
+prevpow(4, 16)              # 16
 
 # -----------------------------
-Base.ndigits
-—
-Function
-ndigits(n::Integer; base::Integer=10, pad::Integer=1)
-
-Compute the number of digits in integer n written in base base (base must not be in [-1, 0, 1]), optionally padded with zeros to a specified size (the result will never be less than pad).
-
-See also digits, count_ones.
-
-Examples
-
-ndigits(0)
-1
-
-ndigits(12345)
-5
-
-ndigits(1022, base=16)
-3
-
-string(1022, base=16)
-"3fe"
-
-ndigits(123, pad=5)
-5
-
-ndigits(-123)
-3
+# Base.nextprod
+# Function nextprod(factors::Union{Tuple,AbstractVector}, n)
+# Next integer greater than or equal to n that can be written as ∏kᵢ^pᵢ  for integers p₁, p₂... and factors kᵢ in factors.
+nextprod((2, 3), 105)       # 108
+2^2 * 3^3                   # 108
 
 # -----------------------------
-Base.add_sum
-—
-Function
-Base.add_sum(x, y)
+# Base.invmod
+# Function invmod(n, m)
+# Take the inverse of n modulo m: y such that ny == 1(mod m), and div(y, m)=0. This will throw an error if m==0, or if
+# gcd(n, m)!=1
 
-The reduction operator used in sum. The main difference from + is that small integers are promoted to Int/UInt.
-
-# -----------------------------
-Base.widemul
-—
-Function
-widemul(x, y)
-
-Multiply x and y, giving the result as a larger type.
-
-See also promote, Base.add_sum.
-
-Examples
-
-widemul(Float32(3.0), 4.0) isa BigFloat
-true
-
-typemax(Int8) * typemax(Int8)
-1
-
-widemul(typemax(Int8), typemax(Int8))  # == 127^2
-16129
+invmod(2, 5)                # 3
+invmod(2, 3)                # 2
+invmod(5, 6)                # 5
 
 # -----------------------------
-Base.Math.evalpoly
-—
-Function
-evalpoly(x, p)
-
-Evaluate the polynomial 
-∑
-𝑘
-𝑥
-𝑘
-−
-1
-𝑝
-[
-𝑘
-]
-∑ 
-k
-​
- x 
-k−1
- p[k] for the coefficients p[1], p[2], ...; that is, the coefficients are given in ascending order by power of x. Loops are unrolled at compile time if the number of coefficients is statically known, i.e. when p is a Tuple. This function generates efficient code using Horner's method if x is real, or using a Goertzel-like [DK62] algorithm if x is complex.
-
-Julia 1.4
-This function requires Julia 1.4 or later.
-
-Example
-
-evalpoly(2, (1, 2, 3))
-17
+# Base.powermod
+# Function powermod(x::Integer, p::Integer, m)
+# Compute xᵖ (mod m)
+powermod(2, 6, 5)           # 4
+mod(2^6, 5)                 # 4
+powermod(5, 2, 20)          # 5
+powermod(5, 2, 19)          # 6
+powermod(5, 3, 19)          # 11
 
 # -----------------------------
-Base.Math.@evalpoly
-—
-Macro
-@evalpoly(z, c...)
-
-Evaluate the polynomial 
-∑
-𝑘
-𝑧
-𝑘
-−
-1
-𝑐
-[
-𝑘
-]
-∑ 
-k
-​
- z 
-k−1
- c[k] for the coefficients c[1], c[2], ...; that is, the coefficients are given in ascending order by power of z. This macro expands to efficient inline code that uses either Horner's method or, for complex z, a more efficient Goertzel-like algorithm.
-
-See also evalpoly.
-
-Examples
-
-@evalpoly(3, 1, 0, 1)
-10
-
-@evalpoly(2, 1, 0, 1)
-5
-
-@evalpoly(2, 1, 1, 1)
-7
+# Base.ndigits
+# Function ndigits(n::Integer; base::Integer=10, pad::Integer=1)
+# Compute the number of digits in integer n written in base base (base must not be in [-1, 0, 1]), optionally padded
+# with zeros to a specified size (the result will never be less than pad).
+# See also digits, count_ones.
+ndigits(0)                  # 1
+ndigits(12345)              # 5
+ndigits(1022, base=16)      # 3
+string(1022, base=16)       # "3fe"
+ndigits(123, pad=5)         # 5
+ndigits(-123)               # 3
 
 # -----------------------------
-Base.FastMath.@fastmath
-—
-Macro
-@fastmath expr
-
-Execute a transformed version of the expression, which calls functions that may violate strict IEEE semantics. This allows the fastest possible operation, but results are undefined – be careful when doing this, as it may change numerical results.
-
-This sets the LLVM Fast-Math flags, and corresponds to the -ffast-math option in clang. See the notes on performance annotations for more details.
-
-Examples
-
-@fastmath 1+2
-3
-
-@fastmath(sin(3))
-0.1411200080598672
+# Base.add_sum
+# Function Base.add_sum(x, y)
+# The reduction operator used in sum. The main difference from + is that small integers are promoted to Int/UInt.
 
 # -----------------------------
-Customizable binary operators
-Some unicode characters can be used to define new binary operators that support infix notation. For example ⊗(x,y) = kron(x,y) defines the ⊗ (otimes) function to be the Kronecker product, and one can call it as binary operator using infix syntax: C = A ⊗ B as well as with the usual prefix syntax C = ⊗(A,B).
+# Base.widemul
+# Function widemul(x, y)
+# Multiply x and y, giving the result as a larger type.
+# See also promote, Base.add_sum.
+widemul(Float32(3.0), 4.0) isa BigFloat     # true
+typemax(Int8) * typemax(Int8)               # 1
+widemul(typemax(Int8), typemax(Int8))       # 16129         # == 127^2
 
-Other characters that support such extensions include \odot ⊙ and \oplus ⊕
+# -----------------------------
+# Base.Math.evalpoly
+# Function evalpoly(x, p)
 
-The complete list is in the parser code: https://github.com/JuliaLang/julia/blob/master/src/julia-parser.scm
+# Evaluate the polynomial ∑{k} xᵏ⁻¹.p[k] for the coefficients p[1], p[2], ...; that is, the coefficients are given in
+# ascending order by power of x. Loops are unrolled at compile time if the number of coefficients is statically known,
+# i.e. when p is a Tuple. This function generates efficient code using Horner's method if x is real, or using a
+# Goertzel-like [DK62] algorithm if x is complex.
 
-Those that are parsed like * (in terms of precedence) include * / ÷ % & ⋅ ∘ × |\\| ∩ ∧ ⊗ ⊘ ⊙ ⊚ ⊛ ⊠ ⊡ ⊓ ∗ ∙ ∤ ⅋ ≀ ⊼ ⋄ ⋆ ⋇ ⋉ ⋊ ⋋ ⋌ ⋏ ⋒ ⟑ ⦸ ⦼ ⦾ ⦿ ⧶ ⧷ ⨇ ⨰ ⨱ ⨲ ⨳ ⨴ ⨵ ⨶ ⨷ ⨸ ⨻ ⨼ ⨽ ⩀ ⩃ ⩄ ⩋ ⩍ ⩎ ⩑ ⩓ ⩕ ⩘ ⩚ ⩜ ⩞ ⩟ ⩠ ⫛ ⊍ ▷ ⨝ ⟕ ⟖ ⟗ and those that are parsed like + include + - |\|| ⊕ ⊖ ⊞ ⊟ |++| ∪ ∨ ⊔ ± ∓ ∔ ∸ ≏ ⊎ ⊻ ⊽ ⋎ ⋓ ⟇ ⧺ ⧻ ⨈ ⨢ ⨣ ⨤ ⨥ ⨦ ⨧ ⨨ ⨩ ⨪ ⨫ ⨬ ⨭ ⨮ ⨹ ⨺ ⩁ ⩂ ⩅ ⩊ ⩌ ⩏ ⩐ ⩒ ⩔ ⩖ ⩗ ⩛ ⩝ ⩡ ⩢ ⩣ There are many others that are related to arrows, comparisons, and powers.
+evalpoly(2, (1, 2, 3))      # 17 = 1×2 + 2×2¹ + 3×2²
+
+# -----------------------------
+# Base.Math.@evalpoly
+# Macro @evalpoly(z, c...)
+# Evaluate the polynomial ∑{k} zᵏ⁻¹.c[k] for the coefficients c[1], c[2], ...; that is, the coefficients are given in
+# ascending order by power of z. This macro expands to efficient inline code that uses either Horner's method or, for
+# complex z, a more efficient Goertzel-like algorithm.
+# See also evalpoly.
+@evalpoly(3, 1, 0, 1)       # 10 = 1 + 0×3 + 1×3²
+@evalpoly(2, 1, 0, 1)       # 5 = 1 + 0×2 + 1×2²
+@evalpoly(2, 1, 1, 1)       # 7
+
+# -----------------------------
+# Base.FastMath.@fastmath
+# Macro @fastmath expr
+#
+# Execute a transformed version of the expression, which calls functions that may violate strict IEEE semantics. This
+# allows the fastest possible operation, but results are undefined – be careful when doing this, as it may change
+# numerical results. 
+# This sets the LLVM Fast-Math flags, and corresponds to the -ffast-math option in clang. See the notes on performance
+# annotations for more details.
+@fastmath 1+2               # 3
+@fastmath(sin(3))           # 0.1411200080598672
+
+# -----------------------------
+# Customizable binary operators
+#
+# Some unicode characters can be used to define new binary operators that support infix notation. For example ⊗(x,y) =
+# kron(x,y) defines the ⊗ (otimes) function to be the Kronecker product, and one can call it as binary operator using
+# infix syntax: C = A ⊗ B as well as with the usual prefix syntax C = ⊗(A, B).
+# 
+# Other characters that support such extensions include \odot ⊙ and \oplus ⊕
+# 
+# The complete list is in the parser code: https://github.com/JuliaLang/julia/blob/master/src/julia-parser.scm
+# 
+# Those that are parsed like * (in terms of precedence) include * / ÷ % & ⋅ ∘ × |\\| ∩ ∧ ⊗ ⊘ ⊙ ⊚ ⊛ ⊠ ⊡ ⊓ ∗ ∙ ∤ ⅋ ≀ ⊼ ⋄ ⋆
+# ⋇ ⋉ ⋊ ⋋ ⋌ ⋏ ⋒ ⟑ ⦸ ⦼ ⦾ ⦿ ⧶ ⧷ ⨇ ⨰ ⨱ ⨲ ⨳ ⨴ ⨵ ⨶ ⨷ ⨸ ⨻ ⨼ ⨽ ⩀ ⩃ ⩄ ⩋ ⩍ ⩎ ⩑ ⩓ ⩕ ⩘ ⩚ ⩜ ⩞ ⩟ ⩠ ⫛ ⊍ ▷ ⨝ ⟕ ⟖ ⟗ 
+# Those that are parsed like + include + - |\|| ⊕ ⊖ ⊞ ⊟ |++| ∪ ∨ ⊔ ± ∓ ∔ ∸ ≏ ⊎ ⊻ ⊽ ⋎ ⋓ ⟇ ⧺ ⧻ ⨈ ⨢ ⨣ ⨤ ⨥ ⨦ ⨧ ⨨ ⨩ ⨪ ⨫ ⨬ ⨭ ⨮
+# ⨹ ⨺ ⩁ ⩂ ⩅ ⩊ ⩌ ⩏ ⩐ ⩒ ⩔ ⩖ ⩗ ⩛ ⩝ ⩡ ⩢ ⩣ 
+#
+# There are many others that are related to arrows, comparisons, and powers.
