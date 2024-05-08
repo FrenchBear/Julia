@@ -7,367 +7,240 @@
 # Numbers
 
 # Standard Numeric Types
-A type tree for all subtypes of Number in Base is shown below. Abstract types have been marked, the rest are concrete types.
-
-Number  (Abstract Type)
-├─ Complex
-└─ Real  (Abstract Type)
-   ├─ AbstractFloat  (Abstract Type)
-   │  ├─ Float16
-   │  ├─ Float32
-   │  ├─ Float64
-   │  └─ BigFloat
-   ├─ Integer  (Abstract Type)
-   │  ├─ Bool
-   │  ├─ Signed  (Abstract Type)
-   │  │  ├─ Int8
-   │  │  ├─ Int16
-   │  │  ├─ Int32
-   │  │  ├─ Int64
-   │  │  ├─ Int128
-   │  │  └─ BigInt
-   │  └─ Unsigned  (Abstract Type)
-   │     ├─ UInt8
-   │     ├─ UInt16
-   │     ├─ UInt32
-   │     ├─ UInt64
-   │     └─ UInt128
-   ├─ Rational
-   └─ AbstractIrrational  (Abstract Type)
-      └─ Irrational
-
-Abstract number types
-Core.Number
-—
-Type
-Number
-
-Abstract supertype for all number types.
-
-source
-Core.Real
-—
-Type
-Real <: Number
-
-Abstract supertype for all real numbers.
-
-source
-Core.AbstractFloat
-—
-Type
-AbstractFloat <: Real
-
-Abstract supertype for all floating point numbers.
-
-source
-Core.Integer
-—
-Type
-Integer <: Real
-
-Abstract supertype for all integers.
-
-source
-Core.Signed
-—
-Type
-Signed <: Integer
-
-Abstract supertype for all signed integers.
-
-source
-Core.Unsigned
-—
-Type
-Unsigned <: Integer
-
-Abstract supertype for all unsigned integers.
-
-source
-Base.AbstractIrrational
-—
-Type
-AbstractIrrational <: Real
-
-Number type representing an exact irrational value, which is automatically rounded to the correct precision in arithmetic operations with other numeric quantities.
-
-Subtypes MyIrrational <: AbstractIrrational should implement at least ==(::MyIrrational, ::MyIrrational), hash(x::MyIrrational, h::UInt), and convert(::Type{F}, x::MyIrrational) where {F <: Union{BigFloat,Float32,Float64}}.
-
-If a subtype is used to represent values that may occasionally be rational (e.g. a square-root type that represents √n for integers n will give a rational result when n is a perfect square), then it should also implement isinteger, iszero, isone, and == with Real values (since all of these default to false for AbstractIrrational types), as well as defining hash to equal that of the corresponding Rational.
-
-source
-Concrete number types
-Core.Float16
-—
-Type
-Float16 <: AbstractFloat
-
-16-bit floating point number type (IEEE 754 standard).
-
-Binary format: 1 sign, 5 exponent, 10 fraction bits.
-
-source
-Core.Float32
-—
-Type
-Float32 <: AbstractFloat
-
-32-bit floating point number type (IEEE 754 standard).
-
-Binary format: 1 sign, 8 exponent, 23 fraction bits.
-
-source
-Core.Float64
-—
-Type
-Float64 <: AbstractFloat
-
-64-bit floating point number type (IEEE 754 standard).
-
-Binary format: 1 sign, 11 exponent, 52 fraction bits.
-
-source
-Base.MPFR.BigFloat
-—
-Type
-BigFloat <: AbstractFloat
-
-Arbitrary precision floating point number type.
-
-source
-Core.Bool
-—
-Type
-Bool <: Integer
-
-Boolean type, containing the values true and false.
-
-Bool is a kind of number: false is numerically equal to 0 and true is numerically equal to 1. Moreover, false acts as a multiplicative "strong zero":
-
-false == 0
-true
-
-true == 1
-true
-
-0 * NaN
-NaN
-
-false * NaN
-0.0
-
-See also: digits, iszero, NaN.
-
-source
-Core.Int8
-—
-Type
-Int8 <: Signed
-
-8-bit signed integer type.
-
-source
-Core.UInt8
-—
-Type
-UInt8 <: Unsigned
-
-8-bit unsigned integer type.
-
-source
-Core.Int16
-—
-Type
-Int16 <: Signed
-
-16-bit signed integer type.
-
-source
-Core.UInt16
-—
-Type
-UInt16 <: Unsigned
-
-16-bit unsigned integer type.
-
-source
-Core.Int32
-—
-Type
-Int32 <: Signed
-
-32-bit signed integer type.
-
-source
-Core.UInt32
-—
-Type
-UInt32 <: Unsigned
-
-32-bit unsigned integer type.
-
-source
-Core.Int64
-—
-Type
-Int64 <: Signed
-
-64-bit signed integer type.
-
-source
-Core.UInt64
-—
-Type
-UInt64 <: Unsigned
-
-64-bit unsigned integer type.
-
-source
-Core.Int128
-—
-Type
-Int128 <: Signed
-
-128-bit signed integer type.
-
-source
-Core.UInt128
-—
-Type
-UInt128 <: Unsigned
-
-128-bit unsigned integer type.
-
-source
-Base.GMP.BigInt
-—
-Type
-BigInt <: Signed
-
-Arbitrary precision integer type.
-
-source
-Base.Complex
-—
-Type
-Complex{T<:Real} <: Number
-
-Complex number type with real and imaginary part of type T.
-
-ComplexF16, ComplexF32 and ComplexF64 are aliases for Complex{Float16}, Complex{Float32} and Complex{Float64} respectively.
-
-See also: Real, complex, real.
-
-source
-Base.Rational
-—
-Type
-Rational{T<:Integer} <: Real
-
-Rational number type, with numerator and denominator of type T. Rationals are checked for overflow.
-
-source
-Base.Irrational
-—
-Type
-Irrational{sym} <: AbstractIrrational
-
-Number type representing an exact irrational value denoted by the symbol sym, such as π, ℯ and γ.
-
-See also AbstractIrrational.
-
-source
-Data Formats
-Base.digits
-—
-Function
-digits([T<:Integer], n::Integer; base::T = 10, pad::Integer = 1)
-
-Return an array with element type T (default Int) of the digits of n in the given base, optionally padded with zeros to a specified size. More significant digits are at higher indices, such that n == sum(digits[k]*base^(k-1) for k=1:length(digits)).
-
-See also ndigits, digits!, and for base 2 also bitstring, count_ones.
-
-Examples
-
-digits(10)
-2-element Vector{Int64}:
- 0
- 1
-
-digits(10, base = 2)
-4-element Vector{Int64}:
- 0
- 1
- 0
- 1
-
-digits(-256, base = 10, pad = 5)
-5-element Vector{Int64}:
- -6
- -5
- -2
-  0
-  0
-
+# A type tree for all subtypes of Number in Base is shown below. Abstract types have been marked, the rest are concrete types.
+
+# Number  (Abstract Type)
+# ├─ Complex{T<:Real}                               ComplexF16, ComplexF32 and ComplexF64 are aliases for Complex{Float16}, Complex{Float32} and Complex{Float64}
+# └─ Real  (Abstract Type)
+#    ├─ AbstractFloat  (Abstract Type)
+#    │  ├─ Float16
+#    │  ├─ Float32
+#    │  ├─ Float64
+#    │  └─ BigFloat
+#    ├─ Integer  (Abstract Type)
+#    │  ├─ Bool
+#    │  ├─ Signed  (Abstract Type)
+#    │  │  ├─ Int8
+#    │  │  ├─ Int16
+#    │  │  ├─ Int32
+#    │  │  ├─ Int64
+#    │  │  ├─ Int128
+#    │  │  └─ BigInt
+#    │  └─ Unsigned  (Abstract Type)
+#    │     ├─ UInt8
+#    │     ├─ UInt16
+#    │     ├─ UInt32
+#    │     ├─ UInt64
+#    │     └─ UInt128
+#    ├─ Rational{T<:Integer}
+#    └─ AbstractIrrational  (Abstract Type)
+#       └─ Irrational{sym}
+
+# -----------------------------------------------------------
+# Abstract number types
+
+# Core.Number
+# Type Number
+# Abstract supertype for all number types.
+
+# -------------------------
+# Core.Real
+# Type Real <: Number
+# Abstract supertype for all real numbers.
+
+# -------------------------
+# Core.AbstractFloat
+# Type AbstractFloat <: Real
+# Abstract supertype for all floating point numbers.
+
+# -------------------------
+# Core.Integer
+# Type Integer <: Real
+# Abstract supertype for all integers.
+
+# -------------------------
+# Core.Signed
+# Type Signed <: Integer
+# Abstract supertype for all signed integers.
+
+# -------------------------
+# Core.Unsigned
+# Type Unsigned <: Integer
+# Abstract supertype for all unsigned integers.
+
+# -------------------------
+# Base.AbstractIrrational
+# Type AbstractIrrational <: Real
+
+# Number type representing an exact irrational value, which is automatically rounded to the correct precision in
+# arithmetic operations with other numeric quantities.
+# 
+# Subtypes MyIrrational <: AbstractIrrational should implement at least ==(::MyIrrational, ::MyIrrational),
+# hash(x::MyIrrational, h::UInt), and convert(::Type{F}, x::MyIrrational) where {F <: Union{BigFloat,Float32,Float64}}.
+# 
+# If a subtype is used to represent values that may occasionally be rational (e.g. a square-root type that represents √n
+# for integers n will give a rational result when n is a perfect square), then it should also implement isinteger,
+# iszero, isone, and == with Real values (since all of these default to false for AbstractIrrational types), as well as
+# defining hash to equal that of the corresponding Rational.
+
+
+# -----------------------------------------------------------
+# Concrete number types
+
+# Core.Float16
+# Type Float16 <: AbstractFloat
+# 16-bit floating point number type (IEEE 754 standard).
+# Binary format: 1 sign, 5 exponent, 10 fraction bits.
+
+# -------------------------
+# Core.Float32
+# Type Float32 <: AbstractFloat
+# 32-bit floating point number type (IEEE 754 standard).
+# Binary format: 1 sign, 8 exponent, 23 fraction bits.
+
+# -------------------------
+# Core.Float64
+# Type Float64 <: AbstractFloat
+# 64-bit floating point number type (IEEE 754 standard).
+# Binary format: 1 sign, 11 exponent, 52 fraction bits.
+
+# -------------------------
+# Base.MPFR.BigFloat
+# Type BigFloat <: AbstractFloat
+# Arbitrary precision floating point number type.
+
+# -------------------------
+# Core.Bool
+# Type Bool <: Integer
+# Boolean type, containing the values true and false.
+# Bool is a kind of number: false is numerically equal to 0 and true is numerically equal to 1. Moreover, false acts as
+# a multiplicative "strong zero":
+# See also: digits, iszero, NaN.
+false == 0              # true
+true == 1               # true
+0 * NaN                 # NaN
+false * NaN             # 0.0
+
+# -------------------------
+# Core.Int8
+# Type Int8 <: Signed
+# 8-bit signed integer type.
+
+# -------------------------
+# Core.UInt8
+# Type UInt8 <: Unsigned
+# 8-bit unsigned integer type.
+
+# -------------------------
+# Core.Int16
+# Type Int16 <: Signed
+# 16-bit signed integer type.
+
+# -------------------------
+# Core.UInt16
+# Type UInt16 <: Unsigned
+# 16-bit unsigned integer type.
+
+# -------------------------
+# Core.Int32
+# Type Int32 <: Signed
+# 32-bit signed integer type.
+
+# -------------------------
+# Core.UInt32
+# Type UInt32 <: Unsigned
+# 32-bit unsigned integer type.
+
+# -------------------------
+# Core.Int64
+# Type Int64 <: Signed
+# 64-bit signed integer type.
+
+# -------------------------
+# Core.UInt64
+# Type UInt64 <: Unsigned
+# 64-bit unsigned integer type.
+
+# -------------------------
+# Core.Int128
+# Type Int128 <: Signed
+# 128-bit signed integer type.
+
+# -------------------------
+# Core.UInt128
+# Type UInt128 <: Unsigned
+# 128-bit unsigned integer type.
+
+# -------------------------
+# Base.GMP.BigInt
+# Type BigInt <: Signed
+# Arbitrary precision integer type.
+
+# -------------------------
+# Base.Complex
+# Type Complex{T<:Real} <: Number
+# Complex number type with real and imaginary part of type T.
+# ComplexF16, ComplexF32 and ComplexF64 are aliases for Complex{Float16}, Complex{Float32} and Complex{Float64} respectively.
+# See also: Real, complex, real.
+
+# -------------------------
+# Base.Rational
+# Type Rational{T<:Integer} <: Real
+# Rational number type, with numerator and denominator of type T. Rationals are checked for overflow.
+
+# -------------------------
+# Base.Irrational
+# Type Irrational{sym} <: AbstractIrrational
+# Number type representing an exact irrational value denoted by the symbol sym, such as π, ℯ and γ.
+# See also AbstractIrrational.
+
+Float64(::Irrational{:v}) = 56.96124843     # Float64
+Irrational{:v}()                            # v = 56.96124843...
+
+
+# -----------------------------------------------------------
+# Data Formats
+
+# Base.digits
+# Function digits([T<:Integer], n::Integer; base::T = 10, pad::Integer = 1)
+#
+# Return an array with element type T (default Int) of the digits of n in the given base, optionally padded with zeros
+# to a specified size. More significant digits are at higher indices, such that n == sum(digits[k]*base^(k-1) for
+# k=1:length(digits)).
+# See also ndigits, digits!, and for base 2 also bitstring, count_ones.
+digits(10)                              # 2-element Vector{Int64}: 0 1
+digits(10, base = 2)                    # 4-element Vector{Int64}: 0 1 0 1
+digits(-256, base = 10, pad = 5)        # 5-element Vector{Int64}: -6 -5 -2  0  0
+digits(51966, base=16)                  # 4-element Vector{Int64}: 14 15 10 12
 n = rand(-999:999);
+n == evalpoly(13, digits(n, base = 13)) # true
 
-n == evalpoly(13, digits(n, base = 13))
-true
+# -------------------------
+# Base.digits!
+# Function digits!(array, n::Integer; base::Integer = 10)
+#
+# Fills an array of the digits of n in the given base. More significant digits are at higher indices. If the array
+# length is insufficient, the least significant digits are filled up to the array length. If the array length is
+# excessive, the excess portion is filled with zeros.
+digits!([2, 2, 2, 2], 10, base = 2)         # 4-element Vector{Int64}: 0 1 0 1
+digits!([2, 2, 2, 2, 2, 2], 10, base = 2)   # 6-element Vector{Int64}: 0 1 0 1 0 0
+digits!([0, 0], 51966, base=16)             # 2-element Vector{Int64}: 14 15
 
-source
-Base.digits!
-—
-Function
-digits!(array, n::Integer; base::Integer = 10)
+# -------------------------
+# Base.bitstring
+# Function bitstring(n)
+# A string giving the literal bit representation of a primitive type.
+# See also count_ones, count_zeros, digits.
+bitstring(Int32(4))                     # "00000000000000000000000000000100"
+bitstring(2.2)                          # "0100000000000001100110011001100110011001100110011001100110011010"
 
-Fills an array of the digits of n in the given base. More significant digits are at higher indices. If the array length is insufficient, the least significant digits are filled up to the array length. If the array length is excessive, the excess portion is filled with zeros.
-
-Examples
-
-digits!([2, 2, 2, 2], 10, base = 2)
-4-element Vector{Int64}:
- 0
- 1
- 0
- 1
-
-digits!([2, 2, 2, 2, 2, 2], 10, base = 2)
-6-element Vector{Int64}:
- 0
- 1
- 0
- 1
- 0
- 0
-
-source
-Base.bitstring
-—
-Function
-bitstring(n)
-
-A string giving the literal bit representation of a primitive type.
-
-See also count_ones, count_zeros, digits.
-
-Examples
-
-bitstring(Int32(4))
-"00000000000000000000000000000100"
-
-bitstring(2.2)
-"0100000000000001100110011001100110011001100110011001100110011010"
-
-source
+# -------------------------
 Base.parse
-—
-Function
-parse(::Type{Platform}, triplet::AbstractString)
+Function parse(::Type{Platform}, triplet::AbstractString)
 
 Parses a string platform triplet back into a Platform object.
 
-source
+# -------------------------
 parse(type, str; base)
 
 Parse a string as a number. For Integer types, a base can be specified (the default is 10). For floating-point types, the string is parsed as a decimal floating-point number. Complex types are parsed from decimal strings of the form "R±Iim" as a Complex(R,I) of the requested type; "i" or "j" can also be used instead of "im", and "R" or "Iim" are also permitted. If the string does not contain a valid number, an error is raised.
@@ -392,27 +265,21 @@ parse(Float64, "1.2e-3")
 parse(Complex{Float64}, "3.2e-1 + 4.5im")
 0.32 + 4.5im
 
-source
+# -------------------------
 Base.tryparse
-—
-Function
-tryparse(type, str; base)
+Function tryparse(type, str; base)
 
 Like parse, but returns either a value of the requested type, or nothing if the string does not contain a valid number.
 
-source
+# -------------------------
 Base.big
-—
-Function
-big(x)
+Function big(x)
 
 Convert a number to a maximum precision representation (typically BigInt or BigFloat). See BigFloat for information about some pitfalls with floating-point numbers.
 
-source
+# -------------------------
 Base.signed
-—
-Function
-signed(T::Integer)
+Function signed(T::Integer)
 
 Convert an integer bitstype to the signed type of the same size.
 
@@ -423,18 +290,16 @@ Int16
 signed(UInt64)
 Int64
 
-source
+# -------------------------
 signed(x)
 
 Convert a number to a signed integer. If the argument is unsigned, it is reinterpreted as signed without checking for overflow.
 
 See also: unsigned, sign, signbit.
 
-source
+# -------------------------
 Base.unsigned
-—
-Function
-unsigned(T::Integer)
+Function unsigned(T::Integer)
 
 Convert an integer bitstype to the unsigned type of the same size.
 
@@ -445,9 +310,8 @@ UInt16
 unsigned(UInt64)
 UInt64
 
-source
+# -------------------------
 Base.float
-—
 Method
 float(x)
 
@@ -463,11 +327,9 @@ float(1:1000)
 float(typemax(Int32))
 2.147483647e9
 
-source
+# -------------------------
 Base.Math.significand
-—
-Function
-significand(x)
+Function significand(x)
 
 Extract the significand (a.k.a. mantissa) of a floating-point number. If x is a non-zero finite number, then the result will be a number of the same type and sign as x, and whose absolute value is on the interval 
 [
@@ -491,11 +353,9 @@ significand(-15.2) * 2^3
 significand(-Inf), significand(Inf), significand(NaN)
 (-Inf, Inf, NaN)
 
-source
+# -------------------------
 Base.Math.exponent
-—
-Function
-exponent(x) -> Int
+Function exponent(x) -> Int
 
 Returns the largest integer y such that 2^y ≤ abs(x). For a normalized floating-point number x, this corresponds to the exponent of x.
 
@@ -516,9 +376,8 @@ exponent(16.0)
 exponent(3.142e-4)
 -12
 
-source
+# -------------------------
 Base.complex
-—
 Method
 complex(r, [i])
 
@@ -535,11 +394,9 @@ complex([1, 2, 3])
  2 + 0im
  3 + 0im
 
-source
+# -------------------------
 Base.bswap
-—
-Function
-bswap(n)
+Function bswap(n)
 
 Reverse the byte order of n.
 
@@ -559,11 +416,9 @@ string(1, base = 2)
 string(bswap(1), base = 2)
 "100000000000000000000000000000000000000000000000000000000"
 
-source
+# -------------------------
 Base.hex2bytes
-—
-Function
-hex2bytes(itr)
+Function hex2bytes(itr)
 
 Given an iterable itr of ASCII codes for a sequence of hexadecimal digits, returns a Vector{UInt8} of bytes corresponding to the binary representation: each successive pair of hexadecimal digits in itr gives the value of one byte in the return vector.
 
@@ -597,22 +452,18 @@ hex2bytes(a)
  0xab
  0xef
 
-source
+# -------------------------
 Base.hex2bytes!
-—
-Function
-hex2bytes!(dest::AbstractVector{UInt8}, itr)
+Function hex2bytes!(dest::AbstractVector{UInt8}, itr)
 
 Convert an iterable itr of bytes representing a hexadecimal string to its binary representation, similar to hex2bytes except that the output is written in-place to dest. The length of dest must be half the length of itr.
 
 Julia 1.7
 Calling hex2bytes! with iterators producing UInt8 requires version 1.7. In earlier versions, you can collect the iterable before calling instead.
 
-source
+# -------------------------
 Base.bytes2hex
-—
-Function
-bytes2hex(itr) -> String
+Function bytes2hex(itr) -> String
 bytes2hex(io::IO, itr)
 
 Convert an iterator itr of bytes to its hexadecimal string representation, either returning a String via bytes2hex(itr) or writing the string to an io stream via bytes2hex(io, itr). The hexadecimal characters are all lowercase.
@@ -633,12 +484,10 @@ b = hex2bytes(a)
 bytes2hex(b)
 "3039"
 
-source
+# -------------------------
 General Number Functions and Constants
 Base.one
-—
-Function
-one(x)
+Function one(x)
 one(T::type)
 
 Return a multiplicative identity for x: a value such that one(x)*x == x*one(x) == x. Alternatively one(T) can take a type T, in which case one returns a multiplicative identity for any x of type T.
@@ -660,11 +509,9 @@ one(Int)
 import Dates; one(Dates.Day(1))
 1
 
-source
+# -------------------------
 Base.oneunit
-—
-Function
-oneunit(x::T)
+Function oneunit(x::T)
 oneunit(T::Type)
 
 Return T(one(x)), where T is either the type of the argument or (if a type is passed) the argument. This differs from one for dimensionful quantities: one is dimensionless (a multiplicative identity) while oneunit is dimensionful (of the same type as x, or of type T).
@@ -677,11 +524,9 @@ oneunit(3.7)
 import Dates; oneunit(Dates.Day)
 1 day
 
-source
+# -------------------------
 Base.zero
-—
-Function
-zero(x)
+Function zero(x)
 zero(::Type)
 
 Get the additive identity element for the type of x (x can also specify the type itself).
@@ -701,9 +546,8 @@ zero(rand(2,2))
  0.0  0.0
  0.0  0.0
 
-source
+# -------------------------
 Base.im
-—
 Constant
 im
 
@@ -719,9 +563,8 @@ im * im
 (2.0 + 3im)^2
 -5.0 + 12.0im
 
-source
+# -------------------------
 Base.MathConstants.pi
-—
 Constant
 π
 pi
@@ -740,9 +583,8 @@ pi
 1/2pi
 0.15915494309189535
 
-source
+# -------------------------
 Base.MathConstants.ℯ
-—
 Constant
 ℯ
 e
@@ -764,9 +606,8 @@ log(ℯ)
 ℯ^(im)π ≈ -1
 true
 
-source
+# -------------------------
 Base.MathConstants.catalan
-—
 Constant
 catalan
 
@@ -780,9 +621,8 @@ catalan = 0.9159655941772...
 sum(log(x)/(1+x^2) for x in 1:0.01:10^6) * 0.01
 0.9159466120554123
 
-source
+# -------------------------
 Base.MathConstants.eulergamma
-—
 Constant
 γ
 eulergamma
@@ -799,9 +639,8 @@ dx = 10^-6;
 sum(-exp(-x) * log(x) for x in dx:dx:100) * dx
 0.5772078382499133
 
-source
+# -------------------------
 Base.MathConstants.golden
-—
 Constant
 φ
 golden
@@ -816,9 +655,8 @@ Base.MathConstants.golden
 (2ans - 1)^2 ≈ 5
 true
 
-source
+# -------------------------
 Base.Inf
-—
 Constant
 Inf, Inf64
 
@@ -837,9 +675,8 @@ Inf
 ℯ^-Inf
 0.0
 
-source
+# -------------------------
 Base.Inf64
-—
 Constant
 Inf, Inf64
 
@@ -858,25 +695,22 @@ Inf
 ℯ^-Inf
 0.0
 
-source
+# -------------------------
 Base.Inf32
-—
 Constant
 Inf32
 
 Positive infinity of type Float32.
 
-source
+# -------------------------
 Base.Inf16
-—
 Constant
 Inf16
 
 Positive infinity of type Float16.
 
-source
+# -------------------------
 Base.NaN
-—
 Constant
 NaN, NaN64
 
@@ -895,9 +729,8 @@ NaN
 NaN == NaN, isequal(NaN, NaN), NaN === NaN
 (false, true, true)
 
-source
+# -------------------------
 Base.NaN64
-—
 Constant
 NaN, NaN64
 
@@ -916,27 +749,23 @@ NaN
 NaN == NaN, isequal(NaN, NaN), NaN === NaN
 (false, true, true)
 
-source
+# -------------------------
 Base.NaN32
-—
 Constant
 NaN32
 
 A not-a-number value of type Float32.
 
-source
+# -------------------------
 Base.NaN16
-—
 Constant
 NaN16
 
 A not-a-number value of type Float16.
 
-source
+# -------------------------
 Base.issubnormal
-—
-Function
-issubnormal(f) -> Bool
+Function issubnormal(f) -> Bool
 
 Test whether a floating point number is subnormal.
 
@@ -953,11 +782,9 @@ false
 issubnormal(1.0f-38)
 true
 
-source
+# -------------------------
 Base.isfinite
-—
-Function
-isfinite(f) -> Bool
+Function isfinite(f) -> Bool
 
 Test whether a number is finite.
 
@@ -969,31 +796,25 @@ true
 isfinite(NaN32)
 false
 
-source
+# -------------------------
 Base.isinf
-—
-Function
-isinf(f) -> Bool
+Function isinf(f) -> Bool
 
 Test whether a number is infinite.
 
 See also: Inf, iszero, isfinite, isnan.
 
-source
+# -------------------------
 Base.isnan
-—
-Function
-isnan(f) -> Bool
+Function isnan(f) -> Bool
 
 Test whether a number value is a NaN, an indeterminate value which is neither an infinity nor a finite number ("not a number").
 
 See also: iszero, isone, isinf, ismissing.
 
-source
+# -------------------------
 Base.iszero
-—
-Function
-iszero(x)
+Function iszero(x)
 
 Return true if x == zero(x); if x is an array, this checks whether all of the elements of x are zero.
 
@@ -1010,11 +831,9 @@ false
 iszero([false, 0, 0])
 true
 
-source
+# -------------------------
 Base.isone
-—
-Function
-isone(x)
+Function isone(x)
 
 Return true if x == one(x); if x is an array, this checks whether x is an identity matrix.
 
@@ -1029,39 +848,33 @@ false
 isone([1 0; 0 true])
 true
 
-source
+# -------------------------
 Base.nextfloat
-—
-Function
-nextfloat(x::AbstractFloat, n::Integer)
+Function nextfloat(x::AbstractFloat, n::Integer)
 
 The result of n iterative applications of nextfloat to x if n >= 0, or -n applications of prevfloat if n < 0.
 
-source
+# -------------------------
 nextfloat(x::AbstractFloat)
 
 Return the smallest floating point number y of the same type as x such x < y. If no such y exists (e.g. if x is Inf or NaN), then return x.
 
 See also: prevfloat, eps, issubnormal.
 
-source
+# -------------------------
 Base.prevfloat
-—
-Function
-prevfloat(x::AbstractFloat, n::Integer)
+Function prevfloat(x::AbstractFloat, n::Integer)
 
 The result of n iterative applications of prevfloat to x if n >= 0, or -n applications of nextfloat if n < 0.
 
-source
+# -------------------------
 prevfloat(x::AbstractFloat)
 
 Return the largest floating point number y of the same type as x such y < x. If no such y exists (e.g. if x is -Inf or NaN), then return x.
 
-source
+# -------------------------
 Base.isinteger
-—
-Function
-isinteger(x) -> Bool
+Function isinteger(x) -> Bool
 
 Test whether x is numerically equal to some integer.
 
@@ -1070,11 +883,9 @@ Examples
 isinteger(4.0)
 true
 
-source
+# -------------------------
 Base.isreal
-—
-Function
-isreal(x) -> Bool
+Function isreal(x) -> Bool
 
 Test whether x or all its elements are numerically equal to some real number including infinities and NaNs. isreal(x) is true if isequal(x, real(x)) is true.
 
@@ -1092,9 +903,8 @@ true
 isreal([4.; complex(0,1)])
 false
 
-source
+# -------------------------
 Core.Float32
-—
 Method
 Float32(x [, mode::RoundingMode])
 
@@ -1110,9 +920,8 @@ Float32(1/3, RoundUp)
 
 See RoundingMode for available rounding modes.
 
-source
+# -------------------------
 Core.Float64
-—
 Method
 Float64(x [, mode::RoundingMode])
 
@@ -1128,19 +937,16 @@ Float64(pi, RoundUp)
 
 See RoundingMode for available rounding modes.
 
-source
+# -------------------------
 Base.Rounding.rounding
-—
-Function
-rounding(T)
+Function rounding(T)
 
 Get the current floating point rounding mode for type T, controlling the rounding of basic arithmetic functions (+, -, *, / and sqrt) and type conversion.
 
 See RoundingMode for available modes.
 
-source
+# -------------------------
 Base.Rounding.setrounding
-—
 Method
 setrounding(T, mode)
 
@@ -1151,9 +957,8 @@ Note that this is currently only supported for T == BigFloat.
 Warning
 This function is not thread-safe. It will affect code running on all threads, but its behavior is undefined if called concurrently with computations that use the setting.
 
-source
+# -------------------------
 Base.Rounding.setrounding
-—
 Method
 setrounding(f::Function, T, mode)
 
@@ -1166,22 +971,18 @@ setrounding(T, old)
 
 See RoundingMode for available rounding modes.
 
-source
+# -------------------------
 Base.Rounding.get_zero_subnormals
-—
-Function
-get_zero_subnormals() -> Bool
+Function get_zero_subnormals() -> Bool
 
 Return false if operations on subnormal floating-point values ("denormals") obey rules for IEEE arithmetic, and true if they might be converted to zeros.
 
 Warning
 This function only affects the current thread.
 
-source
+# -------------------------
 Base.Rounding.set_zero_subnormals
-—
-Function
-set_zero_subnormals(yes::Bool) -> Bool
+Function set_zero_subnormals(yes::Bool) -> Bool
 
 If yes is false, subsequent floating-point operations follow rules for IEEE arithmetic on subnormal values ("denormals"). Otherwise, floating-point operations are permitted (but not required) to convert subnormal inputs or outputs to zero. Returns true unless yes==true but the hardware does not support zeroing of subnormal numbers.
 
@@ -1190,12 +991,10 @@ set_zero_subnormals(true) can speed up some computations on some hardware. Howev
 Warning
 This function only affects the current thread.
 
-source
+# -------------------------
 Integers
 Base.count_ones
-—
-Function
-count_ones(x::Integer) -> Integer
+Function count_ones(x::Integer) -> Integer
 
 Number of ones in the binary representation of x.
 
@@ -1207,11 +1006,9 @@ count_ones(7)
 count_ones(Int32(-1))
 32
 
-source
+# -------------------------
 Base.count_zeros
-—
-Function
-count_zeros(x::Integer) -> Integer
+Function count_zeros(x::Integer) -> Integer
 
 Number of zeros in the binary representation of x.
 
@@ -1223,11 +1020,9 @@ count_zeros(Int32(2 ^ 16 - 1))
 count_zeros(-1)
 0
 
-source
+# -------------------------
 Base.leading_zeros
-—
-Function
-leading_zeros(x::Integer) -> Integer
+Function leading_zeros(x::Integer) -> Integer
 
 Number of zeros leading the binary representation of x.
 
@@ -1236,11 +1031,9 @@ Examples
 leading_zeros(Int32(1))
 31
 
-source
+# -------------------------
 Base.leading_ones
-—
-Function
-leading_ones(x::Integer) -> Integer
+Function leading_ones(x::Integer) -> Integer
 
 Number of ones leading the binary representation of x.
 
@@ -1249,11 +1042,9 @@ Examples
 leading_ones(UInt32(2 ^ 32 - 2))
 31
 
-source
+# -------------------------
 Base.trailing_zeros
-—
-Function
-trailing_zeros(x::Integer) -> Integer
+Function trailing_zeros(x::Integer) -> Integer
 
 Number of zeros trailing the binary representation of x.
 
@@ -1262,11 +1053,9 @@ Examples
 trailing_zeros(2)
 1
 
-source
+# -------------------------
 Base.trailing_ones
-—
-Function
-trailing_ones(x::Integer) -> Integer
+Function trailing_ones(x::Integer) -> Integer
 
 Number of ones trailing the binary representation of x.
 
@@ -1275,11 +1064,9 @@ Examples
 trailing_ones(3)
 2
 
-source
+# -------------------------
 Base.isodd
-—
-Function
-isodd(x::Number) -> Bool
+Function isodd(x::Number) -> Bool
 
 Return true if x is an odd integer (that is, an integer not divisible by 2), and false otherwise.
 
@@ -1294,11 +1081,9 @@ true
 isodd(10)
 false
 
-source
+# -------------------------
 Base.iseven
-—
-Function
-iseven(x::Number) -> Bool
+Function iseven(x::Number) -> Bool
 
 Return true if x is an even integer (that is, an integer divisible by 2), and false otherwise.
 
@@ -1313,9 +1098,8 @@ false
 iseven(10)
 true
 
-source
+# -------------------------
 Core.@int128_str
-—
 Macro
 @int128_str str
 
@@ -1330,9 +1114,8 @@ int128"123456789123.4"
 ERROR: LoadError: ArgumentError: invalid base 10 digit '.' in "123456789123.4"
 [...]
 
-source
+# -------------------------
 Core.@uint128_str
-—
 Macro
 @uint128_str str
 
@@ -1347,12 +1130,11 @@ uint128"-123456789123"
 ERROR: LoadError: ArgumentError: invalid base 10 digit '-' in "-123456789123"
 [...]
 
-source
+# -------------------------
 BigFloats and BigInts
 The BigFloat and BigInt types implements arbitrary-precision floating point and integer arithmetic, respectively. For BigFloat the GNU MPFR library is used, and for BigInt the GNU Multiple Precision Arithmetic Library (GMP) is used.
 
 Base.MPFR.BigFloat
-—
 Method
 BigFloat(x::Union{Real, AbstractString} [, rounding::RoundingMode=rounding(BigFloat)]; [precision::Integer=precision(BigFloat)])
 
@@ -1384,11 +1166,9 @@ BigFloat("2.1", RoundUp)
 BigFloat("2.1", RoundUp, precision=128)
 2.100000000000000000000000000000000000007
 
-source
+# -------------------------
 Base.precision
-—
-Function
-precision(num::AbstractFloat; base::Integer=2)
+Function precision(num::AbstractFloat; base::Integer=2)
 precision(T::Type; base::Integer=2)
 
 Get the precision of a floating point number, as defined by the effective number of bits in the significand, or the precision of a floating-point type T (its current default, if T is a variable-precision type like BigFloat).
@@ -1398,11 +1178,9 @@ If base is specified, then it returns the maximum corresponding number of signif
 Julia 1.8
 The base keyword requires at least Julia 1.8.
 
-source
+# -------------------------
 Base.MPFR.setprecision
-—
-Function
-setprecision([T=BigFloat,] precision::Int; base=2)
+Function setprecision([T=BigFloat,] precision::Int; base=2)
 
 Set the precision (in bits, by default) to be used for T arithmetic. If base is specified, then the precision is the minimum required to give at least precision digits in the given base.
 
@@ -1412,7 +1190,7 @@ This function is not thread-safe. It will affect code running on all threads, bu
 Julia 1.8
 The base keyword requires at least Julia 1.8.
 
-source
+# -------------------------
 setprecision(f::Function, [T=BigFloat,] precision::Integer; base=2)
 
 Change the T arithmetic precision (in the given base) for the duration of f. It is logically equivalent to:
@@ -1429,9 +1207,8 @@ Note: nextfloat(), prevfloat() do not use the precision mentioned by setprecisio
 Julia 1.8
 The base keyword requires at least Julia 1.8.
 
-source
+# -------------------------
 Base.GMP.BigInt
-—
 Method
 BigInt(x)
 
@@ -1450,9 +1227,8 @@ big"313"
 BigInt(10)^19
 10000000000000000000
 
-source
+# -------------------------
 Core.@big_str
-—
 Macro
 @big_str str
 
