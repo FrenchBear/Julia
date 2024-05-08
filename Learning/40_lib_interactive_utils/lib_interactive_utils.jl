@@ -9,9 +9,7 @@
 # This module is intended for interactive work. It is loaded automatically in interactive mode.
 
 Base.Docs.apropos
-—
-Function
-apropos([io::IO=stdout], pattern::Union{AbstractString,Regex})
+Function apropos([io::IO=stdout], pattern::Union{AbstractString,Regex})
 
 Search available docstrings for entries containing pattern.
 
@@ -22,9 +20,7 @@ apropos can be called from the help mode in the REPL by wrapping the query in do
 help?> "pattern"
 
 InteractiveUtils.varinfo
-—
-Function
-varinfo(m::Module=Main, pattern::Regex=r""; all=false, imported=false, recursive=false, sortby::Symbol=:name, minsize::Int=0)
+Function varinfo(m::Module=Main, pattern::Regex=r""; all=false, imported=false, recursive=false, sortby::Symbol=:name, minsize::Int=0)
 
 Return a markdown table giving information about exported global variables in a module, optionally restricted to those matching pattern.
 
@@ -38,9 +34,7 @@ minsize : only includes objects with size at least minsize bytes. Defaults to 0.
 The output of varinfo is intended for display purposes only. See also names to get an array of symbols defined in a module, which is suitable for more general manipulations.
 
 InteractiveUtils.versioninfo
-—
-Function
-versioninfo(io::IO=stdout; verbose::Bool=false)
+Function versioninfo(io::IO=stdout; verbose::Bool=false)
 
 Print information about the version of Julia in use. The output is controlled with boolean keyword arguments:
 
@@ -51,9 +45,7 @@ The output of this function may contain sensitive information. Before sharing th
 See also: VERSION.
 
 InteractiveUtils.methodswith
-—
-Function
-methodswith(typ[, module or function]; supertypes::Bool=false])
+Function methodswith(typ[, module or function]; supertypes::Bool=false])
 
 Return an array of methods with an argument of type typ.
 
@@ -62,15 +54,12 @@ The optional second argument restricts the search to a particular module or func
 If keyword supertypes is true, also return arguments with a parent type of typ, excluding type Any.
 
 InteractiveUtils.subtypes
-—
-Function
-subtypes(T::DataType)
+Function subtypes(T::DataType)
 
 Return a list of immediate subtypes of DataType T. Note that all currently loaded subtypes are included, including those not visible in the current module.
 
 See also supertype, supertypes, methodswith.
 
-Examples
 
 subtypes(Integer)
 3-element Vector{Any}:
@@ -79,32 +68,25 @@ subtypes(Integer)
  Unsigned
 
 InteractiveUtils.supertypes
-—
-Function
-supertypes(T::Type)
+Function supertypes(T::Type)
 
 Return a tuple (T, ..., Any) of T and all its supertypes, as determined by successive calls to the supertype function, listed in order of <: and terminated by Any.
 
 See also subtypes.
 
-Examples
 
 supertypes(Int)
 (Int64, Signed, Integer, Real, Number, Any)
 
 InteractiveUtils.edit
-—
-Method
-edit(path::AbstractString, line::Integer=0, column::Integer=0)
+Method edit(path::AbstractString, line::Integer=0, column::Integer=0)
 
 Edit a file or directory optionally providing a line number to edit the file at. Return to the julia prompt when you quit the editor. The editor can be changed by setting JULIA_EDITOR, VISUAL or EDITOR as an environment variable.
 
 See also define_editor.
 
 InteractiveUtils.edit
-—
-Method
-edit(function, [types])
+Method edit(function, [types])
 edit(module)
 
 Edit the definition of a function, optionally specifying a tuple of types to indicate which method to edit. For modules, open the main source file. The module needs to be loaded with using or import first.
@@ -115,7 +97,6 @@ edit on modules requires at least Julia 1.1.
 To ensure that the file can be opened at the given line, you may need to call define_editor first.
 
 InteractiveUtils.@edit
-—
 Macro
 @edit
 
@@ -124,9 +105,7 @@ Evaluates the arguments to the function or macro call, determines their types, a
 See also: @less, @which.
 
 InteractiveUtils.define_editor
-—
-Function
-define_editor(fn, pattern; wait=false)
+Function define_editor(fn, pattern; wait=false)
 
 Define a new editor matching pattern that can be used to open a file (possibly at a given line number) using fn.
 
@@ -179,21 +158,16 @@ Julia 1.4
 define_editor was introduced in Julia 1.4.
 
 InteractiveUtils.less
-—
-Method
-less(file::AbstractString, [line::Integer])
+Method less(file::AbstractString, [line::Integer])
 
 Show a file using the default pager, optionally providing a starting line number. Returns to the julia prompt when you quit the pager.
 
 InteractiveUtils.less
-—
-Method
-less(function, [types])
+Method less(function, [types])
 
 Show the definition of a function using the default pager, optionally specifying a tuple of types to indicate which method to see.
 
 InteractiveUtils.@less
-—
 Macro
 @less
 
@@ -202,7 +176,6 @@ Evaluates the arguments to the function or macro call, determines their types, a
 See also: @edit, @which, @code_lowered.
 
 InteractiveUtils.@which
-—
 Macro
 @which
 
@@ -211,21 +184,18 @@ Applied to a function or macro call, it evaluates the arguments to the specified
 See also: @less, @edit.
 
 InteractiveUtils.@functionloc
-—
 Macro
 @functionloc
 
 Applied to a function or macro call, it evaluates the arguments to the specified call, and returns a tuple (filename,line) giving the location for the method that would be called for those arguments. It calls out to the functionloc function.
 
 InteractiveUtils.@code_lowered
-—
 Macro
 @code_lowered
 
 Evaluates the arguments to the function or macro call, determines their types, and calls code_lowered on the resulting expression.
 
 InteractiveUtils.@code_typed
-—
 Macro
 @code_typed
 
@@ -236,9 +206,7 @@ Evaluates the arguments to the function or macro call, determines their types, a
 to control whether additional optimizations, such as inlining, are also applied.
 
 InteractiveUtils.code_warntype
-—
-Function
-code_warntype([io::IO], f, types; debuginfo=:default)
+Function code_warntype([io::IO], f, types; debuginfo=:default)
 
 Prints lowered and type-inferred ASTs for the methods matching the given generic function and type signature to io which defaults to stdout. The ASTs are annotated in such a way as to cause "non-leaf" types which may be problematic for performance to be emphasized (if color is available, displayed in red). This serves as a warning of potential type instability.
 
@@ -249,23 +217,19 @@ Keyword argument debuginfo may be one of :source or :none (default), to specify 
 See the @code_warntype section in the Performance Tips page of the manual for more information.
 
 InteractiveUtils.@code_warntype
-—
 Macro
 @code_warntype
 
 Evaluates the arguments to the function or macro call, determines their types, and calls code_warntype on the resulting expression.
 
 InteractiveUtils.code_llvm
-—
-Function
-code_llvm([io=stdout,], f, types; raw=false, dump_module=false, optimize=true, debuginfo=:default)
+Function code_llvm([io=stdout,], f, types; raw=false, dump_module=false, optimize=true, debuginfo=:default)
 
 Prints the LLVM bitcodes generated for running the method matching the given generic function and type signature to io.
 
 If the optimize keyword is unset, the code will be shown before LLVM optimizations. All metadata and dbg.* calls are removed from the printed bitcode. For the full IR, set the raw keyword to true. To dump the entire module that encapsulates the function (with declarations), set the dump_module keyword to true. Keyword argument debuginfo may be one of source (default) or none, to specify the verbosity of code comments.
 
 InteractiveUtils.@code_llvm
-—
 Macro
 @code_llvm
 
@@ -277,9 +241,7 @@ Evaluates the arguments to the function or macro call, determines their types, a
 optimize controls whether additional optimizations, such as inlining, are also applied. raw makes all metadata and dbg.* calls visible. debuginfo may be one of :source (default) or :none, to specify the verbosity of code comments. dump_module prints the entire module that encapsulates the function.
 
 InteractiveUtils.code_native
-—
-Function
-code_native([io=stdout,], f, types; syntax=:intel, debuginfo=:default, binary=false, dump_module=true)
+Function code_native([io=stdout,], f, types; syntax=:intel, debuginfo=:default, binary=false, dump_module=true)
 
 Prints the native assembly instructions generated for running the method matching the given generic function and type signature to io.
 
@@ -291,7 +253,6 @@ If raw is false, uninteresting instructions (like the safepoint function prologu
 See also: @code_native, code_llvm, code_typed and code_lowered
 
 InteractiveUtils.@code_native
-—
 Macro
 @code_native
 
@@ -308,7 +269,6 @@ If dump_module is false, do not print metadata such as rodata or directives.
 See also: code_native, @code_llvm, @code_typed and @code_lowered
 
 InteractiveUtils.@time_imports
-—
 Macro
 @time_imports
 
@@ -318,8 +278,7 @@ One line is printed per package or package extension. The duration shown is the 
 
 On Julia 1.9+ package extensions will show as Parent → Extension.
 
-Note
-During the load process a package sequentially imports all of its dependencies, not just its direct dependencies.
+Note: During the load process a package sequentially imports all of its dependencies, not just its direct dependencies.
 
 @time_imports using CSV
      50.7 ms  Parsers 17.52% compilation time
@@ -343,9 +302,7 @@ Julia 1.8
 This macro requires at least Julia 1.8
 
 InteractiveUtils.clipboard
-—
-Function
-clipboard(x)
+Function clipboard(x)
 
 Send a printed form of x to the operating system clipboard ("copy").
 

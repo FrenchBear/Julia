@@ -95,9 +95,7 @@ All the sorting and order related functions rely on a "less than" relation defin
 
 Sorting Functions
 Base.sort!
-—
-Function
-sort!(v; alg::Algorithm=defalg(v), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
+Function sort!(v; alg::Algorithm=defalg(v), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Sort the vector v in place. A stable algorithm is used by default: the ordering of elements that compare equal is preserved. A specific algorithm can be selected via the alg keyword (see Sorting Algorithms for available algorithms).
 
@@ -122,7 +120,6 @@ For example < is a valid lt function for Int values but ≤ is not: it violates 
 
 See also sort, sortperm, sortslices, partialsort!, partialsortperm, issorted, searchsorted, insorted, Base.Order.ord.
 
-Examples
 
 v = [3, 1, 2]; sort!(v); v
 3-element Vector{Int64}:
@@ -171,7 +168,7 @@ sort([2, NaN, 1, NaN, 3], lt=<) # wrong sort due to invalid lt. This behavior is
  NaN
    3.0
 
-source
+# -------------------------
 sort!(A; dims::Integer, alg::Algorithm=defalg(A), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Sort the multidimensional array A along dimension dims. See the one-dimensional version of sort! for a description of possible keyword arguments.
@@ -181,7 +178,6 @@ To sort slices of an array, refer to sortslices.
 Julia 1.1
 This function requires at least Julia 1.1.
 
-Examples
 
 A = [4 3; 1 2]
 2×2 Matrix{Int64}:
@@ -198,15 +194,12 @@ sort!(A, dims = 2); A
  1  2
  3  4
 
-source
+# -------------------------
 Base.sort
-—
-Function
-sort(v; alg::Algorithm=defalg(v), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
+Function sort(v; alg::Algorithm=defalg(v), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Variant of sort! that returns a sorted copy of v leaving v itself unmodified.
 
-Examples
 
 v = [3, 1, 2];
 
@@ -222,14 +215,13 @@ v
  1
  2
 
-source
+# -------------------------
 sort(A; dims::Integer, alg::Algorithm=defalg(A), lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Sort a multidimensional array A along the given dimension. See sort! for a description of possible keyword arguments.
 
 To sort slices of an array, refer to sortslices.
 
-Examples
 
 A = [4 3; 1 2]
 2×2 Matrix{Int64}:
@@ -246,11 +238,9 @@ sort(A, dims = 2)
  3  4
  1  2
 
-source
+# -------------------------
 Base.sortperm
-—
-Function
-sortperm(A; alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward, [dims::Integer])
+Function sortperm(A; alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward, [dims::Integer])
 
 Return a permutation vector or array I that puts A[I] in sorted order along the given dimension. If A has more than one dimension, then the dims keyword argument must be specified. The order is specified using the same keywords as sort!. The permutation is guaranteed to be stable even if the sorting algorithm is unstable: the indices of equal elements will appear in ascending order.
 
@@ -259,7 +249,6 @@ See also sortperm!, partialsortperm, invperm, indexin. To sort slices of an arra
 Julia 1.9
 The method accepting dims requires at least Julia 1.9.
 
-Examples
 
 v = [3, 1, 2];
 
@@ -290,9 +279,8 @@ sortperm(A, dims = 2)
  3  1
  2  4
 
-source
+# -------------------------
 Base.Sort.InsertionSort
-—
 Constant
 InsertionSort
 
@@ -309,9 +297,8 @@ in-place in memory.
 quadratic performance in the number of elements to be sorted:
 it is well-suited to small collections but should not be used for large ones.
 
-source
+# -------------------------
 Base.Sort.MergeSort
-—
 Constant
 MergeSort
 
@@ -323,9 +310,8 @@ stable: preserves the ordering of elements that compare equal (e.g. "a" and "A" 
 not in-place in memory.
 divide-and-conquer sort strategy.
 good performance for large collections but typically not quite as fast as QuickSort.
-source
+# -------------------------
 Base.Sort.QuickSort
-—
 Constant
 QuickSort
 
@@ -337,11 +323,9 @@ not stable: does not preserve the ordering of elements that compare equal (e.g. 
 in-place in memory.
 divide-and-conquer: sort strategy similar to MergeSort.
 good performance for large collections.
-source
+# -------------------------
 Base.Sort.PartialQuickSort
-—
-Type
-PartialQuickSort{T <: Union{Integer,OrdinalRange}}
+Type PartialQuickSort{T <: Union{Integer,OrdinalRange}}
 
 Indicate that a sorting function should use the partial quick sort algorithm. PartialQuickSort(k) is like QuickSort, but is only required to find and sort the elements that would end up in v[k] were v fully sorted.
 
@@ -369,11 +353,9 @@ map(x->issorted(x[k]), (s1, s2))
 s1[k] == s2[k]
 true
 
-source
+# -------------------------
 Base.Sort.sortperm!
-—
-Function
-sortperm!(ix, A; alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward, [dims::Integer])
+Function sortperm!(ix, A; alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward, [dims::Integer])
 
 Like sortperm, but accepts a preallocated index vector or array ix with the same axes as A. ix is initialized to contain the values LinearIndices(A).
 
@@ -383,7 +365,6 @@ Behavior can be unexpected when any mutated argument shares memory with any othe
 Julia 1.9
 The method accepting dims requires at least Julia 1.9.
 
-Examples
 
 v = [3, 1, 2]; p = zeros(Int, 3);
 
@@ -411,11 +392,9 @@ sortperm!(p, A; dims=2); p
  3  1
  2  4
 
-source
+# -------------------------
 Base.sortslices
-—
-Function
-sortslices(A; dims, alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
+Function sortslices(A; dims, alg::Algorithm=DEFAULT_UNSTABLE, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Sort slices of an array A. The required keyword argument dims must be either an integer or a tuple of integers. It specifies the dimension(s) over which the slices are sorted.
 
@@ -423,7 +402,6 @@ E.g., if A is a matrix, dims=1 will sort rows, dims=2 will sort columns. Note th
 
 For the remaining keyword arguments, see the documentation of sort!.
 
-Examples
 
 sortslices([7 3 5; -1 6 4; 9 -2 8], dims=1) # Sort rows
 3×3 Matrix{Int64}:
@@ -516,16 +494,13 @@ sortslices(reshape([5; 4; 3; 2; 1], (1,1,5)), dims=3, by=x->x[1,1])
 [:, :, 5] =
  5
 
-source
+# -------------------------
 Order-Related Functions
 Base.issorted
-—
-Function
-issorted(v, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
+Function issorted(v, lt=isless, by=identity, rev::Bool=false, order::Ordering=Forward)
 
 Test whether a collection is in sorted order. The keywords modify what order is considered sorted, as described in the sort! documentation.
 
-Examples
 
 issorted([1, 2, 3])
 true
@@ -542,11 +517,9 @@ true
 issorted([1, 2, -2, 3], by=abs)
 true
 
-source
+# -------------------------
 Base.Sort.searchsorted
-—
-Function
-searchsorted(v, x; by=identity, lt=isless, rev=false)
+Function searchsorted(v, x; by=identity, lt=isless, rev=false)
 
 Return the range of indices in v where values are equivalent to x, or an empty range located at the insertion point if v does not contain values equivalent to x. The vector v must be sorted according to the order defined by the keywords. Refer to sort! for the meaning of the keywords and the definition of equivalence. Note that the by function is applied to the searched value x as well as the values in v.
 
@@ -554,7 +527,6 @@ The range is generally found using binary search, but there are optimized implem
 
 See also: searchsortedfirst, sort!, insorted, findall.
 
-Examples
 
 searchsorted([1, 2, 4, 5, 5, 7], 4) # single match
 3:3
@@ -574,11 +546,9 @@ searchsorted([1, 2, 4, 5, 5, 7], 0) # no match, insert at start
 searchsorted([1=>"one", 2=>"two", 2=>"two", 4=>"four"], 2=>"two", by=first) # compare the keys of the pairs
 2:3
 
-source
+# -------------------------
 Base.Sort.searchsortedfirst
-—
-Function
-searchsortedfirst(v, x; by=identity, lt=isless, rev=false)
+Function searchsortedfirst(v, x; by=identity, lt=isless, rev=false)
 
 Return the index of the first value in v greater than or equivalent to x. If x is greater than all values in v, return lastindex(v) + 1.
 
@@ -588,7 +558,6 @@ The index is generally found using binary search, but there are optimized implem
 
 See also: searchsortedlast, searchsorted, findfirst.
 
-Examples
 
 searchsortedfirst([1, 2, 4, 5, 5, 7], 4) # single match
 3
@@ -608,11 +577,9 @@ searchsortedfirst([1, 2, 4, 5, 5, 7], 0) # no match, insert at start
 searchsortedfirst([1=>"one", 2=>"two", 4=>"four"], 3=>"three", by=first) # compare the keys of the pairs
 3
 
-source
+# -------------------------
 Base.Sort.searchsortedlast
-—
-Function
-searchsortedlast(v, x; by=identity, lt=isless, rev=false)
+Function searchsortedlast(v, x; by=identity, lt=isless, rev=false)
 
 Return the index of the last value in v less than or equivalent to x. If x is less than all values in v the function returns firstindex(v) - 1.
 
@@ -620,7 +587,6 @@ The vector v must be sorted according to the order defined by the keywords. Refe
 
 The index is generally found using binary search, but there are optimized implementations for some inputs
 
-Examples
 
 searchsortedlast([1, 2, 4, 5, 5, 7], 4) # single match
 3
@@ -640,11 +606,9 @@ searchsortedlast([1, 2, 4, 5, 5, 7], 0) # no match, insert at start
 searchsortedlast([1=>"one", 2=>"two", 4=>"four"], 3=>"three", by=first) # compare the keys of the pairs
 2
 
-source
+# -------------------------
 Base.Sort.insorted
-—
-Function
-insorted(x, v; by=identity, lt=isless, rev=false) -> Bool
+Function insorted(x, v; by=identity, lt=isless, rev=false) -> Bool
 
 Determine whether a vector v contains any value equivalent to x. The vector v must be sorted according to the order defined by the keywords. Refer to sort! for the meaning of the keywords and the definition of equivalence. Note that the by function is applied to the searched value x as well as the values in v.
 
@@ -652,7 +616,6 @@ The check is generally done using binary search, but there are optimized impleme
 
 See also in.
 
-Examples
 
 insorted(4, [1, 2, 4, 5, 5, 7]) # single match
 true
@@ -675,17 +638,14 @@ true
 Julia 1.6
 insorted was added in Julia 1.6.
 
-source
+# -------------------------
 Base.Sort.partialsort!
-—
-Function
-partialsort!(v, k; by=identity, lt=isless, rev=false)
+Function partialsort!(v, k; by=identity, lt=isless, rev=false)
 
 Partially sort the vector v in place so that the value at index k (or range of adjacent values if k is a range) occurs at the position where it would appear if the array were fully sorted. If k is a single index, that value is returned; if k is a range, an array of values at those indices is returned. Note that partialsort! may not fully sort the input array.
 
 For the keyword arguments, see the documentation of sort!.
 
-Examples
 
 a = [1, 2, 4, 3, 4]
 5-element Vector{Int64}:
@@ -725,25 +685,20 @@ a
  2
  1
 
-source
+# -------------------------
 Base.Sort.partialsort
-—
-Function
-partialsort(v, k, by=identity, lt=isless, rev=false)
+Function partialsort(v, k, by=identity, lt=isless, rev=false)
 
 Variant of partialsort! that copies v before partially sorting it, thereby returning the same thing as partialsort! but leaving v unmodified.
 
-source
+# -------------------------
 Base.Sort.partialsortperm
-—
-Function
-partialsortperm(v, k; by=ientity, lt=isless, rev=false)
+Function partialsortperm(v, k; by=ientity, lt=isless, rev=false)
 
 Return a partial permutation I of the vector v, so that v[I] returns values of a fully sorted version of v at index k. If k is a range, a vector of indices is returned; if k is an integer, a single index is returned. The order is specified using the same keywords as sort!. The permutation is stable: the indices of equal elements will appear in ascending order.
 
 This function is equivalent to, but more efficient than, calling sortperm(...)[k].
 
-Examples
 
 v = [3, 1, 2, 1];
 
@@ -762,11 +717,9 @@ v[p]
  1
  2
 
-source
+# -------------------------
 Base.Sort.partialsortperm!
-—
-Function
-partialsortperm!(ix, v, k; by=identity, lt=isless, rev=false)
+Function partialsortperm!(ix, v, k; by=identity, lt=isless, rev=false)
 
 Like partialsortperm, but accepts a preallocated index vector ix the same size as v, which is used to store (a permutation of) the indices of v.
 
@@ -784,7 +737,6 @@ The return value is the kth element of ix if k is an integer, or view into ix if
 Warning
 Behavior can be unexpected when any mutated argument shares memory with any other argument.
 
-Examples
 
 v = [3, 1, 2, 1];
 
@@ -801,7 +753,7 @@ partialsortperm!(ix, v, 2:3)
  3
 
 
-source
+# -------------------------
 Sorting Algorithms
 There are currently four sorting algorithms publicly available in base Julia:
 
@@ -824,45 +776,36 @@ By default, sort, searchsorted, and related functions use isless to compare two 
 Instances of Ordering define an order through the Base.Order.lt function, which works as a generalization of isless. This function's behavior on custom Orderings must satisfy all the conditions of a strict weak order. See sort! for details and examples of valid and invalid lt functions.
 
 Base.Order.Ordering
-—
-Type
-Base.Order.Ordering
+Type Base.Order.Ordering
 
 Abstract type which represents a total order on some set of elements.
 
 Use Base.Order.lt to compare two elements according to the ordering.
 
-source
+# -------------------------
 Base.Order.lt
-—
-Function
-lt(o::Ordering, a, b)
+Function lt(o::Ordering, a, b)
 
 Test whether a is less than b according to the ordering o.
 
-source
+# -------------------------
 Base.Order.ord
-—
-Function
-ord(lt, by, rev::Union{Bool, Nothing}, order::Ordering=Forward)
+Function ord(lt, by, rev::Union{Bool, Nothing}, order::Ordering=Forward)
 
 Construct an Ordering object from the same arguments used by sort!. Elements are first transformed by the function by (which may be identity) and are then compared according to either the function lt or an existing ordering order. lt should be isless or a function that obeys the same rules as the lt parameter of sort!. Finally, the resulting order is reversed if rev=true.
 
 Passing an lt other than isless along with an order other than Base.Order.Forward or Base.Order.Reverse is not permitted, otherwise all options are independent and can be used together in all possible combinations.
 
-source
+# -------------------------
 Base.Order.Forward
-—
 Constant
 Base.Order.Forward
 
 Default ordering according to isless.
 
-source
+# -------------------------
 Base.Order.ReverseOrdering
-—
-Type
-ReverseOrdering(fwd::Ordering=Forward)
+Type ReverseOrdering(fwd::Ordering=Forward)
 
 A wrapper which reverses an ordering.
 
@@ -870,34 +813,27 @@ For a given Ordering o, the following holds for all a, b:
 
 lt(ReverseOrdering(o), a, b) == lt(o, b, a)
 
-source
+# -------------------------
 Base.Order.Reverse
-—
 Constant
 Base.Order.Reverse
 
 Reverse ordering according to isless.
 
-source
+# -------------------------
 Base.Order.By
-—
-Type
-By(by, order::Ordering=Forward)
+Type By(by, order::Ordering=Forward)
 
 Ordering which applies order to elements after they have been transformed by the function by.
 
-source
+# -------------------------
 Base.Order.Lt
-—
-Type
-Lt(lt)
+Type Lt(lt)
 
 Ordering that calls lt(a, b) to compare elements. lt must obey the same rules as the lt parameter of sort!.
 
-source
+# -------------------------
 Base.Order.Perm
-—
-Type
-Perm(order::Ordering, data::AbstractVector)
+Type Perm(order::Ordering, data::AbstractVector)
 
 Ordering on the indices of data where i is less than j if data[i] is less than data[j] according to order. In the case that data[i] and data[j] are equal, i and j are compared by numeric value.

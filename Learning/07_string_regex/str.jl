@@ -7,6 +7,7 @@
 # 2024-04-10    PV      first, last, chop
 # 2024-04-23    PV      conversions
 # 2024-04-29    PV      Access individual char by index in a (UTF-8) string
+# 2024-05-08    PV      Use UInt32 instead of UInt, sice 32-bit is always enough to encode a char
 
 using Unicode
 
@@ -25,6 +26,31 @@ println()
 ts = split("Il était un petit navire")          # ["Il", "était", "un", "petit", "navire"]
 println(ts)
 println()
+
+# Collect a string
+collect("\xF0\x9F\x90\xBB\xE2\x80\x8D\xE2\x9D\x84\xEF\xB8\x8F")  # or collect("🐻‍❄️")
+# 4-element Vector{Char}:
+#  '🐻': Unicode U+1F43B (category So: Symbol, other)
+#  '\u200d': Unicode U+200D (category Cf: Other, format)
+#  '❄': Unicode U+2744 (category So: Symbol, other)
+#  '️': Unicode U+FE0F (category Mn: Mark, nonspacing)
+
+# Collect a b-String = Vector{Base.CodeUnits{UInt8, String}}
+collect(UInt8, b"\xF0\x9F\x90\xBB\xE2\x80\x8D\xE2\x9D\x84\xEF\xB8\x8F")
+#13-element Vector{UInt8}:
+# 0xf0
+# 0x9f
+# 0x90
+# 0xbb
+# 0xe2
+# 0x80
+# 0x8d
+# 0xe2
+# 0x9d
+# 0x84
+# 0xef
+# 0xb8
+# 0x8f
 
 # Case
 println("uppercase:      ", uppercase(sd))
@@ -114,17 +140,17 @@ println("CFS l=$(length(ssf)) ", ssf)   # l=10 ou ca? la!
 println()
 
 
-isBMP(cp::UInt)::Bool = cp <= 0xD7FF || 0xE000 <= cp <= 0xFFFF
-isBMP(c::Char)::Bool = isBMP(UInt(c))
+isBMP(cp::UInt32)::Bool = cp <= 0xD7FF || 0xE000 <= cp <= 0xFFFF
+isBMP(c::Char)::Bool = isBMP(UInt32(c))
 
-h2(n::UInt)::String = string(n, base = 16, pad = 2)
-h4(n::UInt)::String = string(n, base = 16, pad = 4)
-h8(n::UInt)::String = string(n, base = 16, pad = 8)
+h2(n::UInt32)::String = string(n, base = 16, pad = 2)
+h4(n::UInt32)::String = string(n, base = 16, pad = 4)
+h8(n::UInt32)::String = string(n, base = 16, pad = 8)
 
-UTF16(cp::UInt)::String = isBMP(cp) ? h4(cp) : h4(0xD800 + ((cp - 0x10000) >> 10)) * " " * h4(0xDC00 + (cp & 0x3ff))
-UTF16(c::Char)::String = UTF16(UInt(c))
+UTF16(cp::UInt32)::String = isBMP(cp) ? h4(cp) : h4(0xD800 + ((cp - 0x10000) >> 10)) * " " * h4(0xDC00 + (cp & 0x3ff))
+UTF16(c::Char)::String = UTF16(UInt32(c))
 
-function UTF8(cp::UInt)::String
+function UTF8(cp::UInt32)::String
 	if cp <= 0x7F
 		return h2(cp)
 	elseif cp <= 0x7FF
@@ -137,12 +163,12 @@ function UTF8(cp::UInt)::String
 		return "?" * h8(cp)
 	end
 end
-UTF8(c::Char)::String = UTF8(UInt(c))
+UTF8(c::Char)::String = UTF8(UInt32(c))
 # Alt version
 UTF8_Alt(c::Char)::String = join([h2(codeunit(string(c), i)) for i in 1:ncodeunits(c)], ' ')
 
 function charinfo(c::Char)
-	cp = UInt(c)
+	cp = UInt32(c)
 	println(h8(cp), "  ", rpad(UTF16(cp), 9), "  ", rpad(UTF8(cp), 11), "  ", rpad(Base.Unicode.category_abbrev(c), 2), "  ", c)
 end
 
@@ -253,8 +279,8 @@ firstindex(str) gives the minimal (byte) index that can be used to index into st
 lastindex(str) gives the maximal (byte) index that can be used to index into str.
 length(str) the number of characters in str.
 length(str, i, j) the number of valid character indices in str from i to j.
-ncodeunits(str) number of code units in a string.
-codeunit(str, i) gives the code unit value in the string str at index i.
+ncodeunits(str) number of code units in a string. (= number of bytes)
+codeunit(str, i) gives the code unit value in the string str at index i. (= byte at posion i in 1..ncodeunits(str))
 thisind(str, i) given an arbitrary index into a string find the first index of the character into which the index points.
 nextind(str, i, n=1) find the start of the nth character starting after index i.
 prevind(str, i, n=1) find the start of the nth character starting before index i.
