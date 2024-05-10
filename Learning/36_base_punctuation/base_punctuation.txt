@@ -29,11 +29,11 @@ $           the dollar sign is used for string and expression interpolation
 
 &           single ampersand is bitwise and
 
-&&           double ampersands is short-circuiting boolean and
+&&          double ampersands is short-circuiting boolean and
 
 |           single pipe character is bitwise or
 
-||           double pipe characters is short-circuiting boolean or
+||          double pipe characters is short-circuiting boolean or
 
 ⊻           the unicode xor character is bitwise exclusive or
 

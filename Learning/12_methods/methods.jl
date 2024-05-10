@@ -42,11 +42,17 @@ println(f(2.0, 3))      # 1.0
 
 # To see methods of a function
 println(methods(f))
+println()
 # 2 methods for generic function "f" from Main:
 # [1] f(x::Float64, y::Float64)
 # @ C:\Development\GitHub\Julia\Learning\13_methods\methods.jl:7
 # [2] f(x::Number, y::Number)
 # @ C:\Development\GitHub\Julia\Learning\13_methods\methods.jl:23
+
+# # https://stackoverflow.com/questions/61837154/how-to-tell-what-specializations-are-compiled-for-a-method
+using MethodAnalysis
+println(methodinstances(f))
+println()
 
 # In the absence of a type declaration with ::, the type of a method parameter is Any by default, thus we can define a catch-all method for f like so
 f(x, y) = println("Whaaaaaat???")
