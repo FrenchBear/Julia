@@ -25,9 +25,29 @@ println(parse(Date, "06.23.2013", dateformat"m.d.y"))           # 2013-06-23    
 println(tryparse(DateTime, "1999-12-31T23:59:59"))              # 1999-12-31T23:59:59   Uses the default format. tryparse returns nothing in case of error
 println()
 
+# Next Friday 13th
 nextFriday13 = Dates.tonext(Dates.today()) do d
     Dates.dayofweek(d)==Dates.Friday && Dates.day(d)==13
 end
 println(Dates.format(nextFriday13, "e d u yy"))
 println(Dates.format(nextFriday13, "E d U yyyy"))
 println()
+
+# First friday of current month
+firstFriday = tonext(d -> dayofweek(d)==Friday, firstdayofmonth(today()))
+println("First Friday of ", monthname(today()), ' ', year(today()), ": ", firstFriday)
+# Last friday of current month
+lastFriday = tonext(d -> dayofweekofmonth(d)==daysofweekinmonth(d), firstFriday, step=Week(1))
+@assert dayofweek(lastFriday)==Friday
+println("Last Friday of ", monthname(today()), ' ', year(today()), ": ", lastFriday)
+println()
+
+# Pack in a function
+last_weekday_of_current_month(weekDay::Int) = tonext(d -> dayofweekofmonth(d)==daysofweekinmonth(d) && dayofweek(d)==weekDay, firstdayofmonth(today()))
+@assert last_weekday_of_current_month(Friday)==lastFriday
+
+println("Trimestre courant: ", Dates.format(firstdayofquarter(today()), "E d U yyyy"), " - ",  Dates.format(lastdayofquarter(today()), "E d U yyyy"), '\n')
+
+dd = today()-Date("1965-02-26")          # 21625 days
+dt = Date(0)+dd                          # 0059-03-17
+println(year(dt), " ans, ", month(dt), " mois, ", day(dt), " jour(s)\n")

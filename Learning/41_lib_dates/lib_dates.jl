@@ -402,13 +402,10 @@ round(DateTime(2016, 8, 6, 20, 15), Dates.Day)              # 2016-08-07T00:00:0
 # Rounding should generally behave as expected, but there are a few cases in which the expected behaviour is not
 # obvious.
 
-# -----------
 # Rounding Epoch
-
 # In many cases, the resolution specified for rounding (e.g., Dates.Second(30)) divides evenly into the next largest
 # period (in this case, Dates.Minute(1)). But rounding behaviour in cases in which this is not true may lead to
 # confusion. What is the expected result of rounding a DateTime to the nearest 10 hours?
-
 round(DateTime(2016, 7, 17, 11, 55), Dates.Hour(10))        # 2016-07-17T12:00:00
 
 # That may seem confusing, given that the hour (12) is not divisible by 10. The reason that 2016-07-17T12:00:00 was
@@ -427,13 +424,11 @@ round(DateTime(2016, 7, 17, 11, 55), Dates.Hour(10))        # 2016-07-17T12:00:0
 
 # Here is a related case in which the expected behaviour is not necessarily obvious: What happens when we round to the
 # nearest P(2), where P is a Period type? In some cases (specifically, when P <: Dates.TimePeriod) the answer is clear:
-
 round(DateTime(2016, 7, 17, 8, 55, 30), Dates.Hour(2))      # 2016-07-17T08:00:00
 round(DateTime(2016, 7, 17, 8, 55, 30), Dates.Minute(2))    # 2016-07-17T08:56:00
 
 # This seems obvious, because two of each of these periods still divides evenly into the next larger order period. But
 # in the case of two months (which still divides evenly into one year), the answer may be surprising:
-
 round(DateTime(2016, 7, 17, 8, 55, 30), Dates.Month(2))     # 2016-07-01T00:00:00
 
 # Why round to the first day in July, even though it is month 7 (an odd number)? The key is that months are 1-indexed
@@ -536,7 +531,8 @@ round(DateTime(2016, 7, 17, 8, 55, 30), Dates.Month(2))     # 2016-07-01T00:00:0
 # Dates.TimeZone
 # Type TimeZone
 # 
-# Geographic zone generally based on longitude determining what the time is at a certain location. Some time zones observe daylight savings (eg EST -> EDT). For implementations and more support, see the TimeZones.jl package
+# Geographic zone generally based on longitude determining what the time is at a certain location. Some time zones
+# observe daylight savings (eg EST -> EDT). For implementations and more support, see the TimeZones.jl package
 
 # ------------------------
 # Dates.UTC
@@ -638,8 +634,9 @@ a = ("2020-01-01", "2020-01-02");
 # Dates.DateFormat
 # Type DateFormat(format::AbstractString, locale="english") -> DateFormat
 # 
-# Construct a date formatting object that can be used for parsing date strings or formatting a date object as a string. The following character codes can be used to construct the format string:
-# 
+# Construct a date formatting object that can be used for parsing date strings or formatting a date object as a string.
+# The following character codes can be used to construct the format string:
+#
 # Code	    Matches	    Comment
 # Y	        1996, 96	Returns year of 1996, 0096
 # y	        1996, 96	Same as Y on parse but discards excess digits on format
@@ -701,6 +698,8 @@ a = ("2020-01-01", "2020-01-02");
 # Construct a Date type by Period type parts. Arguments may be in any order. Date parts not provided will default to the
 # value of Dates.default(period).
 
+Date(Year(2024), Month(2), Day(15))         # 2024-02-15
+
 # -----------
 # Method Date(f::Function, y[, m, d]; step=Day(1), limit=10000) -> Date
 #
@@ -747,625 +746,580 @@ a = ("2020-01-01", "2020-01-02");
 # Method Date(d::AbstractString, df::DateFormat=ISODateFormat) -> Date
 #
 # Construct a Date by parsing the d date string following the pattern given in the DateFormat object, or
-# dateformat"yyyy-mm-dd" if omitted.
-# 
+# dateformat"yyyy-mm-dd" if omitted. 
 # Similar to Date(::AbstractString, ::AbstractString) but more efficient when repeatedly parsing similarly formatted
 # date strings with a pre-created DateFormat object.
 
+Date("2024-05-12", Dates.ISODateFormat)         # 2024-05-12
+
 # ------------------------
-Dates.Time
-Method Time(h, [mi, s, ms, us, ns]) -> Time
-
-Construct a Time type by parts. Arguments must be convertible to Int64.
-
-# -----------
-Method Time(period::TimePeriod...) -> Time
-
-Construct a Time type by Period type parts. Arguments may be in any order. Time parts not provided will default to the value of Dates.default(period).
+# Dates.Time
+# Method Time(h, [mi, s, ms, us, ns]) -> Time
+# 
+# Construct a Time type by parts. Arguments must be convertible to Int64.
 
 # -----------
-Method Time(f::Function, h, mi=0; step::Period=Second(1), limit::Int=10000)
-Method Time(f::Function, h, mi, s; step::Period=Millisecond(1), limit::Int=10000)
-Method Time(f::Function, h, mi, s, ms; step::Period=Microsecond(1), limit::Int=10000)
-Method Time(f::Function, h, mi, s, ms, us; step::Period=Nanosecond(1), limit::Int=10000)
-
-Create a Time through the adjuster API. The starting point will be constructed from the provided h, mi, s, ms, us arguments, and will be adjusted until f::Function returns true. The step size in adjusting can be provided manually through the step keyword. limit provides a limit to the max number of iterations the adjustment API will pursue before throwing an error (in the case that f::Function is never satisfied). Note that the default step will adjust to allow for greater precision for the given arguments; i.e. if hour, minute, and second arguments are provided, the default step will be Millisecond(1) instead of Second(1).
-
-Time(t -> minute(t) == 30, 20)
-20:30:00
-
-Time(t -> minute(t) == 0, 20)
-20:00:00
-
-Time(t -> hour(t) == 10, 3; limit = 5)
-ERROR: ArgumentError: Adjustment limit reached: 5 iterations
-Stacktrace:
-[...]
+# Method Time(period::TimePeriod...) -> Time
+#
+# Construct a Time type by Period type parts. Arguments may be in any order. Time parts not provided will default to the
+# value of Dates.default(period).
 
 # -----------
-Method Time(dt::DateTime) -> Time
+# Method Time(f::Function, h, mi=0; step::Period=Second(1), limit::Int=10000)
+# Method Time(f::Function, h, mi, s; step::Period=Millisecond(1), limit::Int=10000)
+# Method Time(f::Function, h, mi, s, ms; step::Period=Microsecond(1), limit::Int=10000)
+# Method Time(f::Function, h, mi, s, ms, us; step::Period=Nanosecond(1), limit::Int=10000)
+#
+# Create a Time through the adjuster API. The starting point will be constructed from the provided h, mi, s, ms, us
+# arguments, and will be adjusted until f::Function returns true. The step size in adjusting can be provided manually
+# through the step keyword. limit provides a limit to the max number of iterations the adjustment API will pursue before
+# throwing an error (in the case that f::Function is never satisfied). Note that the default step will adjust to allow
+# for greater precision for the given arguments; i.e. if hour, minute, and second arguments are provided, the default
+# step will be Millisecond(1) instead of Second(1).
 
-Convert a DateTime to a Time. The hour, minute, second, and millisecond parts of the DateTime are used to create the new Time. Microsecond and nanoseconds are zero by default.
+Time(t -> minute(t) == 30, 20)              # 20:30:00
+Time(t -> minute(t) == 0, 20)               # 20:00:00
+# Time(t -> hour(t) == 10, 3; limit = 5)    # ERROR: ArgumentError: Adjustment limit reached: 5 iterations
 
 # -----------
-Method Time(t::AbstractString, format::AbstractString; locale="english") -> Time
+# Method Time(dt::DateTime) -> Time
+# 
+# Convert a DateTime to a Time. The hour, minute, second, and millisecond parts of the DateTime are used to create the
+# new Time. Microsecond and nanoseconds are zero by default.
 
-Construct a Time by parsing the t time string following the pattern given in the format string (see DateFormat for syntax).
+Time(Dates.now())                           # 12:11:24.391
 
-Note: This method creates a DateFormat object each time it is called. It is recommended that you create a DateFormat object instead and use that as the second argument to avoid performance loss when using the same format repeatedly.
+# -----------
+# Method Time(t::AbstractString, format::AbstractString; locale="english") -> Time
+#
+# Construct a Time by parsing the t time string following the pattern given in the format string (see DateFormat for
+# syntax). 
+# Note: This method creates a DateFormat object each time it is called. It is recommended that you create a DateFormat
+# object instead and use that as the second argument to avoid performance loss when using the same format repeatedly.
 
-Time("12:34pm", "HH:MMp")
-12:34:00
+Time("12:34pm", "HH:MMp")                   # 12:34:00
 
 a = ("12:34pm", "2:34am");
-
-[Time(d, dateformat"HH:MMp") for d ∈ a] # preferred
-2-element Vector{Time}:
- 12:34:00
- 02:34:00
-
-# -----------
-Method Time(t::AbstractString, df::DateFormat=ISOTimeFormat) -> Time
-
-Construct a Time by parsing the t date time string following the pattern given in the DateFormat object, or dateformat"HH:MM:SS.s" if omitted.
-
-Similar to Time(::AbstractString, ::AbstractString) but more efficient when repeatedly parsing similarly formatted time strings with a pre-created DateFormat object.
-
-# ------------------------
-Dates.now
-Method now() -> DateTime
-
-Return a DateTime corresponding to the user's system time including the system timezone locale.
+[Time(d, dateformat"HH:MMp") for d ∈ a]     # preferred
+# 2-element Vector{Time}:
+#  12:34:00
+#  02:34:00
 
 # -----------
-Method now(::Type{UTC}) -> DateTime
-
-Return a DateTime corresponding to the user's system time as UTC/GMT. For other time zones, see the TimeZones.jl package.
-
-now(UTC)
-2023-01-04T10:52:24.864
+# Method Time(t::AbstractString, df::DateFormat=ISOTimeFormat) -> Time
+#
+# Construct a Time by parsing the t date time string following the pattern given in the DateFormat object, or
+# dateformat"HH:MM:SS.s" if omitted. 
+# Similar to Time(::AbstractString, ::AbstractString) but more efficient when repeatedly parsing similarly formatted
+# time strings with a pre-created DateFormat object.
 
 # ------------------------
-Base.eps
-Method eps(::Type{DateTime}) -> Millisecond
-Method eps(::Type{Date}) -> Day
-Method eps(::Type{Time}) -> Nanosecond
-Method eps(::TimeType) -> Period
+# Dates.now
+# Method now() -> DateTime
+# 
+# Return a DateTime corresponding to the user's system time including the system timezone locale.
 
-Return the smallest unit value supported by the TimeType.
+# -----------
+# Method now(::Type{UTC}) -> DateTime
+# 
+# Return a DateTime corresponding to the user's system time as UTC/GMT. For other time zones, see the TimeZones.jl package.
 
-eps(DateTime)
-1 millisecond
+now(UTC)                                    # 2023-01-04T10:52:24.864
 
-eps(Date)
-1 day
+# ------------------------
+# Base.eps
+# Method eps(::Type{DateTime}) -> Millisecond
+# Method eps(::Type{Date}) -> Day
+# Method eps(::Type{Time}) -> Nanosecond
+# Method eps(::TimeType) -> Period
+# 
+# Return the smallest unit value supported by the TimeType.
 
-eps(Time)
-1 nanosecond
+eps(DateTime)                               # 1 millisecond
+eps(Date)                                   # 1 day
+eps(Time)                                   # 1 nanosecond
 
 
 # ----------------------------------------------------
 # Accessor Functions
 
 # ------------------------
-Dates.year
-Function year(dt::TimeType) -> Int64
-
-The year of a Date or DateTime as an Int64.
-
-# ------------------------
-Dates.month
-Function month(dt::TimeType) -> Int64
-
-The month of a Date or DateTime as an Int64.
+# Dates.year
+# Function year(dt::TimeType) -> Int64
+# 
+# The year of a Date or DateTime as an Int64.
 
 # ------------------------
-Dates.week
-Function week(dt::TimeType) -> Int64
-
-Return the ISO week date of a Date or DateTime as an Int64. Note that the first week of a year is the week that contains the first Thursday of the year, which can result in dates prior to January 4th being in the last week of the previous year. For example, week(Date(2005, 1, 1)) is the 53rd week of 2004.
-
-week(Date(1989, 6, 22))
-25
-
-week(Date(2005, 1, 1))
-53
-
-week(Date(2004, 12, 31))
-53
+# Dates.month
+# Function month(dt::TimeType) -> Int64
+# 
+# The month of a Date or DateTime as an Int64.
 
 # ------------------------
-Dates.day
-Function day(dt::TimeType) -> Int64
+# Dates.week
+# Function week(dt::TimeType) -> Int64
+#
+# Return the ISO week date of a Date or DateTime as an Int64. Note that the first week of a year is the week that
+# contains the first Thursday of the year, which can result in dates prior to January 4th being in the last week of the
+# previous year. For example, week(Date(2005, 1, 1)) is the 53rd week of 2004.
 
-The day of month of a Date or DateTime as an Int64.
-
-# ------------------------
-Dates.hour
-Function hour(dt::DateTime) -> Int64
-
-The hour of day of a DateTime as an Int64.
-
-hour(t::Time) -> Int64
-
-The hour of a Time as an Int64.
+week(Date(1989, 6, 22))         # 25
+week(Date(2005, 1, 1))          # 53
+week(Date(2004, 12, 31))        # 53
 
 # ------------------------
-Dates.minute
-Function minute(dt::DateTime) -> Int64
-
-The minute of a DateTime as an Int64.
-
-minute(t::Time) -> Int64
-
-The minute of a Time as an Int64.
+# Dates.day
+# Function day(dt::TimeType) -> Int64
+# 
+# The day of month of a Date or DateTime as an Int64.
 
 # ------------------------
-Dates.second
-Function second(dt::DateTime) -> Int64
-
-The second of a DateTime as an Int64.
-
-second(t::Time) -> Int64
-
-The second of a Time as an Int64.
-
-# ------------------------
-Dates.millisecond
-Function millisecond(dt::DateTime) -> Int64
-
-The millisecond of a DateTime as an Int64.
-
-millisecond(t::Time) -> Int64
-
-The millisecond of a Time as an Int64.
+# Dates.hour
+# Function hour(dt::DateTime) -> Int64
+# 
+# The hour of day of a DateTime as an Int64.
+# 
+# -----------
+# Function hour(t::Time) -> Int64
+# 
+# The hour of a Time as an Int64.
 
 # ------------------------
-Dates.microsecond
-Function microsecond(t::Time) -> Int64
+# Dates.minute
+# Function minute(dt::DateTime) -> Int64
+# 
+# The minute of a DateTime as an Int64.
 
-The microsecond of a Time as an Int64.
+# -----------
+# Function minute(t::Time) -> Int64
 
-# ------------------------
-Dates.nanosecond
-Function nanosecond(t::Time) -> Int64
-
-The nanosecond of a Time as an Int64.
-
-# ------------------------
-Dates.Year
-Method Year(v)
-
-Construct a Year object with the given v value. Input must be losslessly convertible to an Int64.
+# The minute of a Time as an Int64.
 
 # ------------------------
-Dates.Month
-Method Month(v)
+# Dates.second
+# Function second(dt::DateTime) -> Int64
+# 
+# The second of a DateTime as an Int64.
 
-Construct a Month object with the given v value. Input must be losslessly convertible to an Int64.
-
-# ------------------------
-Dates.Week
-Method Week(v)
-
-Construct a Week object with the given v value. Input must be losslessly convertible to an Int64.
-
-# ------------------------
-Dates.Day
-Method Day(v)
-
-Construct a Day object with the given v value. Input must be losslessly convertible to an Int64.
+# -----------
+# Function second(t::Time) -> Int64
+# 
+# The second of a Time as an Int64.
 
 # ------------------------
-Dates.Hour
-Method Hour(dt::DateTime) -> Hour
+# Dates.millisecond
+# Function millisecond(dt::DateTime) -> Int64
+# 
+# The millisecond of a DateTime as an Int64.
 
-The hour part of a DateTime as a Hour.
-
-# ------------------------
-Dates.Minute
-Method Minute(dt::DateTime) -> Minute
-
-The minute part of a DateTime as a Minute.
-
-# ------------------------
-Dates.Second
-Method Second(dt::DateTime) -> Second
-
-The second part of a DateTime as a Second.
+# -----------
+# Function millisecond(t::Time) -> Int64
+# 
+# The millisecond of a Time as an Int64.
 
 # ------------------------
-Dates.Millisecond
-Method Millisecond(dt::DateTime) -> Millisecond
-
-The millisecond part of a DateTime as a Millisecond.
-
-# ------------------------
-Dates.Microsecond
-Method Microsecond(dt::Time) -> Microsecond
-
-The microsecond part of a Time as a Microsecond.
+# Dates.microsecond
+# Function microsecond(t::Time) -> Int64
+# 
+# The microsecond of a Time as an Int64.
 
 # ------------------------
-Dates.Nanosecond
-Method Nanosecond(dt::Time) -> Nanosecond
-
-The nanosecond part of a Time as a Nanosecond.
-
-# ------------------------
-Dates.yearmonth
-Function yearmonth(dt::TimeType) -> (Int64, Int64)
-
-Simultaneously return the year and month parts of a Date or DateTime.
+# Dates.nanosecond
+# Function nanosecond(t::Time) -> Int64
+# 
+# The nanosecond of a Time as an Int64.
 
 # ------------------------
-Dates.monthday
-Function monthday(dt::TimeType) -> (Int64, Int64)
-
-Simultaneously return the month and day parts of a Date or DateTime.
+# Dates.Year
+# Method Year(v)
+# 
+# Construct a Year object with the given v value. Input must be losslessly convertible to an Int64.
 
 # ------------------------
-Dates.yearmonthday
-Function yearmonthday(dt::TimeType) -> (Int64, Int64, Int64)
+# Dates.Month
+# Method Month(v)
+# 
+# Construct a Month object with the given v value. Input must be losslessly convertible to an Int64.
 
-Simultaneously return the year, month and day parts of a Date or DateTime.
+# ------------------------
+# Dates.Week
+# Method Week(v)
+# 
+# Construct a Week object with the given v value. Input must be losslessly convertible to an Int64.
+
+# ------------------------
+# Dates.Day
+# Method Day(v)
+# 
+# Construct a Day object with the given v value. Input must be losslessly convertible to an Int64.
+
+# ------------------------
+# Dates.Hour
+# Method Hour(dt::DateTime) -> Hour
+# 
+# The hour part of a DateTime as a Hour.
+
+# ------------------------
+# Dates.Minute
+# Method Minute(dt::DateTime) -> Minute
+# 
+# The minute part of a DateTime as a Minute.
+
+# ------------------------
+# Dates.Second
+# Method Second(dt::DateTime) -> Second
+# 
+# The second part of a DateTime as a Second.
+
+# ------------------------
+# Dates.Millisecond
+# Method Millisecond(dt::DateTime) -> Millisecond
+# 
+# The millisecond part of a DateTime as a Millisecond.
+
+# ------------------------
+# Dates.Microsecond
+# Method Microsecond(dt::Time) -> Microsecond
+# 
+# The microsecond part of a Time as a Microsecond.
+
+# ------------------------
+# Dates.Nanosecond
+# Method Nanosecond(dt::Time) -> Nanosecond
+# 
+# The nanosecond part of a Time as a Nanosecond.
+
+# ------------------------
+# Dates.yearmonth
+# Function yearmonth(dt::TimeType) -> (Int64, Int64)
+# 
+# Simultaneously return the year and month parts of a Date or DateTime.
+
+# ------------------------
+# Dates.monthday
+# Function monthday(dt::TimeType) -> (Int64, Int64)
+# 
+# Simultaneously return the month and day parts of a Date or DateTime.
+
+# ------------------------
+# Dates.yearmonthday
+# Function yearmonthday(dt::TimeType) -> (Int64, Int64, Int64)
+# 
+# Simultaneously return the year, month and day parts of a Date or DateTime.
 
 
 # ----------------------------------------------------
 # Query Functions
 
 # ------------------------
-Dates.dayname
-Function dayname(dt::TimeType; locale="english") -> String
-Function dayname(day::Integer; locale="english") -> String
+# Dates.dayname
+# Function dayname(dt::TimeType; locale="english") -> String
+# Function dayname(day::Integer; locale="english") -> String
+#
+# Return the full day name corresponding to the day of the week of the Date or DateTime in the given locale. Also
+# accepts Integer.
 
-Return the full day name corresponding to the day of the week of the Date or DateTime in the given locale. Also accepts Integer.
-
-dayname(Date("2000-01-01"))
-"Saturday"
-
-dayname(4)
-"Thursday"
+dayname(Date("2000-01-01"))             # "Saturday"
+dayname(4)                              # "Thursday"
 
 # ------------------------
-Dates.dayabbr
-Function dayabbr(dt::TimeType; locale="english") -> String
-dayabbr(day::Integer; locale="english") -> String
+# Dates.dayabbr
+# Function dayabbr(dt::TimeType; locale="english") -> String
+# Function dayabbr(day::Integer; locale="english") -> String
+#
+# Return the abbreviated name corresponding to the day of the week of the Date or DateTime in the given locale. Also
+# accepts Integer.
 
-Return the abbreviated name corresponding to the day of the week of the Date or DateTime in the given locale. Also accepts Integer.
-
-dayabbr(Date("2000-01-01"))
-"Sat"
-
-dayabbr(3)
-"Wed"
+dayabbr(Date("2000-01-01"))             # "Sat"
+dayabbr(3)                              # "Wed"
 
 # ------------------------
-Dates.dayofweek
-Function dayofweek(dt::TimeType) -> Int64
-
-Return the day of the week as an Int64 with 1 = Monday, 2 = Tuesday, etc..
+# Dates.dayofweek
+# Function dayofweek(dt::TimeType) -> Int64
+# 
+# Return the day of the week as an Int64 with 1 = Monday, 2 = Tuesday, etc..
  
-dayofweek(Date("2000-01-01"))
-6
+dayofweek(Date("2000-01-01"))           # 6
 
 # ------------------------
-Dates.dayofmonth
-Function dayofmonth(dt::TimeType) -> Int64
-
-The day of month of a Date or DateTime as an Int64.
+# Dates.dayofmonth
+# Function dayofmonth(dt::TimeType) -> Int64
+# 
+# The day of month of a Date or DateTime as an Int64.
 
 # ------------------------
-Dates.dayofweekofmonth
-Function dayofweekofmonth(dt::TimeType) -> Int
-
-For the day of week of dt, return which number it is in dt's month. So if the day of the week of dt is Monday, then 1 = First Monday of the month, 2 = Second Monday of the month, etc. In the range 1:5.
+# Dates.dayofweekofmonth
+# Function dayofweekofmonth(dt::TimeType) -> Int
+#
+# For the day of week of dt, return which number it is in dt's month. So if the day of the week of dt is Monday, then
+# 1 = First Monday of the month, 2 = Second Monday of the month, etc. In the range 1:5.
  
-dayofweekofmonth(Date("2000-02-01"))
-1
-
-dayofweekofmonth(Date("2000-02-08"))
-2
-
-dayofweekofmonth(Date("2000-02-15"))
-3
+dayofweekofmonth(Date("2000-02-01"))    # 1
+dayofweekofmonth(Date("2000-02-08"))    # 2
+dayofweekofmonth(Date("2000-02-15"))    # 3
 
 # ------------------------
-Dates.daysofweekinmonth
-Function daysofweekinmonth(dt::TimeType) -> Int
-
-For the day of week of dt, return the total number of that day of the week in dt's month. Returns 4 or 5. Useful in temporal expressions for specifying the last day of a week in a month by including dayofweekofmonth(dt) == daysofweekinmonth(dt) in the adjuster function.
+# Dates.daysofweekinmonth
+# Function daysofweekinmonth(dt::TimeType) -> Int
+#
+# For the day of week of dt, return the total number of that day of the week in dt's month. Returns 4 or 5. Useful in
+# temporal expressions for specifying the last day of a week in a month by including dayofweekofmonth(dt) ==
+# daysofweekinmonth(dt) in the adjuster function.
  
-daysofweekinmonth(Date("2005-01-01"))
-5
-
-daysofweekinmonth(Date("2005-01-04"))
-4
+daysofweekinmonth(Date("2005-01-01"))   # 5
+daysofweekinmonth(Date("2005-01-04"))   # 4
 
 # ------------------------
-Dates.monthname
-Function monthname(dt::TimeType; locale="english") -> String
-monthname(month::Integer, locale="english") -> String
-
-Return the full name of the month of the Date or DateTime or Integer in the given locale.
+# Dates.monthname
+# Function monthname(dt::TimeType; locale="english") -> String
+# Function monthname(month::Integer, locale="english") -> String
+# 
+# Return the full name of the month of the Date or DateTime or Integer in the given locale.
  
-monthname(Date("2005-01-04"))
-"January"
-
-monthname(2)
-"February"
+monthname(Date("2005-01-04"))           # "January"
+monthname(2)                            # "February"
 
 # ------------------------
-Dates.monthabbr
-Function monthabbr(dt::TimeType; locale="english") -> String
-monthabbr(month::Integer, locale="english") -> String
-
-Return the abbreviated month name of the Date or DateTime or Integer in the given locale.
+# Dates.monthabbr
+# Function monthabbr(dt::TimeType; locale="english") -> String
+# Function monthabbr(month::Integer, locale="english") -> String
+# 
+# Return the abbreviated month name of the Date or DateTime or Integer in the given locale.
  
-monthabbr(Date("2005-01-04"))
-"Jan"
-
-monthabbr(2)
-"Feb"
+monthabbr(Date("2005-01-04"))           # "Jan"
+monthabbr(2)                            # "Feb"
 
 # ------------------------
-Dates.daysinmonth
-Function daysinmonth(dt::TimeType) -> Int
-
-Return the number of days in the month of dt. Value will be 28, 29, 30, or 31.
+# Dates.daysinmonth
+# Function daysinmonth(dt::TimeType) -> Int
+# 
+# Return the number of days in the month of dt. Value will be 28, 29, 30, or 31.
  
-daysinmonth(Date("2000-01"))
-31
-
-daysinmonth(Date("2001-02"))
-28
-
-daysinmonth(Date("2000-02"))
-29
+daysinmonth(Date("2000-01"))            # 31
+daysinmonth(Date("2001-02"))            # 28
+daysinmonth(Date("2000-02"))            # 29
 
 # ------------------------
-Dates.isleapyear
-Function isleapyear(dt::TimeType) -> Bool
-
-Return true if the year of dt is a leap year.
+# Dates.isleapyear
+# Function isleapyear(dt::TimeType) -> Bool
+# 
+# Return true if the year of dt is a leap year.
  
-isleapyear(Date("2004"))
-true
-
-isleapyear(Date("2005"))
-false
+isleapyear(Date("2004"))                # true
+isleapyear(Date("2005"))                # false
 
 # ------------------------
-Dates.dayofyear
-Function dayofyear(dt::TimeType) -> Int
-
-Return the day of the year for dt with January 1st being day 1.
+# Dates.dayofyear
+# Function dayofyear(dt::TimeType) -> Int
+# 
+# Return the day of the year for dt with January 1st being day 1.
 
 # ------------------------
-Dates.daysinyear
-Function daysinyear(dt::TimeType) -> Int
-
-Return 366 if the year of dt is a leap year, otherwise return 365.
+# Dates.daysinyear
+# Function daysinyear(dt::TimeType) -> Int
+# 
+# Return 366 if the year of dt is a leap year, otherwise return 365.
  
-daysinyear(1999)
-365
-
-daysinyear(2000)
-366
+daysinyear(1999)                        # 365
+daysinyear(2000)                        # 366
 
 # ------------------------
-Dates.quarterofyear
-Function quarterofyear(dt::TimeType) -> Int
-
-Return the quarter that dt resides in. Range of value is 1:4.
+# Dates.quarterofyear
+# Function quarterofyear(dt::TimeType) -> Int
+# 
+# Return the quarter that dt resides in. Range of value is 1:4.
 
 # ------------------------
-Dates.dayofquarter
-Function dayofquarter(dt::TimeType) -> Int
-
-Return the day of the current quarter of dt. Range of value is 1:92.
+# Dates.dayofquarter
+# Function dayofquarter(dt::TimeType) -> Int
+# 
+# Return the day of the current quarter of dt. Range of value is 1:92.
 
 
 # ----------------------------------------------------
 # Adjuster Functions
 
 # ------------------------
-Base.trunc
-Method trunc(dt::TimeType, ::Type{Period}) -> TimeType
-
-Truncates the value of dt according to the provided Period type.
+# Base.trunc
+# Method trunc(dt::TimeType, ::Type{Period}) -> TimeType
+# 
+# Truncates the value of dt according to the provided Period type.
  
-trunc(DateTime("1996-01-01T12:30:00"), Day)
-1996-01-01T00:00:00
+trunc(DateTime("1996-01-01T12:30:00"), Day)             # 1996-01-01T00:00:00
 
 # ------------------------
-Dates.firstdayofweek
-Function firstdayofweek(dt::TimeType) -> TimeType
-
-Adjusts dt to the Monday of its week.
+# Dates.firstdayofweek
+# Function firstdayofweek(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the Monday of its week.
  
-firstdayofweek(DateTime("1996-01-05T12:30:00"))
-1996-01-01T00:00:00
+firstdayofweek(DateTime("1996-01-05T12:30:00"))         # 1996-01-01T00:00:00
+firstdayofweek(Date("2024-05-01"))                      # 2024-04-29
 
 # ------------------------
-Dates.lastdayofweek
-Function lastdayofweek(dt::TimeType) -> TimeType
-
-Adjusts dt to the Sunday of its week.
+# Dates.lastdayofweek
+# Function lastdayofweek(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the Sunday of its week.
  
-lastdayofweek(DateTime("1996-01-05T12:30:00"))
-1996-01-07T00:00:00
+lastdayofweek(DateTime("1996-01-05T12:30:00"))          # 1996-01-07T00:00:00
 
 # ------------------------
-Dates.firstdayofmonth
-Function firstdayofmonth(dt::TimeType) -> TimeType
-
-Adjusts dt to the first day of its month.
+# Dates.firstdayofmonth
+# Function firstdayofmonth(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the first day of its month.
  
-firstdayofmonth(DateTime("1996-05-20"))
-1996-05-01T00:00:00
+firstdayofmonth(DateTime("1996-05-20"))                 # 1996-05-01T00:00:00
 
 # ------------------------
-Dates.lastdayofmonth
-Function lastdayofmonth(dt::TimeType) -> TimeType
-
-Adjusts dt to the last day of its month.
+# Dates.lastdayofmonth
+# Function lastdayofmonth(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the last day of its month.
  
-lastdayofmonth(DateTime("1996-05-20"))
-1996-05-31T00:00:00
+lastdayofmonth(DateTime("1996-05-20"))                  # 1996-05-31T00:00:00
 
 # ------------------------
-Dates.firstdayofyear
-Function firstdayofyear(dt::TimeType) -> TimeType
-
-Adjusts dt to the first day of its year.
+# Dates.firstdayofyear
+# Function firstdayofyear(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the first day of its year.
  
-firstdayofyear(DateTime("1996-05-20"))
-1996-01-01T00:00:00
+firstdayofyear(DateTime("1996-05-20"))                  # 1996-01-01T00:00:00
 
 # ------------------------
-Dates.lastdayofyear
-Function lastdayofyear(dt::TimeType) -> TimeType
-
-Adjusts dt to the last day of its year.
+# Dates.lastdayofyear
+# Function lastdayofyear(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the last day of its year.
  
-lastdayofyear(DateTime("1996-05-20"))
-1996-12-31T00:00:00
+lastdayofyear(DateTime("1996-05-20"))                   # 1996-12-31T00:00:00
 
 # ------------------------
-Dates.firstdayofquarter
-Function firstdayofquarter(dt::TimeType) -> TimeType
-
-Adjusts dt to the first day of its quarter.
+# Dates.firstdayofquarter
+# Function firstdayofquarter(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the first day of its quarter.
  
-firstdayofquarter(DateTime("1996-05-20"))
-1996-04-01T00:00:00
-
-firstdayofquarter(DateTime("1996-08-20"))
-1996-07-01T00:00:00
+firstdayofquarter(DateTime("1996-05-20"))               # 1996-04-01T00:00:00
+firstdayofquarter(DateTime("1996-08-20"))               # 1996-07-01T00:00:00
 
 # ------------------------
-Dates.lastdayofquarter
-Function lastdayofquarter(dt::TimeType) -> TimeType
-
-Adjusts dt to the last day of its quarter.
+# Dates.lastdayofquarter
+# Function lastdayofquarter(dt::TimeType) -> TimeType
+# 
+# Adjusts dt to the last day of its quarter.
  
-lastdayofquarter(DateTime("1996-05-20"))
-1996-06-30T00:00:00
-
-lastdayofquarter(DateTime("1996-08-20"))
-1996-09-30T00:00:00
+lastdayofquarter(DateTime("1996-05-20"))                # 1996-06-30T00:00:00
+lastdayofquarter(DateTime("1996-08-20"))                # 1996-09-30T00:00:00
 
 # ------------------------
-Dates.tonext
-Method tonext(dt::TimeType, dow::Int; same::Bool=false) -> TimeType
+# Dates.tonext
+# Method tonext(dt::TimeType, dow::Int; same::Bool=false) -> TimeType
+#
+# Adjusts dt to the next day of week corresponding to dow with 1 = Monday, 2 = Tuesday, etc. Setting same=true allows
+# the current dt to be considered as the next dow, allowing for no adjustment to occur.
 
-Adjusts dt to the next day of week corresponding to dow with 1 = Monday, 2 = Tuesday, etc. Setting same=true allows the current dt to be considered as the next dow, allowing for no adjustment to occur.
-
-# ------------------------
-Dates.toprev
-Method toprev(dt::TimeType, dow::Int; same::Bool=false) -> TimeType
-
-Adjusts dt to the previous day of week corresponding to dow with 1 = Monday, 2 = Tuesday, etc. Setting same=true allows the current dt to be considered as the previous dow, allowing for no adjustment to occur.
-
-# ------------------------
-Dates.tofirst
-Function tofirst(dt::TimeType, dow::Int; of=Month) -> TimeType
-
-Adjusts dt to the first dow of its month. Alternatively, of=Year will adjust to the first dow of the year.
+# -----------
+# Method tonext(func::Function, dt::TimeType; step=Day(1), limit=10000, same=false) -> TimeType
+# 
+# Adjusts dt by iterating at most limit iterations by step increments until func returns true. func must take a single
+# TimeType argument and return a Bool. same allows dt to be considered in satisfying func.
 
 # ------------------------
-Dates.tolast
-Function tolast(dt::TimeType, dow::Int; of=Month) -> TimeType
+# Dates.toprev
+# Method toprev(dt::TimeType, dow::Int; same::Bool=false) -> TimeType
+#
+# Adjusts dt to the previous day of week corresponding to dow with 1 = Monday, 2 = Tuesday, etc. Setting same=true
+# allows the current dt to be considered as the previous dow, allowing for no adjustment to occur.
 
-Adjusts dt to the last dow of its month. Alternatively, of=Year will adjust to the last dow of the year.
+# -----------
+# Method toprev(func::Function, dt::TimeType; step=Day(-1), limit=10000, same=false) -> TimeType
+#
+# Adjusts dt by iterating at most limit iterations by step increments until func returns true. func must take a single
+# TimeType argument and return a Bool. same allows dt to be considered in satisfying func.
 
 # ------------------------
-Dates.tonext
-Method tonext(func::Function, dt::TimeType; step=Day(1), limit=10000, same=false) -> TimeType
-
-Adjusts dt by iterating at most limit iterations by step increments until func returns true. func must take a single TimeType argument and return a Bool. same allows dt to be considered in satisfying func.
+# Dates.tofirst
+# Function tofirst(dt::TimeType, dow::Int; of=Month) -> TimeType
+# 
+# Adjusts dt to the first dow of its month. Alternatively, of=Year will adjust to the first dow of the year.
 
 # ------------------------
-Dates.toprev
-Method toprev(func::Function, dt::TimeType; step=Day(-1), limit=10000, same=false) -> TimeType
+# Dates.tolast
+# Function tolast(dt::TimeType, dow::Int; of=Month) -> TimeType
+# 
+# Adjusts dt to the last dow of its month. Alternatively, of=Year will adjust to the last dow of the year.
 
-Adjusts dt by iterating at most limit iterations by step increments until func returns true. func must take a single TimeType argument and return a Bool. same allows dt to be considered in satisfying func.
+# -----------
 
 
 # ----------------------------------------------------
 # Periods
 
 # ------------------------
-Dates.Period
-Method Year(v)
-Method Quarter(v)
-Method Month(v)
-Method Week(v)
-Method Day(v)
-Method Hour(v)
-Method Minute(v)
-Method Second(v)
-Method Millisecond(v)
-Method Microsecond(v)
-Method Nanosecond(v)
-
-Construct a Period type with the given v value. Input must be losslessly convertible to an Int64.
+# Dates.Period
+# Method Year(v)
+# Method Quarter(v)
+# Method Month(v)
+# Method Week(v)
+# Method Day(v)
+# Method Hour(v)
+# Method Minute(v)
+# Method Second(v)
+# Method Millisecond(v)
+# Method Microsecond(v)
+# Method Nanosecond(v)
+# 
+# Construct a Period type with the given v value. Input must be losslessly convertible to an Int64.
 
 # ------------------------
-Dates.CompoundPeriod
-Method CompoundPeriod(periods) -> CompoundPeriod
-
-Construct a CompoundPeriod from a Vector of Periods. All Periods of the same type will be added together.
+# Dates.CompoundPeriod
+# Method CompoundPeriod(periods) -> CompoundPeriod
+# 
+# Construct a CompoundPeriod from a Vector of Periods. All Periods of the same type will be added together.
  
-Dates.CompoundPeriod(Dates.Hour(12), Dates.Hour(13))
-25 hours
-
-Dates.CompoundPeriod(Dates.Hour(-1), Dates.Minute(1))
--1 hour, 1 minute
-
-Dates.CompoundPeriod(Dates.Month(1), Dates.Week(-2))
-1 month, -2 weeks
-
-Dates.CompoundPeriod(Dates.Minute(50000))
-50000 minutes
+Dates.CompoundPeriod(Dates.Hour(12), Dates.Hour(13))        # 25 hours
+Dates.CompoundPeriod(Dates.Hour(-1), Dates.Minute(1))       # -1 hour, 1 minute
+Dates.CompoundPeriod(Dates.Month(1), Dates.Week(-2))        # 1 month, -2 weeks
+Dates.CompoundPeriod(Dates.Minute(50000))                   # 50000 minutes
 
 # ------------------------
-Dates.canonicalize
-Function canonicalize(::CompoundPeriod) -> CompoundPeriod
+# Dates.canonicalize
+# Function canonicalize(::CompoundPeriod) -> CompoundPeriod
+# 
+# Reduces the CompoundPeriod into its canonical form by applying the following rules:
+# - Any Period large enough be partially representable by a coarser Period will be broken into multiple Periods (eg.
+#   Hour(30) becomes Day(1) + Hour(6))
+# - Periods with opposite signs will be combined when possible (eg. Hour(1) - Day(1) becomes -Hour(23)) 
 
-Reduces the CompoundPeriod into its canonical form by applying the following rules:
+canonicalize(Dates.CompoundPeriod(Dates.Hour(12), Dates.Hour(13)))      # 1 day, 1 hour
+canonicalize(Dates.CompoundPeriod(Dates.Hour(-1), Dates.Minute(1)))     # -59 minutes
+canonicalize(Dates.CompoundPeriod(Dates.Month(1), Dates.Week(-2)))      # 1 month, -2 weeks
+canonicalize(Dates.CompoundPeriod(Dates.Minute(50000)))                 # 4 weeks, 6 days, 17 hours, 20 minutes
 
-Any Period large enough be partially representable by a coarser Period will be broken into multiple Periods (eg. Hour(30) becomes Day(1) + Hour(6))
-Periods with opposite signs will be combined when possible (eg. Hour(1) - Day(1) becomes -Hour(23)) 
-canonicalize(Dates.CompoundPeriod(Dates.Hour(12), Dates.Hour(13)))
-1 day, 1 hour
-
-canonicalize(Dates.CompoundPeriod(Dates.Hour(-1), Dates.Minute(1)))
--59 minutes
-
-canonicalize(Dates.CompoundPeriod(Dates.Month(1), Dates.Week(-2)))
-1 month, -2 weeks
-
-canonicalize(Dates.CompoundPeriod(Dates.Minute(50000)))
-4 weeks, 6 days, 17 hours, 20 minutes
+canonicalize(today()-Date("1965-02-26"))                                # 3089 weeks, 2 days
 
 # ------------------------
-Dates.value
-Function Dates.value(x::Period) -> Int64
-
-For a given period, return the value associated with that period. For example, value(Millisecond(10)) returns 10 as an integer.
+# Dates.value
+# Function Dates.value(x::Period) -> Int64
+# 
+# For a given period, return the value associated with that period. For example, value(Millisecond(10)) returns 10 as an
+# integer.
 
 # ------------------------
-Dates.default
-Function default(p::Period) -> Period
+# Dates.default
+# Function default(p::Period) -> Period
+#
+# Return a sensible "default" value for the input Period by returning T(1) for Year, Month, and Day, and T(0) for Hour,
+# Minute, Second, and Millisecond.
 
-Return a sensible "default" value for the input Period by returning T(1) for Year, Month, and Day, and T(0) for Hour, Minute, Second, and Millisecond.
-
-Dates.periods
-Function Dates.periods(::CompoundPeriod) -> Vector{Period}
-
-Return the Vector of Periods that comprise the given CompoundPeriod.
+# ------------------------
+# Dates.periods
+# Function Dates.periods(::CompoundPeriod) -> Vector{Period}
+# 
+# Return the Vector of Periods that comprise the given CompoundPeriod.
 
 
 # ----------------------------------------------------
@@ -1373,260 +1327,244 @@ Return the Vector of Periods that comprise the given CompoundPeriod.
 # Date and DateTime values can be rounded to a specified resolution (e.g., 1 month or 15 minutes) with floor, ceil, or round.
 
 # ------------------------
-Base.floor
-Method floor(dt::TimeType, p::Period) -> TimeType
+# Base.floor
+# Method floor(dt::TimeType, p::Period) -> TimeType
+# 
+# Return the nearest Date or DateTime less than or equal to dt at resolution p.
+# 
+# For convenience, p may be a type instead of a value: floor(dt, Dates.Hour) is a shortcut for floor(dt, Dates.Hour(1)).
 
-Return the nearest Date or DateTime less than or equal to dt at resolution p.
-
-For convenience, p may be a type instead of a value: floor(dt, Dates.Hour) is a shortcut for floor(dt, Dates.Hour(1)).
-
-floor(Date(1985, 8, 16), Month)
-1985-08-01
-
-floor(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))
-2013-02-13T00:30:00
-
-floor(DateTime(2016, 8, 6, 12, 0, 0), Day)
-2016-08-06T00:00:00
+floor(Date(1985, 8, 16), Month)                         # 1985-08-01
+floor(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))     # 2013-02-13T00:30:00
+floor(DateTime(2016, 8, 6, 12, 0, 0), Day)              # 2016-08-06T00:00:00
 
 # ------------------------
-Base.ceil
-Method ceil(dt::TimeType, p::Period) -> TimeType
+# Base.ceil
+# Method ceil(dt::TimeType, p::Period) -> TimeType
+# 
+# Return the nearest Date or DateTime greater than or equal to dt at resolution p.
+# 
+# For convenience, p may be a type instead of a value: ceil(dt, Dates.Hour) is a shortcut for ceil(dt, Dates.Hour(1)).
 
-Return the nearest Date or DateTime greater than or equal to dt at resolution p.
-
-For convenience, p may be a type instead of a value: ceil(dt, Dates.Hour) is a shortcut for ceil(dt, Dates.Hour(1)).
-
-ceil(Date(1985, 8, 16), Month)
-1985-09-01
-
-ceil(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))
-2013-02-13T00:45:00
-
-ceil(DateTime(2016, 8, 6, 12, 0, 0), Day)
-2016-08-07T00:00:00
+ceil(Date(1985, 8, 16), Month)                          # 1985-09-01
+ceil(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))      # 2013-02-13T00:45:00
+ceil(DateTime(2016, 8, 6, 12, 0, 0), Day)               # 2016-08-07T00:00:00
 
 # ------------------------
-Base.round
-Method round(dt::TimeType, p::Period, [r::RoundingMode]) -> TimeType
+# Base.round
+# Method round(dt::TimeType, p::Period, [r::RoundingMode]) -> TimeType
+#
+# Return the Date or DateTime nearest to dt at resolution p. By default (RoundNearestTiesUp), ties (e.g., rounding 9:30
+# to the nearest hour) will be rounded up.
+# 
+# For convenience, p may be a type instead of a value: round(dt, Dates.Hour) is a shortcut for round(dt, Dates.Hour(1)).
 
-Return the Date or DateTime nearest to dt at resolution p. By default (RoundNearestTiesUp), ties (e.g., rounding 9:30 to the nearest hour) will be rounded up.
+round(Date(1985, 8, 16), Month)                         # 1985-08-01
+round(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))     # 2013-02-13T00:30:00
+round(DateTime(2016, 8, 6, 12, 0, 0), Day)              # 2016-08-07T00:00:00
 
-For convenience, p may be a type instead of a value: round(dt, Dates.Hour) is a shortcut for round(dt, Dates.Hour(1)).
+# Valid rounding modes for round(::TimeType, ::Period, ::RoundingMode) are RoundNearestTiesUp (default), RoundDown
+# (floor), and RoundUp (ceil).
 
-round(Date(1985, 8, 16), Month)
-1985-08-01
+# -----------
+# Method round(x::Period, precision::T, [r::RoundingMode]) where T <: Union{TimePeriod, Week, Day} -> T
+#
+# Round x to the nearest multiple of precision. If x and precision are different subtypes of Period, the return value
+# will have the same type as precision. By default (RoundNearestTiesUp), ties (e.g., rounding 90 minutes to the nearest
+# hour) will be rounded up.
+# 
+# For convenience, precision may be a type instead of a value: round(x, Dates.Hour) is a shortcut for round(x,
+# Dates.Hour(1)).
 
-round(DateTime(2013, 2, 13, 0, 31, 20), Minute(15))
-2013-02-13T00:30:00
+round(Day(16), Week)                                    # 2 weeks
+round(Minute(44), Minute(15))                           # 45 minutes
+round(Hour(36), Day)                                    # 2 days
 
-round(DateTime(2016, 8, 6, 12, 0, 0), Day)
-2016-08-07T00:00:00
+# Valid rounding modes for round(::Period, ::T, ::RoundingMode) are RoundNearestTiesUp (default), RoundDown (floor), and
+# RoundUp (ceil).
+# Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
 
-Valid rounding modes for round(::TimeType, ::Period, ::RoundingMode) are RoundNearestTiesUp (default), RoundDown (floor), and RoundUp (ceil).
 
-Most Period values can also be rounded to a specified resolution:
-
-# ------------------------
-Base.floor
-Method floor(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> T
-
-Round x down to the nearest multiple of precision. If x and precision are different subtypes of Period, the return value will have the same type as precision.
-
-For convenience, precision may be a type instead of a value: floor(x, Dates.Hour) is a shortcut for floor(x, Dates.Hour(1)).
-
-floor(Day(16), Week)
-2 weeks
-
-floor(Minute(44), Minute(15))
-30 minutes
-
-floor(Hour(36), Day)
-1 day
-
-Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
+# Most Period values can also be rounded to a specified resolution:
 
 # ------------------------
-Base.ceil
-Method ceil(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> T
+# Base.floor
+# Method floor(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> T
+#
+# Round x down to the nearest multiple of precision. If x and precision are different subtypes of Period, the return
+# value will have the same type as precision. 
+# For convenience, precision may be a type instead of a value: floor(x, Dates.Hour) is a shortcut for floor(x,
+# Dates.Hour(1)).
 
-Round x up to the nearest multiple of precision. If x and precision are different subtypes of Period, the return value will have the same type as precision.
+floor(Day(16), Week)                # 2 weeks
+floor(Minute(44), Minute(15))       # 30 minutes
+floor(Hour(36), Day)                # 1 day
 
-For convenience, precision may be a type instead of a value: ceil(x, Dates.Hour) is a shortcut for ceil(x, Dates.Hour(1)).
-
-ceil(Day(16), Week)
-3 weeks
-
-ceil(Minute(44), Minute(15))
-45 minutes
-
-ceil(Hour(36), Day)
-2 days
-
-Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
+# Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
 
 # ------------------------
-Base.round
-Method round(x::Period, precision::T, [r::RoundingMode]) where T <: Union{TimePeriod, Week, Day} -> T
+# Base.ceil
+# Method ceil(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> T
+#
+# Round x up to the nearest multiple of precision. If x and precision are different subtypes of Period, the return value
+# will have the same type as precision.
+# 
+# For convenience, precision may be a type instead of a value: ceil(x, Dates.Hour) is a shortcut for ceil(x,
+# Dates.Hour(1)).
 
-Round x to the nearest multiple of precision. If x and precision are different subtypes of Period, the return value will have the same type as precision. By default (RoundNearestTiesUp), ties (e.g., rounding 90 minutes to the nearest hour) will be rounded up.
+ceil(Day(16), Week)                 # 3 weeks
+ceil(Minute(44), Minute(15))        # 45 minutes
+ceil(Hour(36), Day)                 # 2 days
 
-For convenience, precision may be a type instead of a value: round(x, Dates.Hour) is a shortcut for round(x, Dates.Hour(1)).
+# Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
 
-round(Day(16), Week)
-2 weeks
 
-round(Minute(44), Minute(15))
-45 minutes
-
-round(Hour(36), Day)
-2 days
-
-Valid rounding modes for round(::Period, ::T, ::RoundingMode) are RoundNearestTiesUp (default), RoundDown (floor), and RoundUp (ceil).
-
-Rounding to a precision of Months or Years is not supported, as these Periods are of inconsistent length.
-
-The following functions are not exported:
+# The following functions are not exported:
 
 # ------------------------
-Dates.floorceil
-Function floorceil(dt::TimeType, p::Period) -> (TimeType, TimeType)
+# Dates.floorceil
+# Function floorceil(dt::TimeType, p::Period) -> (TimeType, TimeType)
+#
+# Simultaneously return the floor and ceil of a Date or DateTime at resolution p. More efficient than calling both floor
+# and ceil individually.
 
-Simultaneously return the floor and ceil of a Date or DateTime at resolution p. More efficient than calling both floor and ceil individually.
-
-floorceil(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> (T, T)
-
-Simultaneously return the floor and ceil of Period at resolution p. More efficient than calling both floor and ceil individually.
-
-# ------------------------
-Dates.epochdays2date
-Function epochdays2date(days) -> Date
-
-Take the number of days since the rounding epoch (0000-01-01T00:00:00) and return the corresponding Date.
-
-Dates.epochms2datetime
-Function epochms2datetime(milliseconds) -> DateTime
-
-Take the number of milliseconds since the rounding epoch (0000-01-01T00:00:00) and return the corresponding DateTime.
+# -----------
+# Function floorceil(x::Period, precision::T) where T <: Union{TimePeriod, Week, Day} -> (T, T)
+# 
+# Simultaneously return the floor and ceil of Period at resolution p. More efficient than calling both floor and ceil
+# individually.
 
 # ------------------------
-Dates.date2epochdays
-Function date2epochdays(dt::Date) -> Int64
-
-Take the given Date and return the number of days since the rounding epoch (0000-01-01T00:00:00) as an Int64.
-
-# ------------------------
-Dates.datetime2epochms
-Function datetime2epochms(dt::DateTime) -> Int64
-
-Take the given DateTime and return the number of milliseconds since the rounding epoch (0000-01-01T00:00:00) as an Int64.
-
-Conversion Functions
-Dates.today
-Function today() -> Date
-
-Return the date portion of now().
+# Dates.epochdays2date
+# Function epochdays2date(days) -> Date
+# 
+# Take the number of days since the rounding epoch (0000-01-01T00:00:00) and return the corresponding Date.
 
 # ------------------------
-Dates.unix2datetime
-Function unix2datetime(x) -> DateTime
-
-Take the number of seconds since unix epoch 1970-01-01T00:00:00 and convert to the corresponding DateTime.
-
-# ------------------------
-Dates.datetime2unix
-Function datetime2unix(dt::DateTime) -> Float64
-
-Take the given DateTime and return the number of seconds since the unix epoch 1970-01-01T00:00:00 as a Float64.
+# Dates.epochdays2datetime
+# Function epochms2datetime(milliseconds) -> DateTime
+# 
+# Take the number of milliseconds since the rounding epoch (0000-01-01T00:00:00) and return the corresponding DateTime.
 
 # ------------------------
-Dates.julian2datetime
-Function julian2datetime(julian_days) -> DateTime
-
-Take the number of Julian calendar days since epoch -4713-11-24T12:00:00 and return the corresponding DateTime.
-
-# ------------------------
-Dates.datetime2julian
-Function datetime2julian(dt::DateTime) -> Float64
-
-Take the given DateTime and return the number of Julian calendar days since the julian epoch -4713-11-24T12:00:00 as a Float64.
+# Dates.date2epochdays
+# Function date2epochdays(dt::Date) -> Int64
+# 
+# Take the given Date and return the number of days since the rounding epoch (0000-01-01T00:00:00) as an Int64.
 
 # ------------------------
-Dates.rata2datetime
-Function rata2datetime(days) -> DateTime
+# Dates.datetime2epochms
+# Function datetime2epochms(dt::DateTime) -> Int64
+# 
+# Take the given DateTime and return the number of milliseconds since the rounding epoch (0000-01-01T00:00:00) as an Int64.
 
-Take the number of Rata Die days since epoch 0000-12-31T00:00:00 and return the corresponding DateTime.
-
-# ------------------------
-Dates.datetime2rata
-Function datetime2rata(dt::TimeType) -> Int64
-
-Return the number of Rata Die days since epoch from the given Date or DateTime.
 
 # ----------------------------------------------------
-Constants
-Days of the Week:
-
-Variable	Abbr.	Value (Int)
-Monday	Mon	1
-Tuesday	Tue	2
-Wednesday	Wed	3
-Thursday	Thu	4
-Friday	Fri	5
-Saturday	Sat	6
-Sunday	Sun	7
-Months of the Year:
-
-Variable	Abbr.	Value (Int)
-January	Jan	1
-February	Feb	2
-March	Mar	3
-April	Apr	4
-May	May	5
-June	Jun	6
-July	Jul	7
-August	Aug	8
-September	Sep	9
-October	Oct	10
-November	Nov	11
-December	Dec	12
-Common Date Formatters
-
+# Conversion Functions
 
 # ------------------------
-Dates.ISODateTimeFormat
-Constant Dates.ISODateTimeFormat
-
-Describes the ISO8601 formatting for a date and time. This is the default value for Dates.format of a DateTime.
-
-Dates.format(DateTime(2018, 8, 8, 12, 0, 43, 1), ISODateTimeFormat)
-"2018-08-08T12:00:43.001"
+# Dates.today
+# Function today() -> Date
+# 
+# Return the date portion of now().
 
 # ------------------------
-Dates.ISODateFormat
-Constant Dates.ISODateFormat
-
-Describes the ISO8601 formatting for a date. This is the default value for Dates.format of a Date.
-
-Example
-
-Dates.format(Date(2018, 8, 8), ISODateFormat)
-"2018-08-08"
+# Dates.unix2datetime
+# Function unix2datetime(x) -> DateTime
+# 
+# Take the number of seconds since unix epoch 1970-01-01T00:00:00 and convert to the corresponding DateTime.
 
 # ------------------------
-Dates.ISOTimeFormat
-Constant Dates.ISOTimeFormat
-
-Describes the ISO8601 formatting for a time. This is the default value for Dates.format of a Time.
-
-Dates.format(Time(12, 0, 43, 1), ISOTimeFormat)
-"12:00:43.001"
+# Dates.datetime2unix
+# Function datetime2unix(dt::DateTime) -> Float64
+# 
+# Take the given DateTime and return the number of seconds since the unix epoch 1970-01-01T00:00:00 as a Float64.
 
 # ------------------------
-Dates.RFC1123Format
-Constant Dates.RFC1123Format
+# Dates.julian2datetime
+# Function julian2datetime(julian_days) -> DateTime
+# 
+# Take the number of Julian calendar days since epoch -4713-11-24T12:00:00 and return the corresponding DateTime.
 
-Describes the RFC1123 formatting for a date and time.
+# ------------------------
+# Dates.datetime2julian
+# Function datetime2julian(dt::DateTime) -> Float64
+# 
+# Take the given DateTime and return the number of Julian calendar days since the julian epoch -4713-11-24T12:00:00 as a
+# Float64.
 
-Dates.format(DateTime(2018, 8, 8, 12, 0, 43, 1), RFC1123Format)
-"Wed, 08 Aug 2018 12:00:43"
+# ------------------------
+# Dates.rata2datetime
+# Function rata2datetime(days) -> DateTime
+# 
+# Take the number of Rata Die days since epoch 0000-12-31T00:00:00 and return the corresponding DateTime.
+
+# ------------------------
+# Dates.datetime2rata
+# Function datetime2rata(dt::TimeType) -> Int64
+# 
+# Return the number of Rata Die days since epoch from the given Date or DateTime.
+
+# ----------------------------------------------------
+# Constants
+# 
+# Days of the Week:
+# Variable	Abbr.	Value (Int)
+# Monday	Mon	    1
+# Tuesday	Tue	    2
+# Wednesday	Wed	    3
+# Thursday	Thu	    4
+# Friday	Fri	    5
+# Saturday	Sat	    6
+# Sunday	Sun	    7
+
+# Months of the Year:
+# Variable	Abbr.	Value (Int)
+# January	Jan	    1
+# February	Feb	    2
+# March	    Mar	    3
+# April	    Apr	    4
+# May	    May	    5
+# June	    Jun	    6
+# July	    Jul	    7
+# August	Aug	    8
+# September	Sep	    9
+# October	Oct	    10
+# November	Nov	    11
+# December	Dec	    12
+
+
+# ----------------------------------------------------
+# Common Date Formatters
+
+# ------------------------
+# Dates.ISODateTimeFormat
+# Constant Dates.ISODateTimeFormat
+# 
+# Describes the ISO8601 formatting for a date and time. This is the default value for Dates.format of a DateTime.
+
+Dates.format(DateTime(2018, 8, 8, 12, 0, 43, 1), ISODateTimeFormat)     # "2018-08-08T12:00:43.001"
+
+# ------------------------
+# Dates.ISODateFormat
+# Constant Dates.ISODateFormat
+# 
+# Describes the ISO8601 formatting for a date. This is the default value for Dates.format of a Date.
+
+Dates.format(Date(2018, 8, 8), ISODateFormat)                           # "2018-08-08"
+
+# ------------------------
+# Dates.ISOTimeFormat
+# Constant Dates.ISOTimeFormat
+# 
+# Describes the ISO8601 formatting for a time. This is the default value for Dates.format of a Time.
+
+Dates.format(Time(12, 0, 43, 1), ISOTimeFormat)                         # "12:00:43.001"
+
+# ------------------------
+# Dates.RFC1123Format
+# Constant Dates.RFC1123Format
+# 
+# Describes the RFC1123 formatting for a date and time.
+
+Dates.format(DateTime(2018, 8, 8, 12, 0, 43, 1), RFC1123Format)         # "Wed, 08 Aug 2018 12:00:43"

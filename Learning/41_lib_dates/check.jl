@@ -7,7 +7,7 @@
 state = 0
 nl = 0
 np = 0
-for line in readlines("base_iterations.jl")
+for line in readlines("lib_dates.jl")
 	global state, nl, np
 	nl += 1
 
@@ -40,7 +40,7 @@ for line in readlines("base_iterations.jl")
 
 	# After a medium separatot line
 	if state == 10
-		if startswith(line, "# Base.") || startswith(line, "# Core.") || line == "# &&" || line == "# ||"
+		if any(map(x->startswith(line, x), ["# Base.", "# Core.", "# Dates."])) || any(line .== ["# &&", "# ||"])
 			state = 11
 			continue
 		elseif startswith(line, "# Type ")
