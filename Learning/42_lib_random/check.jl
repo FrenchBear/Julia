@@ -7,7 +7,7 @@
 state = 0
 nl = 0
 np = 0
-for line in readlines("lib_dates.jl")
+for line in readlines("lib_random.jl")
 	global state, nl, np
 	nl += 1
 
@@ -40,14 +40,14 @@ for line in readlines("lib_dates.jl")
 
 	# After a medium separatot line
 	if state == 10
-		if any(map(x->startswith(line, x), ["# Base.", "# Core.", "# Dates."])) || any(line .== ["# &&", "# ||"])
+		if any(map(x->startswith(line, x), ["# Base.", "# Core.", "# Dates.", "# Random."])) || any(line .== ["# &&", "# ||"])
 			state = 11
 			continue
 		elseif startswith(line, "# Type ")
 			state = 11
 			continue
 		else
-			println("Line $nl, state $state: Expect # Base|Core\nFound: $line")
+			println("Line $nl, state $state: Expect # Base|Core|...\nFound: $line")
 			state = 0
 			np += 1
 			continue
@@ -57,7 +57,7 @@ for line in readlines("lib_dates.jl")
 	# Header Function/Method... after Base/Code header
 	# or after a small separator line
 	if state == 11
-		if startswith(line, "# Function ") || startswith(line, "# Method ") || startswith(line, "# Type ") || startswith(line, "# Macro ") || startswith(line, "# Constant ") || startswith(line, "# Keyword ")
+		if any(map(x->startswith(line, x), ["# Function ", "# Method ", "# Type ", "# Macro ", "# Constant ", "# Keyword ", "# Module "]))
 			continue
 		elseif strip(line) == ""
 			state = 0
@@ -66,7 +66,7 @@ for line in readlines("lib_dates.jl")
 			state = 12
 			continue
 		else
-			println("Line $nl, state $state: Expect # or # Function|Method|Type|Macro\nFound: $line")
+			println("Line $nl, state $state: Expect # or # Function|Method|Type|Macro|...\nFound: $line")
 			np += 1
 			state = 0
 			continue

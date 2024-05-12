@@ -291,6 +291,9 @@ less(unique, (AbstractRange,))
 # Evaluates the arguments to the function or macro call, determines their types, and calls code_lowered on the resulting
 # expression.
 
+# Note: choice(x) returns the same result as rand(x) for a vector, a range, ...  It's just a simple example of function
+# for following tests
+
 function choice(source::Range{T}) where T
     source[rand(1:length(source))]
 end
