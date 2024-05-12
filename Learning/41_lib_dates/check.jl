@@ -1,13 +1,13 @@
 # check.jl
 # Checks leaning julia source files for simple formatting rules
 #
-# 2024-05-09    PV
+# 2024-05-11    PV
 
 
 state = 0
 nl = 0
 np = 0
-for line in readlines("base_iterators.jl")
+for line in readlines("base_iterations.jl")
 	global state, nl, np
 	nl += 1
 
