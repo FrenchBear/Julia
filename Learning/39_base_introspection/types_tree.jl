@@ -1,5 +1,5 @@
-# typestree
-# Draw hierarchy of subtypes for a given type
+# types_tree.jl
+# Draw a hierarchy of subtypes for a given type
 #
 # 2024-05-11    PV
 
