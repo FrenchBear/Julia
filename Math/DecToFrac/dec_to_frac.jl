@@ -41,7 +41,7 @@ function double_to_fraction(f::Float64, epsilon=1e-6)::Fraction
 	end
 end
 
-println("Stern-Brocot algorithm to transform a periodic decimal suite into a fraction\n")
+println("Stern-Brocot algorithm to transform a periodic decimal suite into a fraction (Julia)\n")
 
 epsilon=1e-6
 f = 0.1415926535
