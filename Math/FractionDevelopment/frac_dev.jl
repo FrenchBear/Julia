@@ -45,6 +45,9 @@ function test(f::Fraction, res::String)
 end
 
 
+println("Fraction development in Julia\n")
+
+
 test(100 // 250, "0.4")
 test(100 // 4, "25")
 test(8 // 2, "4")
@@ -56,12 +59,23 @@ test(1 // 5, "0.2")
 test(1 // 7, "0.[142857]")
 test(100 // 23, "4.[3478260869565217391304]")
 test(679 // 550, "1.23[45]")
+test(1 // 9801, "0.[000102030405060708091011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980818283848586878889909192939495969799]") # 0.[00 01 02 03... 96 97 99] (no 98)
 test(0 // 5, "0")
 test(5 // 0, "/0 error")
 
+# Performance
 t = @elapsed begin
     for i in 1:100_000
         _ = develop(100//23)
     end
 end
-println("\nElapsed: $(round(t; digits=3))s")
+println("\n100K developments of 100/23: Elapsed: $(round(t; digits=3))s")
+
+t = @elapsed begin
+    for i in 1:1000
+        for j in 1:1000
+            _ = develop(i//j)
+        end
+    end
+end
+println("1M developments: Elapsed: $(round(t; digits=3))s")
