@@ -14,13 +14,15 @@ function decompose(f::Fraction)::Vector{Fraction}
 	[f1; decompose(f2)]
 end
 
-const max=13
+println("Factions Égyptiennes en Julia\n")
+
+const max = 13
 for num in 2:max
-    for den in num+1:max
-        f=num//den
-        if f.num==num
-            println("$num/$den = ", join(decompose(f), " + "))
-        end
-    end
-    println()
+	for den in num+1:max
+		f = num // den
+		if f.num == num
+			println("$num/$den = ", join(decompose(f), " + "))
+		end
+	end
+	println()
 end
