@@ -1,2 +1,2 @@
 #!/bin/sh
-julia cordic.jl "$@"
+julia hamming.jl "$@"
