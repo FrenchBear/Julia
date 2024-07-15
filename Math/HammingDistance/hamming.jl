@@ -18,6 +18,7 @@ end
 
 hamming_distance_intrinsics(hash1::UInt64, hash2::UInt64)::Int = count_ones(xor(hash1, hash2))
 
+# Simple test
 @assert hamming_distance(UInt64(871234), UInt64(162332)) == 12
 
 for i in 0:64
