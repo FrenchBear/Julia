@@ -2,7 +2,7 @@
 # Quick way to load common packages
 #
 # 2024-05-03    PV
-
+# 2025-01-02	PV		StaticArrays for Pentomino
 import Pkg
 
 function u(m::String)
@@ -34,3 +34,4 @@ u("StatsPlots")
 u("Test")
 u("TOML")
 u("Unicode")
+u("StaticArrays")
