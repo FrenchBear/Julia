@@ -18,10 +18,10 @@
 # DateTime type is not aware of time zones (naive, in Python parlance), analogous to a LocalDateTime in Java 8.
 # Additional time zone functionality can be added through the TimeZones.jl package, which compiles the IANA time zone
 # database. Both Date and DateTime are based on the ISO 8601 standard, which follows the proleptic Gregorian calendar.
-# One note is that the ISO 8601 standard is particular about BC/BCE dates. In general, the last day of the BC/BCE era,
-# 1-12-31 BC/BCE, was followed by 1-1-1 AD/CE, thus no year zero exists. The ISO standard, however, states that 1 BC/BCE
-# is year zero, so 0000-12-31 is the day before 0001-01-01, and year -0001 (yes, negative one for the year) is 2 BC/BCE,
-# year -0002 is 3 BC/BCE, etc.
+# One note is that the ISO 8601 standard is particular about BC/BCE dates. 
+# In general, the last day of the BC/BCE era, 1-12-31 BC/BCE, was followed by 1-1-1 AD/CE, thus no year zero exists. The
+# ISO standard, however, states that 1 BC/BCE is year zero, so 0000-12-31 is the day before 0001-01-01, and year -0001
+# (yes, negative one for the year) is 2 BC/BCE, year -0002 is 3 BC/BCE, etc.
 
 # [1] The notion of the UT second is actually quite fundamental. There are basically two different notions of time
 #     generally accepted, one based on the physical rotation of the earth (one full rotation = 1 day), the other based
