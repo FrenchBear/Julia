@@ -3,6 +3,8 @@
 #
 # 2024-05-03    PV
 # 2025-01-02	PV		StaticArrays for Pentomino
+# 2025-09-16	PV		Added Images and Colors for rotor_router
+
 import Pkg
 
 function u(m::String)
@@ -35,3 +37,5 @@ u("Test")
 u("TOML")
 u("Unicode")
 u("StaticArrays")
+u("Images")
+u("Colors")
