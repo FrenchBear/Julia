@@ -1,1 +1,1 @@
-julia fract_egypt.jl %*
+julia EgyptianFractions.jl %*
